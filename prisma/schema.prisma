@@ -37,3 +37,8 @@ model Admin {
   password  String
   createdAt DateTime @default(now())
 }
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
