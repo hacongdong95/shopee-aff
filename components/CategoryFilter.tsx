@@ -1,6 +1,6 @@
 'use client'
 
-import { Category } from '@prisma/client'
+type Category = { id: number; name: string; slug: string }
 import { useRouter, useSearchParams } from 'next/navigation'
 
 export default function CategoryFilter({

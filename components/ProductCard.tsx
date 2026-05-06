@@ -1,6 +1,13 @@
 'use client'
 
-import { Category, Product } from '@prisma/client'
+type Category = { id: number; name: string; slug: string }
+type Product = {
+  id: number; name: string; slug: string; price: number
+  oldPrice: number | null; imageUrl: string | null
+  affLink: string; isActive: boolean; clicks: number
+  description: string | null; categoryId: number
+  category: Category
+}
 
 type Props = {
   product: Product & { category: Category }
