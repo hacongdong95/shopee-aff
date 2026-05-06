@@ -45,7 +45,7 @@ export default async function AdminDashboard() {
             </tr>
           </thead>
           <tbody>
-            {recentProducts.map(p => (
+            {recentProducts.map((p: any) => (
               <tr key={p.id} style={{ borderBottom: '1px solid var(--border)' }}>
                 <td style={{ padding: '10px 12px', fontWeight: 600 }}>{p.name}</td>
                 <td style={{ padding: '10px 12px', color: 'var(--muted)' }}>{p.category.name}</td>
