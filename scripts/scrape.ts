@@ -168,7 +168,7 @@ Link gốc: ${shopeeUrl}
 Hãy:
 1. Làm sạch tên sản phẩm (viết hoa đúng chỗ, bỏ ký tự thừa)
 2. Đoán giá hợp lý cho sản phẩm này tại thị trường Việt Nam (số nguyên VND).
-3. Viết mô tả đầy đủ dạng PLAIN TEXT, KHÔNG dùng HTML hay markdown.Dùng định dạng sau:Tiêu đề section viết HOA và kết thúc bằng dấu :, Mỗi chi tiết bắt đầu bằng dấu - ở đầu dòng.
+3. Viết mô tả đầy đủ dạng PLAIN TEXT, KHÔNG dùng HTML hay markdown, Dùng định dạng Tiêu đề section viết HOA và kết thúc bằng dấu hai chấm, mỗi chi tiết bắt đầu bằng dấu - ở đầu dòng nhìn chuyên nghiệp.
 
 Trả về JSON duy nhất, KHÔNG markdown:
 {
