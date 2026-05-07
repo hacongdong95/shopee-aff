@@ -146,7 +146,7 @@ export default function ProductDetail({
     ? Math.round((1 - product.price / product.oldPrice) * 100) : null
   const saved = product.oldPrice && product.oldPrice > product.price
     ? product.oldPrice - product.price : null
-  const { sold, views, reviews } = getFakeStats(product.id)
+  const { sold, views, reviews, rating } = getFakeStats(product.id)
 
   return (
     <div style={{ minHeight: '100vh', background: '#f5f5f5', fontFamily: 'Arial, sans-serif' }}>
