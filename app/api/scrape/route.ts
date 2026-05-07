@@ -1,6 +1,4 @@
 // app/api/scrape/route.ts
-// POST /api/scrape  — nhận link Shopee, trả về thông tin sản phẩm
-
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 
@@ -34,40 +32,20 @@ export async function POST(req: NextRequest) {
 
   const GROQ_API_KEY = process.env.GROQ_API_KEY
   if (!GROQ_API_KEY) {
-    return NextResponse.json({ error: 'Thiếu GROQ_API_KEY trong .env' }, { status: 500 })
+    return NextResponse.json({ error: 'Thiếu GROQ_API_KEY' }, { status: 500 })
   }
 
-  const userPrompt = `Tên sản phẩm thô từ URL Shopee: "${rawName}"
-Link: ${url}
+  const userPrompt = `Tên sản phẩm từ URL Shopee: "${rawName}"
 
-Hãy:
-1. Làm sạch tên sản phẩm (viết hoa đúng, bỏ ký tự thừa)
-2. Đoán giá hợp lý tại thị trường Việt Nam (số nguyên VND)
-3. Đoán giá gốc nếu có thể (hoặc null)
-4. Viết mô tả sản phẩm THEO ĐÚNG FORMAT bên dưới, có emoji sticker, tiêu đề in hoa, bullet points như Shopee thật:
+Hãy trả về JSON với các field sau:
+- name: tên sản phẩm đã làm sạch (viết hoa đúng)
+- price: giá hợp lý VND (số nguyên)
+- oldPrice: giá gốc VND hoặc null
+- description: mô tả sản phẩm chuyên nghiệp có emoji và bullet points, VIẾT LIỀN TRÊN 1 DÒNG, dùng \\n để xuống dòng
 
-✅ THÔNG TIN SẢN PHẨM:
-• [đặc điểm nổi bật 1]
-• [đặc điểm nổi bật 2]
-• [đặc điểm nổi bật 3]
+Ví dụ description: "✅ THONG TIN:\\n• Dac diem 1\\n• Dac diem 2\\n\\n🎁 CAM KET:\\n• Hang chinh hang 100%"
 
-✅ ƯU ĐIỂM NỔI BẬT:
-• [ưu điểm 1]
-• [ưu điểm 2]
-• [ưu điểm 3]
-
-🎁 CAM KẾT CỦA SHOP:
-• Hàng chính hãng 100%
-• Hoàn tiền nếu hàng không đúng mô tả
-• Đổi trả miễn phí trong 15 ngày
-
-Trả về JSON duy nhất, KHÔNG markdown:
-{
-  "name": "tên sản phẩm sạch",
-  "price": 199000,
-  "oldPrice": 299000,
-  "description": "mô tả theo format trên, dùng ký tự xuống dòng thật"
-}`
+Chỉ trả về JSON, không có gì khác.`
 
   try {
     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -83,7 +61,7 @@ Trả về JSON duy nhất, KHÔNG markdown:
         messages: [
           {
             role: 'system',
-            content: 'Bạn là chuyên gia viết mô tả sản phẩm thương mại điện tử Việt Nam. Viết mô tả chuyên nghiệp, hấp dẫn, có emoji, bullet points. Chỉ trả về JSON thuần túy, không có text thừa, không markdown fence.',
+            content: 'Bạn là chuyên gia viết mô tả sản phẩm thương mại điện tử Việt Nam. Trả về JSON hợp lệ duy nhất. Trong field description, dùng \\n (backslash-n) để xuống dòng, KHÔNG dùng ký tự xuống dòng thật.',
           },
           {
             role: 'user',
@@ -100,11 +78,28 @@ Trả về JSON duy nhất, KHÔNG markdown:
 
     const data = await res.json()
     const text: string = data?.choices?.[0]?.message?.content ?? ''
-    const clean = text.replace(/```json|```/g, '').trim()
-    const match = clean.match(/\{[\s\S]*\}/)
-    if (!match) throw new Error('Không parse được JSON')
 
-    const parsed = JSON.parse(match[0])
+    // Làm sạch JSON: bỏ markdown fence, xử lý ký tự đặc biệt
+    const clean = text
+      .replace(/```json|```/g, '')
+      .trim()
+
+    const matchJson = clean.match(/\{[\s\S]*\}/)
+    if (!matchJson) throw new Error('Không tìm thấy JSON')
+
+    // Thay ký tự xuống dòng thật bên trong string thành \n
+    const safeJson = matchJson[0].replace(/:\s*"([\s\S]*?)"/g, (_: string, inner: string) => {
+      const escaped = inner
+        .replace(/\\/g, '\\\\')
+        .replace(/\r\n/g, '\\n')
+        .replace(/\n/g, '\\n')
+        .replace(/\r/g, '\\n')
+        .replace(/\t/g, '\\t')
+        .replace(/"/g, '\\"')
+      return `: "${escaped}"`
+    })
+
+    const parsed = JSON.parse(safeJson)
     return NextResponse.json({ ok: true, ...parsed })
 
   } catch (e) {
