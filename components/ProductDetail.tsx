@@ -53,8 +53,9 @@ function getLineIcon(text: string): string {
 
 // ─── Render mô tả thông minh ─────────────────────────────────────────────────
 function renderDescription(description: string) {
-  // Strip HTML tags nếu mô tả cũ lưu dạng HTML
-  const cleaned = description
+  // Fix \n literal thành xuống dòng thật
+  const fixed = description
+    .replace(/\\n/g, '\n')   // ← thêm dòng này
     .replace(/<li>/gi, '\n- ')
     .replace(/<\/li>/gi, '')
     .replace(/<ul>|<\/ul>/gi, '')
@@ -64,7 +65,7 @@ function renderDescription(description: string) {
     .replace(/<[^>]+>/g, '')
     .trim()
 
-  const lines = cleaned.split('\n').map(l => l.trim()).filter(Boolean)
+  const lines = fixed.split('\n').map(l => l.trim()).filter(Boolean)
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
