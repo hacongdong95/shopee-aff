@@ -308,13 +308,29 @@ export default function ProductsPage() {
               <div style={{ background: '#fafafa', borderRadius: 10, padding: '18px 20px', border: '1px solid #f0f0f0' }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: '#6b7280', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Hình ảnh & Liên kết</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  <Field label="Link ảnh sản phẩm">
-                    <input value={form.imageUrl} onChange={e => setForm(f => ({ ...f, imageUrl: e.target.value }))} placeholder="https://..." style={inputStyle} />
+                                    <Field label="Link ảnh sản phẩm (mỗi link 1 dòng)">
+                    <textarea
+                      value={form.imageUrl}
+                      onChange={e => setForm(f => ({ ...f, imageUrl: e.target.value }))}
+                      placeholder={"https://down-vn.img.susercontent.com/file/abc123\nhttps://down-vn.img.susercontent.com/file/def456\nhttps://down-vn.img.susercontent.com/file/ghi789"}
+                      rows={5}
+                      style={{ ...inputStyle, resize: 'vertical', fontFamily: 'monospace', fontSize: 11, lineHeight: 1.6 }}
+                    />
+                    <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 3 }}>
+                      Mỗi URL 1 dòng — ảnh đầu tiên sẽ là ảnh đại diện
+                    </div>
+                    {/* Preview thumbnails */}
                     {form.imageUrl && (
-                      <img src={form.imageUrl} alt="preview" style={{ marginTop: 8, width: 80, height: 80, objectFit: 'cover', borderRadius: 8, border: '1px solid #e5e7eb' }}
-                        onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                      <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+                        {form.imageUrl.split('\n').map(u => u.trim()).filter(Boolean).map((url, i) => (
+                          <img key={i} src={url} alt={`preview ${i+1}`}
+                            style={{ width: 56, height: 56, objectFit: 'contain', borderRadius: 6, border: i === 0 ? '2px solid #ee4d2d' : '1px solid #e5e7eb', background: '#fafafa', padding: 2 }}
+                            onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+                          />
+                        ))}
+                      </div>
                     )}
-                    <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>
+			                <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>
                       💡 Mở Shopee → chuột phải vào ảnh → "Copy image address" → dán vào đây
                     </div>
                   </Field>
