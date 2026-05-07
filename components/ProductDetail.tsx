@@ -21,9 +21,9 @@ function getFakeStats(productId: number) {
   const sold    = Math.floor(seededRandom(productId * 3)  * 8000  + 2000)
   const views   = sold + Math.floor(seededRandom(productId * 7)  * 20000 + 5000)
   const reviews = Math.floor(seededRandom(productId * 11) * 800   + 100)
-  return { sold, views, reviews }
+  const rating  = (seededRandom(productId * 13) * 0.5 + 4.4).toFixed(1)  // 4.4 → 4.9
+  return { sold, views, reviews, rating }
 }
-
 // ─── Icon tự động theo từ khóa ────────────────────────────────────────────────
 const KEYWORD_ICONS: [RegExp, string][] = [
   [/chính hãng/i,           '✅'],
@@ -53,7 +53,18 @@ function getLineIcon(text: string): string {
 
 // ─── Render mô tả thông minh ─────────────────────────────────────────────────
 function renderDescription(description: string) {
-  const lines = description.split('\n').map(l => l.trim()).filter(Boolean)
+  // Strip HTML tags nếu mô tả cũ lưu dạng HTML
+  const cleaned = description
+    .replace(/<li>/gi, '\n- ')
+    .replace(/<\/li>/gi, '')
+    .replace(/<ul>|<\/ul>/gi, '')
+    .replace(/<p>/gi, '\n')
+    .replace(/<\/p>/gi, '')
+    .replace(/<strong>(.*?)<\/strong>/gi, '$1')
+    .replace(/<[^>]+>/g, '')
+    .trim()
+
+  const lines = cleaned.split('\n').map(l => l.trim()).filter(Boolean)
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -199,7 +210,7 @@ export default function ProductDetail({
               {/* Stats row */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, paddingBottom: 16, borderBottom: '1px solid #f0f0f0', fontSize: 12, color: '#555', flexWrap: 'wrap' }}>
                 <span style={{ color: '#f5a623', fontWeight: 600 }}>
-                  ⭐ 4.8
+                  ⭐ {rating}
                   <span style={{ color: '#aaa', fontWeight: 400 }}> ({reviews.toLocaleString('vi-VN')})</span>
                 </span>
                 <span style={{ color: '#eee' }}>|</span>
