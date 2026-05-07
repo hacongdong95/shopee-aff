@@ -13,3 +13,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   )
 }
+
+import ThemeProvider from '@/components/ThemeProvider'
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="vi">
+      <head>
+        <ThemeProvider />   {/* ← thêm dòng này */}
+      </head>
+      <body>{children}</body>
+    </html>
+  )
+}
