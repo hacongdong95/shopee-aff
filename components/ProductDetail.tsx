@@ -157,13 +157,17 @@ export default function ProductDetail({ product, related }: { product: Product; 
             {/* Left: Gallery */}
             <div style={{ padding: 20, borderRight: '1px solid #f0f0f0' }}>
               <ImageGallery images={images} productName={product.name} />
-              <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 8, padding: '12px 16px', background: '#fff9f8', border: '1px solid #ffd5cb', borderRadius: 4 }}>
+              <div 
+                onClick={() => { fetch(`/api/products/${product.id}/click`, { method: 'POST' }); window.open(product.affLink, '_blank') }}
+                style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 8, padding: '12px 16px', background: '#fff9f8', border: '1px solid #ffd5cb', borderRadius: 4, cursor: 'pointer' }}
+              >
                 <span style={{ fontSize: 20 }}>🛒</span>
                 <div>
                   <div style={{ fontSize: 12, fontWeight: 700, color: '#ee4d2d' }}>Mua tại Shopee</div>
-                  <div style={{ fontSize: 11, color: '#888' }}>Đảm bảo chính hãng · Giao nhanh</div>
+                  <div style={{ fontSize: 11, color: '#888' }}>Đảm bảo chính hãng · Giao nhanh →</div>
                 </div>
               </div>
+
             </div>
 
             {/* Right: Info */}
