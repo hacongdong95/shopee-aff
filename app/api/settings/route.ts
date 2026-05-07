@@ -1,29 +1,10 @@
-// app/api/settings/route.ts
-import { prisma } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
-
-// Các settings mặc định khi chưa có trong DB
-export const DEFAULT_SETTINGS: Record<string, string> = {
-  site_name:        'Shopee Deals',
-  site_tagline:     'Deal hot mỗi ngày',
-  site_logo_emoji:  '🛍️',
-  header_bg:        'linear-gradient(135deg,#ee4d2d,#ff7337)',
-  banner_title:     '🔥 Deal Hot Mỗi Ngày',
-  banner_subtitle:  'Hàng ngàn sản phẩm giảm giá sâu — mua ngay kẻo hết!',
-  banner_show:      'true',
-  footer_text:      'Tổng hợp sản phẩm giảm giá tốt nhất từ Shopee',
-  footer_copyright: '© 2025 · Affiliate Website',
-  primary_color:    '#ee4d2d',
-  shipping_text:    '🚚 Miễn phí vận chuyển · Giao trong 2-5 ngày',
-  guarantee_text:   '✅ Hoàn tiền nếu hàng không đúng mô tả',
-  return_text:      '↩️ Đổi trả miễn phí trong 15 ngày',
-  buy_button_text:  'Mua Ngay',
-  shopee_badge:     'Đảm bảo chính hãng · Giao nhanh',
-}
+import { prisma } from '@/lib/prisma'
+import { getSession } from '@/lib/auth'
 
 export async function GET() {
-  const rows = await prisma.siteSetting.findMany()
-  const result = { ...DEFAULT_SETTINGS }
+  const rows = await prisma.setting.findMany()
+  const result: Record<string, string> = {}
   for (const row of rows) {
     result[row.key] = row.value
   }
@@ -31,16 +12,18 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.json() as Record<string, string>
-  // Upsert từng key
-  await Promise.all(
-    Object.entries(body).map(([key, value]) =>
-      prisma.siteSetting.upsert({
-        where:  { key },
-        update: { value },
-        create: { key, value },
-      })
-    )
-  )
+  const session = await getSession()
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const body: Record<string, string> = await req.json()
+
+  for (const [key, value] of Object.entries(body)) {
+    await prisma.setting.upsert({
+      where: { key },
+      update: { value },
+      create: { key, value },
+    })
+  }
+
   return NextResponse.json({ ok: true })
 }

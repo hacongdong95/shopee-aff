@@ -36,16 +36,23 @@ model Admin {
   id        Int      @id @default(autoincrement())
   email     String   @unique
   password  String
-  role      String   @default("editor")
-  name      String   @default("")
+  name      String?
+  role      String   @default("admin")
   createdAt DateTime @default(now())
 }
 
-// Lưu cấu hình web: key-value
-// Ví dụ: key="site_name", value="Shopee Deals"
+model Setting {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model SiteSetting {
   id        Int      @id @default(autoincrement())
   key       String   @unique
-  value     String   @default("")
+  value     String
+  createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
