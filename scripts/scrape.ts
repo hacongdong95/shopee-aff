@@ -168,7 +168,7 @@ Link gốc: ${shopeeUrl}
 Hãy:
 1. Làm sạch tên sản phẩm (viết hoa đúng chỗ, bỏ ký tự thừa)
 2. Đoán giá hợp lý cho sản phẩm này tại thị trường Việt Nam (số nguyên VND).
-3. Viết mô tả đầy đủ copy y nguyên trong chi tiết sản phẩm của link Shoppee đó.
+3. Viết mô tả đầy đủ copy y nguyên trong chi tiết sản phẩm của link Shoppee đó đầy đủ các gạch đầu dòng và thêm các sticker nhìn chuyên nghiệp bắt mắt người mua chứ không phải là dòng văn xuôi nhàm chán.
 
 Trả về JSON duy nhất, KHÔNG markdown:
 {
