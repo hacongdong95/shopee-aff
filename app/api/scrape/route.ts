@@ -37,6 +37,38 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Thiếu GROQ_API_KEY trong .env' }, { status: 500 })
   }
 
+  const userPrompt = `Tên sản phẩm thô từ URL Shopee: "${rawName}"
+Link: ${url}
+
+Hãy:
+1. Làm sạch tên sản phẩm (viết hoa đúng, bỏ ký tự thừa)
+2. Đoán giá hợp lý tại thị trường Việt Nam (số nguyên VND)
+3. Đoán giá gốc nếu có thể (hoặc null)
+4. Viết mô tả sản phẩm THEO ĐÚNG FORMAT bên dưới, có emoji sticker, tiêu đề in hoa, bullet points như Shopee thật:
+
+✅ THÔNG TIN SẢN PHẨM:
+• [đặc điểm nổi bật 1]
+• [đặc điểm nổi bật 2]
+• [đặc điểm nổi bật 3]
+
+✅ ƯU ĐIỂM NỔI BẬT:
+• [ưu điểm 1]
+• [ưu điểm 2]
+• [ưu điểm 3]
+
+🎁 CAM KẾT CỦA SHOP:
+• Hàng chính hãng 100%
+• Hoàn tiền nếu hàng không đúng mô tả
+• Đổi trả miễn phí trong 15 ngày
+
+Trả về JSON duy nhất, KHÔNG markdown:
+{
+  "name": "tên sản phẩm sạch",
+  "price": 199000,
+  "oldPrice": 299000,
+  "description": "mô tả theo format trên, dùng ký tự xuống dòng thật"
+}`
+
   try {
     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -46,31 +78,16 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
-        temperature: 0.2,
-        max_tokens: 500,
+        temperature: 0.3,
+        max_tokens: 800,
         messages: [
           {
             role: 'system',
-            content: 'Bạn là tool xử lý dữ liệu sản phẩm thương mại điện tử Việt Nam. Chỉ trả về JSON thuần túy, không có text thừa, không markdown.',
+            content: 'Bạn là chuyên gia viết mô tả sản phẩm thương mại điện tử Việt Nam. Viết mô tả chuyên nghiệp, hấp dẫn, có emoji, bullet points. Chỉ trả về JSON thuần túy, không có text thừa, không markdown fence.',
           },
           {
             role: 'user',
-            content: `Tên sản phẩm thô từ URL Shopee: "${rawName}"
-Link: ${url}
-
-Hãy:
-1. Làm sạch tên (viết hoa đúng, bỏ ký tự thừa)
-2. Đoán giá hợp lý tại thị trường Việt Nam (số nguyên VND)
-3. Đoán giá gốc nếu có thể (hoặc null)
-4. Viết mô tả sản phẩm 2-3 câu bằng tiếng Việt, tự nhiên
-
-Trả về JSON:
-{
-  "name": "tên sản phẩm sạch",
-  "price": 199000,
-  "oldPrice": 299000,
-  "description": "mô tả 2-3 câu"
-}`,
+            content: userPrompt,
           },
         ],
       }),
