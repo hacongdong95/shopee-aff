@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { getSession } from '@/lib/auth'
 
@@ -24,6 +25,9 @@ export async function POST(req: NextRequest) {
       create: { key, value },
     })
   }
+
+  revalidatePath('/')
+  revalidatePath('/san-pham/[slug]', 'page')
 
   return NextResponse.json({ ok: true })
 }
