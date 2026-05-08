@@ -20,35 +20,60 @@ const PALETTES = [
 // ─── Tabs config ──────────────────────────────────────────────────────────
 const TABS = [
   { id: 'giaodien', label: '🎨 Giao diện' },
+  { id: 'banner',   label: '📢 Banner' },
   { id: 'noidung',  label: '📝 Nội dung' },
+  { id: 'chinh_sach', label: '📋 Chính sách' },
+  { id: 'mang_xa_hoi', label: '📱 Mạng XH' },
   { id: 'seo',      label: '🔍 SEO' },
 ]
 
 // ─── Fields theo tab ──────────────────────────────────────────────────────
 const TAB_FIELDS: Record<string, { key: string; label: string; type: string; placeholder: string; hint?: string }[]> = {
   giaodien: [
-    { key: 'primary_color',    label: 'Màu chủ đạo',       type: 'color',  placeholder: '#ee4d2d', hint: 'Áp dụng cho header, nút, banner...' },
-    { key: 'site_logo_emoji',  label: 'Logo (emoji)',       type: 'text',   placeholder: '🛍️',    hint: 'Hiển thị ở header và footer' },
-    { key: 'banner_show',      label: 'Hiện banner trang chủ', type: 'toggle', placeholder: 'true' },
-    { key: 'banner_title',     label: 'Tiêu đề banner',    type: 'text',   placeholder: '🔥 Deal Hot Mỗi Ngày' },
-    { key: 'banner_subtitle',  label: 'Mô tả banner',      type: 'textarea', placeholder: 'Hàng ngàn sản phẩm giảm giá...' },
-    { key: 'footer_color', label: 'Màu nền footer', type: 'color', placeholder: '#1a1a1a', hint: 'Màu tối như #1a1a1a hoặc #111827' },
+    { key: 'primary_color',   label: 'Màu chủ đạo',      type: 'color',  placeholder: '#ee4d2d', hint: 'Áp dụng cho header, nút, giá sản phẩm...' },
+    { key: 'footer_color',    label: 'Màu nền footer',    type: 'color',  placeholder: '#1a1a1a', hint: 'Nên dùng màu tối' },
+    { key: 'bg_color',        label: 'Màu nền trang',     type: 'color',  placeholder: '#f5f5f5', hint: 'Màu background chính' },
+    { key: 'site_logo_emoji', label: 'Logo (emoji)',       type: 'text',   placeholder: '🛍️',   hint: 'Hiển thị ở header và footer' },
+    { key: 'grid_size',       label: 'Kích thước card sản phẩm', type: 'select_grid', placeholder: '180' },
+  ],
+  banner: [
+    { key: 'banner_show',     label: 'Hiện banner trang chủ',  type: 'toggle',   placeholder: 'true' },
+    { key: 'banner_title',    label: 'Tiêu đề banner',         type: 'text',     placeholder: '🔥 Deal Hot Mỗi Ngày' },
+    { key: 'banner_subtitle', label: 'Mô tả banner',           type: 'textarea', placeholder: 'Hàng ngàn sản phẩm giảm giá sâu...' },
+    { key: 'banner_cta_text', label: 'Text nút CTA (tùy chọn)', type: 'text',    placeholder: 'Xem ngay' },
+    { key: 'banner_cta_link', label: 'Link nút CTA',           type: 'text',     placeholder: '/?cat=dien-tu' },
+    { key: 'announcement_show', label: 'Hiện thông báo nổi',  type: 'toggle',   placeholder: 'false' },
+    { key: 'announcement_text', label: 'Nội dung thông báo',  type: 'text',     placeholder: '🎉 Miễn phí vận chuyển cho đơn từ 200k!' },
+    { key: 'announcement_color', label: 'Màu thông báo',      type: 'color',    placeholder: '#059669' },
   ],
   noidung: [
-    { key: 'site_name',        label: 'Tên website',        type: 'text',   placeholder: 'Shopee Deals' },
-    { key: 'site_tagline',     label: 'Slogan',             type: 'text',   placeholder: 'Deal hot mỗi ngày' },
-    { key: 'buy_button_text',  label: 'Text nút Mua Ngay',  type: 'text',   placeholder: 'Mua Ngay' },
-    { key: 'shopee_badge',     label: 'Badge Shopee',       type: 'text',   placeholder: 'Đảm bảo chính hãng · Giao nhanh' },
-    { key: 'shipping_text',    label: 'Vận chuyển',         type: 'text',   placeholder: '🚚 Miễn phí vận chuyển' },
-    { key: 'guarantee_text',   label: 'Đảm bảo',           type: 'text',   placeholder: '✅ Hoàn tiền nếu không đúng mô tả' },
-    { key: 'return_text',      label: 'Đổi trả',            type: 'text',   placeholder: '↩️ Đổi trả miễn phí 15 ngày' },
+    { key: 'site_name',        label: 'Tên website',        type: 'text',     placeholder: 'Shopee Deals' },
+    { key: 'site_tagline',     label: 'Slogan',             type: 'text',     placeholder: 'Deal hot mỗi ngày' },
+    { key: 'buy_button_text',  label: 'Text nút Mua Ngay',  type: 'text',     placeholder: 'Mua Ngay' },
+    { key: 'shopee_badge',     label: 'Badge Shopee',        type: 'text',     placeholder: 'Đảm bảo chính hãng · Giao nhanh' },
     { key: 'footer_text',      label: 'Mô tả footer',       type: 'textarea', placeholder: 'Tổng hợp sản phẩm giảm giá...' },
-    { key: 'footer_copyright', label: 'Copyright',          type: 'text',   placeholder: '© 2025 · Affiliate Website' },
+    { key: 'footer_copyright', label: 'Copyright',          type: 'text',     placeholder: '© 2025 · Affiliate Website' },
+  ],
+  chinh_sach: [
+    { key: 'shipping_text',    label: 'Vận chuyển',   type: 'text', placeholder: '🚚 Miễn phí vận chuyển · Giao trong 2-5 ngày' },
+    { key: 'guarantee_text',   label: 'Đảm bảo',     type: 'text', placeholder: '✅ Hoàn tiền nếu hàng không đúng mô tả' },
+    { key: 'return_text',      label: 'Đổi trả',      type: 'text', placeholder: '↩️ Đổi trả miễn phí trong 15 ngày' },
+    { key: 'show_fake_stats',  label: 'Hiện lượt xem & đã bán giả', type: 'toggle', placeholder: 'true', hint: 'Tạo độ tin tưởng cho khách hàng' },
+    { key: 'show_related',     label: 'Hiện sản phẩm liên quan', type: 'toggle', placeholder: 'true' },
+  ],
+  mang_xa_hoi: [
+    { key: 'social_facebook',  label: 'Facebook Page URL',  type: 'text', placeholder: 'https://facebook.com/...' },
+    { key: 'social_zalo',      label: 'Zalo / SĐT',         type: 'text', placeholder: '0912345678' },
+    { key: 'social_tiktok',    label: 'TikTok URL',          type: 'text', placeholder: 'https://tiktok.com/@...' },
+    { key: 'social_youtube',   label: 'YouTube URL',         type: 'text', placeholder: 'https://youtube.com/@...' },
+    { key: 'contact_email',    label: 'Email liên hệ',       type: 'text', placeholder: 'contact@example.com' },
   ],
   seo: [
-    { key: 'seo_title',        label: 'Tiêu đề trang (SEO)', type: 'text',  placeholder: 'Shopee Deals – Săn Deal Mỗi Ngày', hint: 'Nên dưới 60 ký tự' },
-    { key: 'seo_description',  label: 'Mô tả (meta description)', type: 'textarea', placeholder: 'Tổng hợp sản phẩm giảm giá tốt nhất từ Shopee...', hint: 'Nên từ 120–160 ký tự' },
-    { key: 'seo_keywords',     label: 'Keywords',            type: 'text',  placeholder: 'shopee, deal, giảm giá, affiliate', hint: 'Ngăn cách bằng dấu phẩy' },
+    { key: 'seo_title',        label: 'Tiêu đề trang (SEO)',       type: 'text',     placeholder: 'Shopee Deals – Săn Deal Mỗi Ngày', hint: 'Nên dưới 60 ký tự' },
+    { key: 'seo_description',  label: 'Mô tả (meta description)',  type: 'textarea', placeholder: 'Tổng hợp sản phẩm giảm giá tốt nhất từ Shopee...', hint: 'Nên từ 120–160 ký tự' },
+    { key: 'seo_keywords',     label: 'Keywords',                   type: 'text',     placeholder: 'shopee, deal, giảm giá, affiliate', hint: 'Ngăn cách bằng dấu phẩy' },
+    { key: 'ga_id',            label: 'Google Analytics ID',        type: 'text',     placeholder: 'G-XXXXXXXXXX' },
+    { key: 'fb_pixel',         label: 'Facebook Pixel ID',          type: 'text',     placeholder: '123456789' },
   ],
 }
 
@@ -456,6 +481,13 @@ function FieldRow({ field, value, primary, rgb, onChange }: {
           style={{ ...base, resize:'vertical', lineHeight:1.6 }}
         />
 
+      ) : field.type === 'select_grid' ? (
+        <select value={value || '180'} onChange={e => onChange(e.target.value)} style={base}>
+          <option value="140">Nhỏ — nhiều sản phẩm mỗi hàng</option>
+          <option value="180">Vừa (mặc định)</option>
+          <option value="220">Lớn — ảnh to hơn</option>
+          <option value="280">Rất lớn — 3-4 sản phẩm/hàng</option>
+        </select>
       ) : (
         <input
           type="text"

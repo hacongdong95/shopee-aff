@@ -231,6 +231,13 @@ export default function ProductDetail({ product, related, settings={} }: { produ
   return (
     <div style={{ minHeight:'100vh', background:'#f5f5f5', fontFamily:"'Be Vietnam Pro', Arial, sans-serif", paddingBottom:80 }}>
 
+
+      <style>{`
+        @media(max-width:640px){
+          .pd-grid{grid-template-columns:1fr!important}
+          .pd-gallery{border-right:none!important;border-bottom:1px solid #f5f5f5}
+        }
+      `}</style>
       {/* ── Marquee trust bar ── */}
       <MarqueeBanner primary={primary} items={[shippingText, guaranteeText, returnText, shopeeBadge]} />
 
@@ -267,22 +274,23 @@ export default function ProductDetail({ product, related, settings={} }: { produ
         {/* ── Main product card ── */}
         <div style={{ background:'white', borderRadius:12, boxShadow:'0 2px 12px rgba(0,0,0,0.08)', marginBottom:16, overflow:'hidden' }}>
           {/* Desktop: 2 cột | Mobile: 1 cột */}
-          <div style={{ display:'grid', gridTemplateColumns:'clamp(280px,40%,420px) 1fr' }}>
+          <div className="pd-grid" style={{ display:'grid', gridTemplateColumns:'min(420px,40%) 1fr' }}>
 
             {/* Left: Gallery */}
-            <div style={{ padding:16, borderRight:'1px solid #f5f5f5' }}>
+            <div className="pd-gallery" style={{ padding:16, borderRight:'1px solid #f5f5f5' }}>
               <ImageGallery images={images} name={product.name} primary={primary} />
               {/* Mua tại Shopee box */}
-              <div onClick={()=>{fetch(`/api/products/${product.id}/click`,{method:'POST'});window.open(product.affLink,'_blank')}}
-                style={{ marginTop:12, display:'flex', alignItems:'center', gap:10, padding:'10px 14px', background:`${primary}0d`, border:`1px solid ${primary}33`, borderRadius:8, cursor:'pointer', transition:'background 0.15s' }}
-                onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.background=`${primary}18`}
-                onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.background=`${primary}0d`}>
+              <a href={product.affLink} target="_blank" rel="noopener noreferrer"
+                onClick={()=>fetch(`/api/products/${product.id}/click`,{method:'POST'}).catch(()=>{})}
+                style={{ marginTop:12, display:'flex', alignItems:'center', gap:10, padding:'10px 14px', background:`${primary}0d`, border:`1px solid ${primary}33`, borderRadius:8, cursor:'pointer', transition:'background 0.15s', textDecoration:'none' }}
+                onMouseEnter={e=>(e.currentTarget as HTMLAnchorElement).style.background=`${primary}18`}
+                onMouseLeave={e=>(e.currentTarget as HTMLAnchorElement).style.background=`${primary}0d`}>
                 <span style={{ fontSize:22 }}>🛒</span>
                 <div>
                   <div style={{ fontSize:12, fontWeight:700, color:primary }}>Mua tại Shopee</div>
                   <div style={{ fontSize:11, color:'#888' }}>{shopeeBadge} →</div>
                 </div>
-              </div>
+              </a>
             </div>
 
             {/* Right: Info */}
@@ -389,7 +397,7 @@ export default function ProductDetail({ product, related, settings={} }: { produ
       </div>
 
       {/* ── Footer ── */}
-      <footer style={{ background:footerColor, color:'#aaa', padding:'40px 20px 100px', marginTop:8 }}>
+      <footer style={{ background:footerColor, color:'#aaa', padding:'40px 20px 28px', marginTop:8 }}>
         <div style={{ maxWidth:1100, margin:'0 auto', textAlign:'center' }}>
           <div style={{ color:'white', fontWeight:800, fontSize:18, fontFamily:'Nunito,sans-serif', marginBottom:6 }}>{siteEmoji} {siteName}</div>
           <div style={{ fontSize:13, maxWidth:400, margin:'0 auto 20px', lineHeight:1.7, color:'rgba(255,255,255,0.4)' }}>{footerText}</div>
