@@ -42,11 +42,14 @@ export default function ProductsPage() {
   const [showForm, setShowForm] = useState(false)
   const [loading, setLoading] = useState(false)
   const [search, setSearch] = useState('')
+  const [selected, setSelected] = useState<Set<number>>(new Set())
+  const [deleting, setDeleting] = useState(false)
 
   // Scrape state
   const [scrapeUrl, setScrapeUrl] = useState('')
   const [scraping, setScraping] = useState(false)
   const [scrapeMsg, setScrapeMsg] = useState('')
+  const [fetchingImages, setFetchingImages] = useState(false)
 
   const load = async () => {
     const [p, c] = await Promise.all([
@@ -55,6 +58,7 @@ export default function ProductsPage() {
     ])
     setProducts(p)
     setCategories(c)
+    setSelected(new Set())
   }
 
   useEffect(() => { load() }, [])
@@ -72,7 +76,7 @@ export default function ProductsPage() {
     setShowForm(true)
   }
 
-  // ── Scrape từ link Shopee ──────────────────────────────────────────────────
+  // ── Scrape thông tin từ link Shopee ───────────────────────────────────────
   const handleScrape = async () => {
     if (!scrapeUrl.includes('shopee')) {
       setScrapeMsg('❌ Vui lòng nhập link Shopee hợp lệ')
@@ -91,7 +95,6 @@ export default function ProductsPage() {
         setScrapeMsg(`❌ ${data.error || 'Scrape thất bại'}`)
         return
       }
-      // Điền vào form
       setForm(f => ({
         ...f,
         name:        data.name        || f.name,
@@ -100,11 +103,40 @@ export default function ProductsPage() {
         oldPrice:    data.oldPrice    ? String(data.oldPrice) : f.oldPrice,
         affLink:     scrapeUrl,
       }))
-      setScrapeMsg('✅ Đã điền thông tin! Kiểm tra lại giá và thêm ảnh nhé.')
+      setScrapeMsg('✅ Đã điền thông tin! Kiểm tra lại giá và bấm "Lấy ảnh từ Shopee" nhé.')
     } catch (e) {
       setScrapeMsg(`❌ Lỗi: ${e}`)
     } finally {
       setScraping(false)
+    }
+  }
+
+  // ── Lấy ảnh từ Shopee API ─────────────────────────────────────────────────
+  const handleFetchImages = async () => {
+    const shopeeLink = form.affLink || scrapeUrl
+    if (!shopeeLink) {
+      setScrapeMsg('❌ Nhập link Shopee vào ô Affiliate hoặc ô Scrape trước!')
+      return
+    }
+    setFetchingImages(true)
+    setScrapeMsg('⏳ Đang lấy ảnh...')
+    try {
+      const res = await fetch('/api/shopee-images', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: shopeeLink }),
+      })
+      const data = await res.json()
+      if (!res.ok || data.error) {
+        setScrapeMsg(`❌ ${data.error}`)
+        return
+      }
+      setForm(f => ({ ...f, imageUrl: data.imageUrls.join('\n') }))
+      setScrapeMsg(`✅ Lấy được ${data.count} ảnh!`)
+    } catch (e) {
+      setScrapeMsg(`❌ Lỗi: ${e}`)
+    } finally {
+      setFetchingImages(false)
     }
   }
 
@@ -132,9 +164,37 @@ export default function ProductsPage() {
     load()
   }
 
+  // ── Xóa nhiều ─────────────────────────────────────────────────────────────
+  const toggleSelect = (id: number) => {
+    setSelected(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
+
+  const toggleAll = () => {
+    if (selected.size === filtered.length) setSelected(new Set())
+    else setSelected(new Set(filtered.map(p => p.id)))
+  }
+
+  const deleteSelected = async () => {
+    if (selected.size === 0) return
+    if (!confirm(`Xóa ${selected.size} sản phẩm đã chọn?`)) return
+    setDeleting(true)
+    await Promise.all([...selected].map(id =>
+      fetch(`/api/products/${id}`, { method: 'DELETE' })
+    ))
+    setDeleting(false)
+    load()
+  }
+
   const filtered = products.filter(p =>
     p.name.toLowerCase().includes(search.toLowerCase())
   )
+
+  const allSelected = filtered.length > 0 && selected.size === filtered.length
+  const someSelected = selected.size > 0
 
   const disc = (price: number, old: number | null) =>
     old && old > price ? Math.round((1 - price / old) * 100) : null
@@ -154,17 +214,24 @@ export default function ProductsPage() {
         }}>+ Thêm sản phẩm</button>
       </div>
 
-      {/* Search */}
-      <div style={{
-        background: 'white', borderRadius: 10, padding: '10px 16px',
-        boxShadow: '0 1px 4px rgba(0,0,0,0.07)', marginBottom: 16,
-        display: 'flex', alignItems: 'center', gap: 10,
-      }}>
+      {/* Search + toolbar */}
+      <div style={{ background: 'white', borderRadius: 10, padding: '10px 16px', boxShadow: '0 1px 4px rgba(0,0,0,0.07)', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+        <input type="checkbox" checked={allSelected} onChange={toggleAll}
+          style={{ width: 16, height: 16, cursor: 'pointer', accentColor: '#ee4d2d' }} title="Chọn tất cả" />
         <span style={{ color: '#9ca3af' }}>🔍</span>
         <input value={search} onChange={e => setSearch(e.target.value)}
           placeholder="Tìm kiếm sản phẩm..."
-          style={{ border: 'none', outline: 'none', fontSize: 14, flex: 1, background: 'transparent' }}
-        />
+          style={{ border: 'none', outline: 'none', fontSize: 14, flex: 1, background: 'transparent', minWidth: 150 }} />
+        {someSelected && (
+          <>
+            <button onClick={deleteSelected} disabled={deleting} style={{ background: deleting ? '#fca5a5' : '#ef4444', color: 'white', border: 'none', padding: '7px 16px', borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              🗑️ Xóa {selected.size} mục {deleting ? '...' : ''}
+            </button>
+            <button onClick={() => setSelected(new Set())} style={{ background: 'white', border: '1.5px solid #e5e7eb', color: '#6b7280', padding: '7px 14px', borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
+              Bỏ chọn
+            </button>
+          </>
+        )}
       </div>
 
       {/* Grid */}
@@ -176,35 +243,41 @@ export default function ProductsPage() {
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: 16 }}>
-          {filtered.map(p => (
-            <div key={p.id} style={{ background: 'white', borderRadius: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.08)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-              <div style={{ position: 'relative', paddingTop: '100%', background: '#f5f5f5' }}>
-                {p.imageUrl
-                  ? <img src={p.imageUrl} alt={p.name} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-                  : <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40, color: '#d1d5db' }}>🛍️</div>
-                }
-                {disc(p.price, p.oldPrice) && (
-                  <div style={{ position: 'absolute', top: 8, left: 8, background: '#ee4d2d', color: 'white', fontSize: 11, fontWeight: 700, padding: '2px 7px', borderRadius: 4 }}>-{disc(p.price, p.oldPrice)}%</div>
-                )}
-                <div style={{ position: 'absolute', top: 8, right: 8, background: p.isActive ? '#d1fae5' : '#fee2e2', color: p.isActive ? '#065f46' : '#991b1b', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 20 }}>
-                  {p.isActive ? 'Hiện' : 'Ẩn'}
+          {filtered.map(p => {
+            const isSelected = selected.has(p.id)
+            return (
+              <div key={p.id} style={{ background: 'white', borderRadius: 12, boxShadow: isSelected ? '0 0 0 2px #ee4d2d, 0 1px 4px rgba(0,0,0,0.08)' : '0 1px 4px rgba(0,0,0,0.08)', overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative', transition: 'box-shadow 0.15s' }}>
+                <div onClick={() => toggleSelect(p.id)} style={{ position: 'absolute', top: 8, left: 8, zIndex: 10, width: 22, height: 22, borderRadius: 6, background: isSelected ? '#ee4d2d' : 'rgba(255,255,255,0.9)', border: isSelected ? '2px solid #ee4d2d' : '2px solid #d1d5db', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 1px 3px rgba(0,0,0,0.15)', transition: 'all 0.15s' }}>
+                  {isSelected && <span style={{ color: 'white', fontSize: 13, fontWeight: 700 }}>✓</span>}
+                </div>
+                <div style={{ position: 'relative', paddingTop: '100%', background: '#f5f5f5' }}>
+                  {p.imageUrl
+                    ? <img src={p.imageUrl.split('\n')[0].trim()} alt={p.name} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                    : <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40, color: '#d1d5db' }}>🛍️</div>
+                  }
+                  {disc(p.price, p.oldPrice) && (
+                    <div style={{ position: 'absolute', top: 8, right: 8, background: '#ee4d2d', color: 'white', fontSize: 11, fontWeight: 700, padding: '2px 7px', borderRadius: 4 }}>-{disc(p.price, p.oldPrice)}%</div>
+                  )}
+                  <div style={{ position: 'absolute', bottom: 8, right: 8, background: p.isActive ? '#d1fae5' : '#fee2e2', color: p.isActive ? '#065f46' : '#991b1b', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 20 }}>
+                    {p.isActive ? 'Hiện' : 'Ẩn'}
+                  </div>
+                </div>
+                <div style={{ padding: '12px 14px', flex: 1, display: 'flex', flexDirection: 'column', gap: 5 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{p.name}</div>
+                  <div style={{ fontSize: 11, color: '#ee4d2d', fontWeight: 600 }}>{p.category.name}</div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                    <span style={{ color: '#ee4d2d', fontWeight: 700, fontSize: 16 }}>{p.price.toLocaleString('vi-VN')}đ</span>
+                    {p.oldPrice && <span style={{ color: '#9ca3af', fontSize: 12, textDecoration: 'line-through' }}>{p.oldPrice.toLocaleString('vi-VN')}đ</span>}
+                  </div>
+                  <div style={{ fontSize: 12, color: '#6b7280' }}>👆 {p.clicks} lượt click</div>
+                  <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                    <button onClick={() => openEdit(p)} style={{ flex: 1, padding: '7px', border: '1.5px solid #ee4d2d', borderRadius: 7, color: '#ee4d2d', background: 'white', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Sửa</button>
+                    <button onClick={() => del(p.id)} style={{ flex: 1, padding: '7px', border: '1.5px solid #e5e7eb', borderRadius: 7, color: '#6b7280', background: 'white', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Xóa</button>
+                  </div>
                 </div>
               </div>
-              <div style={{ padding: '12px 14px', flex: 1, display: 'flex', flexDirection: 'column', gap: 5 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{p.name}</div>
-                <div style={{ fontSize: 11, color: '#ee4d2d', fontWeight: 600 }}>{p.category.name}</div>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                  <span style={{ color: '#ee4d2d', fontWeight: 700, fontSize: 16 }}>{p.price.toLocaleString('vi-VN')}đ</span>
-                  {p.oldPrice && <span style={{ color: '#9ca3af', fontSize: 12, textDecoration: 'line-through' }}>{p.oldPrice.toLocaleString('vi-VN')}đ</span>}
-                </div>
-                <div style={{ fontSize: 12, color: '#6b7280' }}>👆 {p.clicks} lượt click</div>
-                <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                  <button onClick={() => openEdit(p)} style={{ flex: 1, padding: '7px', border: '1.5px solid #ee4d2d', borderRadius: 7, color: '#ee4d2d', background: 'white', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Sửa</button>
-                  <button onClick={() => del(p.id)} style={{ flex: 1, padding: '7px', border: '1.5px solid #e5e7eb', borderRadius: 7, color: '#6b7280', background: 'white', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Xóa</button>
-                </div>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
 
@@ -226,30 +299,20 @@ export default function ProductsPage() {
             {/* Body */}
             <div style={{ padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-              {/* ── SCRAPE BOX ── */}
+              {/* SCRAPE BOX */}
               <div style={{ background: '#fff8f0', borderRadius: 10, padding: '18px 20px', border: '1.5px solid #fcd9c4' }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: '#c2410c', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                   🪄 Tự động điền từ link Shopee
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <input
-                    value={scrapeUrl}
-                    onChange={e => setScrapeUrl(e.target.value)}
+                  <input value={scrapeUrl} onChange={e => setScrapeUrl(e.target.value)}
                     placeholder="Paste link Shopee vào đây..."
-                    style={{ ...inputStyle, flex: 1 }}
-                  />
-                  <button
-                    onClick={handleScrape}
-                    disabled={scraping}
-                    style={{
-                      background: scraping ? '#fed7aa' : '#ee4d2d',
-                      color: 'white', border: 'none', borderRadius: 8,
-                      padding: '0 18px', fontWeight: 700, fontSize: 13,
-                      cursor: scraping ? 'not-allowed' : 'pointer',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {scraping ? '⏳ Đang lấy...' : '🔍 Lấy thông tin'}
+                    style={{ ...inputStyle, flex: 1 }} />
+                  <button onClick={handleScrape} disabled={scraping} style={{ background: scraping ? '#fed7aa' : '#ee4d2d', color: 'white', border: 'none', borderRadius: 8, padding: '0 18px', fontWeight: 700, fontSize: 13, cursor: scraping ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap' }}>
+                    {scraping ? '⏳...' : '🔍 Lấy info'}
+                  </button>
+                  <button onClick={handleFetchImages} disabled={fetchingImages} style={{ background: fetchingImages ? '#ddd' : '#fff0ee', color: '#ee4d2d', border: '1.5px solid #ee4d2d', borderRadius: 8, padding: '0 14px', fontWeight: 700, fontSize: 13, cursor: fetchingImages ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap' }}>
+                    {fetchingImages ? '⏳...' : '🖼️ Lấy ảnh'}
                   </button>
                 </div>
                 {scrapeMsg && (
@@ -258,7 +321,7 @@ export default function ProductsPage() {
                   </div>
                 )}
                 <div style={{ marginTop: 6, fontSize: 11, color: '#9ca3af' }}>
-                  Sẽ tự điền: tên, mô tả, giá ước tính, link affiliate. Ảnh cần thêm thủ công.
+                  1. Paste link → 🔍 Lấy info → điền tên/giá/mô tả &nbsp;|&nbsp; 2. 🖼️ Lấy ảnh → tự điền URLs ảnh
                 </div>
               </div>
 
@@ -269,8 +332,8 @@ export default function ProductsPage() {
                   <Field label="Tên sản phẩm" required>
                     <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="VD: Tai nghe Bluetooth Sony WH-1000XM5" style={inputStyle} />
                   </Field>
-                  <Field label="Mô tả ngắn">
-                    <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Mô tả nổi bật của sản phẩm..." rows={3} style={{ ...inputStyle, resize: 'vertical' }} />
+                  <Field label="Mô tả">
+                    <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Mô tả nổi bật của sản phẩm..." rows={4} style={{ ...inputStyle, resize: 'vertical' }} />
                   </Field>
                   <Field label="Danh mục" required>
                     <select value={form.categoryId} onChange={e => setForm(f => ({ ...f, categoryId: e.target.value }))} style={inputStyle}>
@@ -308,31 +371,26 @@ export default function ProductsPage() {
               <div style={{ background: '#fafafa', borderRadius: 10, padding: '18px 20px', border: '1px solid #f0f0f0' }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: '#6b7280', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Hình ảnh & Liên kết</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                                    <Field label="Link ảnh sản phẩm (mỗi link 1 dòng)">
+                  <Field label="Link ảnh sản phẩm (mỗi link 1 dòng)">
                     <textarea
                       value={form.imageUrl}
                       onChange={e => setForm(f => ({ ...f, imageUrl: e.target.value }))}
-                      placeholder={"https://down-vn.img.susercontent.com/file/abc123\nhttps://down-vn.img.susercontent.com/file/def456\nhttps://down-vn.img.susercontent.com/file/ghi789"}
+                      placeholder={"https://down-vn.img.susercontent.com/file/abc123\nhttps://down-vn.img.susercontent.com/file/def456"}
                       rows={5}
                       style={{ ...inputStyle, resize: 'vertical', fontFamily: 'monospace', fontSize: 11, lineHeight: 1.6 }}
                     />
                     <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 3 }}>
-                      Mỗi URL 1 dòng — ảnh đầu tiên sẽ là ảnh đại diện
+                      Mỗi URL 1 dòng — ảnh đầu tiên là ảnh đại diện — hoặc bấm 🖼️ Lấy ảnh ở trên
                     </div>
-                    {/* Preview thumbnails */}
                     {form.imageUrl && (
                       <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
                         {form.imageUrl.split('\n').map(u => u.trim()).filter(Boolean).map((url, i) => (
-                          <img key={i} src={url} alt={`preview ${i+1}`}
+                          <img key={i} src={url} alt={`preview ${i + 1}`}
                             style={{ width: 56, height: 56, objectFit: 'contain', borderRadius: 6, border: i === 0 ? '2px solid #ee4d2d' : '1px solid #e5e7eb', background: '#fafafa', padding: 2 }}
-                            onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
-                          />
+                            onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
                         ))}
                       </div>
                     )}
-			                <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>
-                      💡 Mở Shopee → chuột phải vào ảnh → "Copy image address" → dán vào đây
-                    </div>
                   </Field>
                   <Field label="Link affiliate Shopee" required>
                     <input value={form.affLink} onChange={e => setForm(f => ({ ...f, affLink: e.target.value }))} placeholder="https://shope.ee/..." style={inputStyle} />
