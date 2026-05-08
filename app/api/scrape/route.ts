@@ -35,18 +35,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Thiếu GROQ_API_KEY' }, { status: 500 })
   }
 
-  const userPrompt = `Tên sản phẩm từ URL Shopee: "${rawName}"
-
-Hãy trả về JSON với các field sau:
-- name: tên sản phẩm đã làm sạch (viết hoa đúng)
-- price: giá hợp lý VND (số nguyên)
-- oldPrice: giá gốc VND hoặc null
-- description: mô tả sản phẩm chuyên nghiệp có emoji và bullet points, VIẾT LIỀN TRÊN 1 DÒNG, dùng \\n để xuống dòng
-
-Ví dụ description: "✅ THONG TIN:\\n• Dac diem 1\\n• Dac diem 2\\n\\n🎁 CAM KET:\\n• Hang chinh hang 100%"
-
-Chỉ trả về JSON, không có gì khác.`
-
   try {
     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -56,16 +44,26 @@ Chỉ trả về JSON, không có gì khác.`
       },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
-        temperature: 0.3,
-        max_tokens: 800,
+        temperature: 0.4,
+        max_tokens: 2000,
         messages: [
           {
             role: 'system',
-            content: 'Bạn là chuyên gia viết mô tả sản phẩm thương mại điện tử Việt Nam. Trả về JSON hợp lệ duy nhất. Trong field description, dùng \\n (backslash-n) để xuống dòng, KHÔNG dùng ký tự xuống dòng thật.',
+            content: `Bạn là chuyên gia viết content bán hàng thương mại điện tử Việt Nam. 
+Nhiệm vụ: viết mô tả sản phẩm CỰC KỲ chi tiết, hấp dẫn, thuyết phục khách mua hàng.
+Phong cách: chuyên nghiệp, có emoji, bullet points rõ ràng, đánh vào tâm lý mua hàng.
+Bắt buộc trả về JSON hợp lệ. KHÔNG dùng ký tự xuống dòng thật trong JSON string — thay bằng chuỗi <br>.`,
           },
           {
             role: 'user',
-            content: userPrompt,
+            content: `Sản phẩm: "${rawName}"
+
+Viết mô tả sản phẩm theo format sau, CỰC KỲ CHI TIẾT (ít nhất 15-20 gạch đầu dòng tổng cộng):
+
+✅ GIỚI THIỆU SẢN PHẨM:<br>• [2-3 câu giới thiệu hấp dẫn về sản phẩm]<br><br>📦 THÔNG TIN CHI TIẾT:<br>• [thông tin 1]<br>• [thông tin 2]<br>• [thông tin 3]<br>• [thông tin 4]<br>• [thông tin 5]<br><br>⚡ CÔNG DỤNG & LỢI ÍCH:<br>• [công dụng 1]<br>• [công dụng 2]<br>• [công dụng 3]<br>• [công dụng 4]<br>• [công dụng 5]<br><br>🎯 HƯỚNG DẪN SỬ DỤNG:<br>• [bước 1]<br>• [bước 2]<br>• [bước 3]<br>• [bước 4]<br><br>💡 LƯU Ý KHI SỬ DỤNG:<br>• [lưu ý 1]<br>• [lưu ý 2]<br>• [lưu ý 3]<br><br>🎁 CAM KẾT CỦA SHOP:<br>• ✔ Hàng chính hãng 100%, có tem chống giả<br>• ✔ Hoàn tiền 100% nếu hàng không đúng mô tả<br>• ✔ Đổi trả miễn phí trong 15 ngày<br>• ✔ Giao hàng nhanh toàn quốc 2-5 ngày<br>• ✔ Hỗ trợ tư vấn 24/7
+
+Trả về JSON (dùng <br> thay cho xuống dòng):
+{"name": "tên sản phẩm sạch", "price": 199000, "oldPrice": 299000, "description": "toàn bộ mô tả ở trên"}`,
           },
         ],
       }),
@@ -79,27 +77,30 @@ Chỉ trả về JSON, không có gì khác.`
     const data = await res.json()
     const text: string = data?.choices?.[0]?.message?.content ?? ''
 
-    // Làm sạch JSON: bỏ markdown fence, xử lý ký tự đặc biệt
-    const clean = text
-      .replace(/```json|```/g, '')
-      .trim()
-
+    // Parse JSON an toàn
+    const clean = text.replace(/```json|```/g, '').trim()
     const matchJson = clean.match(/\{[\s\S]*\}/)
-    if (!matchJson) throw new Error('Không tìm thấy JSON')
+    if (!matchJson) throw new Error('Không tìm thấy JSON trong response')
 
-    // Thay ký tự xuống dòng thật bên trong string thành \n
-    const safeJson = matchJson[0].replace(/:\s*"([\s\S]*?)"/g, (_: string, inner: string) => {
-      const escaped = inner
-        .replace(/\\/g, '\\\\')
-        .replace(/\r\n/g, '\\n')
-        .replace(/\n/g, '\\n')
-        .replace(/\r/g, '\\n')
-        .replace(/\t/g, '\\t')
-        .replace(/"/g, '\\"')
-      return `: "${escaped}"`
-    })
+    // Dùng cách parse thủ công để tránh lỗi ký tự đặc biệt
+    let parsed: Record<string, unknown>
+    try {
+      parsed = JSON.parse(matchJson[0])
+    } catch {
+      // Nếu vẫn lỗi, thử extract từng field thủ công
+      const getName = matchJson[0].match(/"name"\s*:\s*"([^"]+)"/)
+      const getPrice = matchJson[0].match(/"price"\s*:\s*(\d+)/)
+      const getOldPrice = matchJson[0].match(/"oldPrice"\s*:\s*(\d+|null)/)
+      const getDesc = matchJson[0].match(/"description"\s*:\s*"([\s\S]+?)"(?:\s*[,}])/)
 
-    const parsed = JSON.parse(safeJson)
+      parsed = {
+        name: getName?.[1] ?? rawName,
+        price: getPrice ? Number(getPrice[1]) : 99000,
+        oldPrice: getOldPrice?.[1] && getOldPrice[1] !== 'null' ? Number(getOldPrice[1]) : null,
+        description: getDesc?.[1] ?? '',
+      }
+    }
+
     return NextResponse.json({ ok: true, ...parsed })
 
   } catch (e) {

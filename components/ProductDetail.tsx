@@ -41,7 +41,7 @@ function getLineIcon(text: string) {
   return '▸'
 }
 function renderDescription(desc: string, primary: string) {
-  const fixed = desc.replace(/\\n/g,'\n').replace(/<li>/gi,'\n- ').replace(/<\/li>/gi,'')
+  const fixed = desc.replace(/\\n/g,'\n').replace(/<br\s*\/?>gi,'\n').replace(/<li>/gi,'\n- ').replace(/<\/li>/gi,'')
     .replace(/<ul>|<\/ul>/gi,'').replace(/<p>/gi,'\n').replace(/<\/p>/gi,'')
     .replace(/<strong>(.*?)<\/strong>/gi,'$1').replace(/<[^>]+>/g,'').trim()
   const lines = fixed.split('\n').map(l => l.trim()).filter(Boolean)
