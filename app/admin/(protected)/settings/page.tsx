@@ -32,6 +32,7 @@ const TAB_FIELDS: Record<string, { key: string; label: string; type: string; pla
     { key: 'banner_show',      label: 'Hiện banner trang chủ', type: 'toggle', placeholder: 'true' },
     { key: 'banner_title',     label: 'Tiêu đề banner',    type: 'text',   placeholder: '🔥 Deal Hot Mỗi Ngày' },
     { key: 'banner_subtitle',  label: 'Mô tả banner',      type: 'textarea', placeholder: 'Hàng ngàn sản phẩm giảm giá...' },
+    { key: 'footer_color', label: 'Màu nền footer', type: 'color', placeholder: '#1a1a1a', hint: 'Màu tối như #1a1a1a hoặc #111827' },
   ],
   noidung: [
     { key: 'site_name',        label: 'Tên website',        type: 'text',   placeholder: 'Shopee Deals' },
