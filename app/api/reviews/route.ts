@@ -22,13 +22,13 @@ export async function POST(req: NextRequest) {
     const { productId, name, rating, comment } = await req.json()
 
     if (!productId || !name?.trim() || !rating || !comment?.trim()) {
-      return NextResponse.json({ error: 'Thiếu thông tin bắt buộc' }, { status: 400 })
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
     if (rating < 1 || rating > 5) {
-      return NextResponse.json({ error: 'Đánh giá sao không hợp lệ' }, { status: 400 })
+      return NextResponse.json({ error: 'Invalid rating' }, { status: 400 })
     }
     if (comment.trim().length < 10) {
-      return NextResponse.json({ error: 'Đánh giá phải ít nhất 10 ký tự' }, { status: 400 })
+      return NextResponse.json({ error: 'Comment too short' }, { status: 400 })
     }
 
     const review = await prisma.review.create({
@@ -43,6 +43,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(review, { status: 201 })
   } catch (err) {
     console.error('Review POST error:', err)
-    return NextResponse.json({ error: 'Có lỗi xảy ra, thử lại sau' }, { status: 500 })
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }
