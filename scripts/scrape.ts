@@ -16,9 +16,6 @@ import * as https from 'https'
 const prisma = new PrismaClient()
 const GROQ_API_KEY = process.env.GROQ_API_KEY!
 
-// ─── Thư mục lưu ảnh ──────────────────────────────────────────────────────────
-// Ảnh sẽ lưu vào: public/uploads/products/<slug>/0.jpg, 1.jpg, ...
-// Đồng thời copy sang D:\AFF SHOPEE WEB\public\uploads\products\<slug>\
 const LOCAL_IMAGE_BASE = path.join('public', 'uploads', 'products')
 
 // ─── Parse shopid + itemid từ URL Shopee ──────────────────────────────────────
@@ -26,16 +23,12 @@ const LOCAL_IMAGE_BASE = path.join('public', 'uploads', 'products')
 function extractShopeeIds(shopeeUrl: string): { shopId: string; itemId: string } | null {
   try {
     const decoded = decodeURIComponent(shopeeUrl)
-    // Dạng: shopee.vn/TEN-i.SHOPID.ITEMID
     const match = decoded.match(/-i\.(\d+)\.(\d+)/)
     if (match) return { shopId: match[1], itemId: match[2] }
-
-    // Dạng query string: ?shopid=...&itemid=...
     const urlObj = new URL(shopeeUrl.startsWith('http') ? shopeeUrl : 'https://' + shopeeUrl)
     const shopId = urlObj.searchParams.get('shopid')
     const itemId = urlObj.searchParams.get('itemid')
     if (shopId && itemId) return { shopId, itemId }
-
     return null
   } catch {
     return null
@@ -46,7 +39,6 @@ function extractShopeeIds(shopeeUrl: string): { shopId: string; itemId: string }
 
 async function fetchShopeeImages(shopId: string, itemId: string): Promise<string[]> {
   const apiUrl = `https://shopee.vn/api/v4/item/get?itemid=${itemId}&shopid=${shopId}`
-
   const res = await fetch(apiUrl, {
     headers: {
       'User-Agent':       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
@@ -57,19 +49,12 @@ async function fetchShopeeImages(shopId: string, itemId: string): Promise<string
       'x-requested-with': 'XMLHttpRequest',
     },
   })
-
   if (!res.ok) throw new Error(`Shopee API lỗi ${res.status}`)
-
   const data = await res.json()
   const item = data?.data?.item
-
   if (!item) throw new Error('Shopee API không trả về item data')
-
-  // Lấy tất cả ảnh: images[] là mảng hash
   const imageHashes: string[] = item.images ?? []
-  return imageHashes.map(
-    (hash: string) => `https://down-vn.img.susercontent.com/file/${hash}_tn`
-  )
+  return imageHashes.map((hash: string) => `https://down-vn.img.susercontent.com/file/${hash}_tn`)
 }
 
 // ─── Download 1 ảnh về local ──────────────────────────────────────────────────
@@ -103,15 +88,11 @@ function downloadImage(url: string, destPath: string): Promise<void> {
 async function downloadAllImages(imageUrls: string[], productSlug: string): Promise<string> {
   const folder = path.join(LOCAL_IMAGE_BASE, productSlug)
   fs.mkdirSync(folder, { recursive: true })
-
   const downloaded: string[] = []
-
   for (let i = 0; i < imageUrls.length; i++) {
     const url = imageUrls[i]
-    const ext = '.jpg'
-    const fileName = `${i}${ext}`
+    const fileName = `${i}.jpg`
     const destPath = path.join(folder, fileName)
-
     try {
       await downloadImage(url, destPath)
       downloaded.push(fileName)
@@ -119,16 +100,10 @@ async function downloadAllImages(imageUrls: string[], productSlug: string): Prom
     } catch (e) {
       console.warn(`     ⚠️  Ảnh ${i + 1} thất bại: ${e}`)
     }
-
-    // Delay nhỏ tránh bị rate limit
     if (i < imageUrls.length - 1) await new Promise(r => setTimeout(r, 300))
   }
-
-  // Trả về đường dẫn web ảnh đầu tiên (dùng cho imageUrl trong DB)
   const firstImage = downloaded[0]
-  return firstImage
-    ? `/uploads/products/${productSlug}/${firstImage}`
-    : ''
+  return firstImage ? `/uploads/products/${productSlug}/${firstImage}` : ''
 }
 
 // ─── Lấy tên sản phẩm từ URL ──────────────────────────────────────────────────
@@ -167,15 +142,18 @@ Link gốc: ${shopeeUrl}
 
 Hãy:
 1. Làm sạch tên sản phẩm (viết hoa đúng chỗ, bỏ ký tự thừa)
-2. Đoán giá hợp lý cho sản phẩm này tại thị trường Việt Nam (số nguyên VND).
-3. Viết mô tả đầy đủ dạng PLAIN TEXT, KHÔNG dùng HTML hay markdown, Dùng định dạng Tiêu đề section viết HOA và kết thúc bằng dấu hai chấm, mỗi chi tiết bắt đầu bằng dấu - ở đầu dòng nhìn chuyên nghiệp.
+2. Đoán giá trung bình thị trường Việt Nam cho sản phẩm này (số nguyên VND, đây là "price" - giá hiện tại đang bán).
+   oldPrice = price * 1.25, làm tròn đến nghìn đồng (đây là giá gốc cao hơn để hiển thị gạch ngang).
+3. Viết mô tả đầy đủ dạng PLAIN TEXT, KHÔNG dùng HTML hay markdown. Dùng định dạng:
+   - Tiêu đề section viết HOA và kết thúc bằng dấu hai chấm
+   - Mỗi chi tiết bắt đầu bằng dấu - ở đầu dòng
 
 Trả về JSON duy nhất, KHÔNG markdown:
 {
   "name": "tên sản phẩm đã làm sạch",
   "price": 100000,
-  "oldPrice": 135000,
-  "description": "mô tả ngắn",
+  "oldPrice": 125000,
+  "description": "mô tả",
   "imageUrl": null
 }`
 
@@ -211,8 +189,12 @@ Trả về JSON duy nhất, KHÔNG markdown:
 
   const parsed = JSON.parse(match[0]) as ScrapedProduct
   if (!parsed.name) throw new Error('Thiếu name trong response')
-
   if (!parsed.price || parsed.price <= 0) parsed.price = 99000
+
+  // Đảm bảo oldPrice luôn = price * 1.25 nếu Groq không tính đúng
+  if (!parsed.oldPrice || parsed.oldPrice <= parsed.price) {
+    parsed.oldPrice = Math.round(parsed.price * 1.25 / 1000) * 1000
+  }
 
   return parsed
 }
@@ -241,7 +223,6 @@ async function processOne(url: string, categoryId: number, dryRun: boolean) {
 
   console.log(`\n🔍 Đang xử lý: ${trimmed}`)
 
-  // Bước 1: lấy tên từ URL
   const rawName = extractNameFromUrl(trimmed)
   if (!rawName) {
     console.error('  ❌ Không parse được tên từ URL')
@@ -249,42 +230,37 @@ async function processOne(url: string, categoryId: number, dryRun: boolean) {
   }
   console.log(`  📝 Tên thô từ URL: ${rawName}`)
 
-  // Bước 2: Groq làm sạch + tạo mô tả
   let scraped: ScrapedProduct
   try {
     scraped = await enrichWithGroq(rawName, trimmed)
   } catch (e) {
     console.error(`  ❌ Groq thất bại: ${e}`)
-    scraped = { name: rawName, price: 99000, oldPrice: null, description: null, imageUrl: null }
+    scraped = { name: rawName, price: 99000, oldPrice: Math.round(99000 * 1.25 / 1000) * 1000, description: null, imageUrl: null }
     console.log(`  ⚠️  Dùng fallback: tên thô + giá mặc định`)
   }
 
   console.log(`  ✅ Tên: ${scraped.name}`)
-  console.log(`     Giá: ${scraped.price.toLocaleString('vi-VN')}₫` +
-    (scraped.oldPrice ? ` (gốc: ${scraped.oldPrice.toLocaleString('vi-VN')}₫)` : ''))
+  console.log(`     Giá bán: ${scraped.price.toLocaleString('vi-VN')}₫` +
+    (scraped.oldPrice ? ` | Giá gốc: ${scraped.oldPrice.toLocaleString('vi-VN')}₫` : ''))
 
-  // Tạo slug sớm để dùng cho tên folder ảnh
   const slug =
     slugify(scraped.name, { lower: true, locale: 'vi', strict: true }).slice(0, 80)
     + '-' + Date.now()
 
-  // Bước 3: Lấy ảnh từ Shopee API + download về local
+  // Lấy ảnh từ Shopee API
   const ids = extractShopeeIds(trimmed)
   if (ids) {
     console.log(`  🖼  Đang lấy ảnh từ Shopee API (shopId=${ids.shopId}, itemId=${ids.itemId})...`)
     try {
       const imageUrls = await fetchShopeeImages(ids.shopId, ids.itemId)
       console.log(`     Tìm thấy ${imageUrls.length} ảnh`)
-
       if (imageUrls.length > 0) {
         if (!dryRun) {
           const firstImagePath = await downloadAllImages(imageUrls, slug)
           scraped.imageUrl = firstImagePath
           console.log(`  ✅ Ảnh lưu tại: public/uploads/products/${slug}/`)
-          console.log(`     imageUrl trong DB: ${firstImagePath}`)
         } else {
           console.log(`  🧪 Dry-run — bỏ qua download ảnh`)
-          console.log(`     Sẽ download ${imageUrls.length} ảnh vào: public/uploads/products/${slug}/`)
         }
       }
     } catch (e) {
@@ -300,7 +276,6 @@ async function processOne(url: string, categoryId: number, dryRun: boolean) {
     return
   }
 
-  // Bước 4: Lưu vào DB
   try {
     const product = await prisma.product.create({
       data: {
