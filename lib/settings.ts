@@ -19,7 +19,7 @@ export const DEFAULT_SETTINGS: Record<string, string> = {
 }
 
 export async function getSettings(): Promise<Record<string, string>> {
-  const rows = await prisma.siteSetting.findMany()
+  const rows = await prisma.setting.findMany()
   const result = { ...DEFAULT_SETTINGS }
   for (const row of rows) {
     result[row.key] = row.value
