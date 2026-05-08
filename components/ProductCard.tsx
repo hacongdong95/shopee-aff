@@ -8,7 +8,7 @@ type Product = {
   oldPrice: number | null; imageUrl: string | null
   affLink: string; isActive: boolean; clicks: number
   description: string | null; categoryId: number
-  category: Category; createdAt?: string
+  category: Category; createdAt?: string | Date
 }
 
 function seededRandom(seed: number) {
@@ -24,7 +24,7 @@ function getBadge(product: Product): { label: string; color: string; bg: string 
   if (product.clicks > 200) return { label: '👍 Phổ Biến', color: 'white', bg: '#2980b9' }
   // Sản phẩm mới (7 ngày gần đây)
   if (product.createdAt) {
-    const daysDiff = (Date.now() - new Date(product.createdAt).getTime()) / 86400000
+    const daysDiff = (Date.now() - new Date(product.createdAt as string | Date).getTime()) / 86400000
     if (daysDiff < 7) return { label: '🆕 Mới Về', color: 'white', bg: '#27ae60' }
   }
   return null
