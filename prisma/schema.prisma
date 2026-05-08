@@ -59,6 +59,7 @@ model Review {
   name      String   // Tên người đánh giá
   rating    Int      // 1-5
   comment   String
-  isHidden  Boolean  @default(false) // Admin có thể ẩn
+  isHidden  Boolean  @default(false)
+  likes     Int      @default(0)
   createdAt DateTime @default(now())
 }

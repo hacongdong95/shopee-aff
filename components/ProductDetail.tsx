@@ -14,7 +14,7 @@ type Product = {
 }
 type Settings = Record<string, string>
 type Review = {
-  id: number; name: string; rating: number; comment: string; createdAt: string
+  id: number; name: string; rating: number; comment: string; createdAt: string; likes: number
 }
 
 function parseImages(imageUrl: string | null): string[] {
@@ -218,6 +218,38 @@ function StarRow({ value, onChange, size=24 }: { value:number; onChange?:(v:numb
   )
 }
 
+// ── Like Button ───────────────────────────────────────────────────────────────
+function LikeButton({ reviewId, initialLikes, primary }: { reviewId: number; initialLikes: number; primary: string }) {
+  const [likes, setLikes] = useState(initialLikes)
+  const [liked, setLiked] = useState(false)
+  const [anim, setAnim] = useState(false)
+
+  const handleLike = async () => {
+    if (liked) return
+    setLiked(true)
+    setAnim(true)
+    setTimeout(() => setAnim(false), 400)
+    const res = await fetch(`/api/reviews/${reviewId}/like`, { method: 'POST' })
+    const d = await res.json()
+    setLikes(d.likes)
+  }
+
+  return (
+    <button onClick={handleLike} disabled={liked}
+      style={{
+        marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 5,
+        background: liked ? '#fee2e2' : '#f5f5f5',
+        border: `1.5px solid ${liked ? '#fca5a5' : '#e5e7eb'}`,
+        borderRadius: 20, padding: '3px 12px', fontSize: 12, fontWeight: 600,
+        color: liked ? '#e74c3c' : '#888', cursor: liked ? 'default' : 'pointer',
+        transition: 'all 0.2s',
+        transform: anim ? 'scale(1.2)' : 'scale(1)',
+      }}>
+      {liked ? '❤️' : '🤍'} {likes}
+    </button>
+  )
+}
+
 // ── Reviews Section ───────────────────────────────────────────────────────────
 function ReviewsSection({ productId, primary }: { productId:number; primary:string }) {
   const [reviews, setReviews]   = useState<Review[]>([])
@@ -344,6 +376,7 @@ function ReviewsSection({ productId, primary }: { productId:number; primary:stri
                   </span>
                 </div>
                 <p style={{ margin:0, fontSize:13, color:'#444', lineHeight:1.7 }}>{r.comment}</p>
+                <LikeButton reviewId={r.id} initialLikes={r.likes ?? 0} primary={primary} />
               </div>
             ))}
           </div>
@@ -462,7 +495,7 @@ export default function ProductDetail({ product, related, settings={} }: { produ
   const { sold, views, reviews, rating } = getFakeStats(product.id)
   const images = parseImages(product.imageUrl)
 
-  const copyLink = () => { navigator.clipboard.writeText(window.location.href); setCopied(true); setTimeout(()=>setCopied(false),2000) }
+  const copyLink = async () => { const url = window.location.href; if (navigator.share) { try { await navigator.share({ title: product.name, url }) } catch {} } else { navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 2000) } }
 
   const socialLinks = buildSocialLinks(settings)
 
