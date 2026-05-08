@@ -30,6 +30,7 @@ model Product {
   category    Category @relation(fields: [categoryId], references: [id])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  reviews     Review[]
 }
 
 model Admin {
@@ -49,10 +50,15 @@ model Setting {
   updatedAt DateTime @updatedAt
 }
 
-model SiteSetting {
+// Đã xóa model SiteSetting (trùng với Setting, không dùng)
+
+model Review {
   id        Int      @id @default(autoincrement())
-  key       String   @unique
-  value     String
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name      String   // Tên người đánh giá
+  rating    Int      // 1-5
+  comment   String
+  isHidden  Boolean  @default(false) // Admin có thể ẩn
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }

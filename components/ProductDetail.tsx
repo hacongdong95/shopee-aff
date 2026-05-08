@@ -13,6 +13,9 @@ type Product = {
   category: Category
 }
 type Settings = Record<string, string>
+type Review = {
+  id: number; name: string; rating: number; comment: string; createdAt: string
+}
 
 function parseImages(imageUrl: string | null): string[] {
   if (!imageUrl) return []
@@ -162,14 +165,9 @@ function MarqueeBanner({ primary, items }: { primary:string; items:string[] }) {
   const text = items.join('   •   ')
   return (
     <div style={{ background:`${primary}15`, borderBottom:`1px solid ${primary}25`, overflow:'hidden', height:32, display:'flex', alignItems:'center' }}>
-      <div style={{
-        display:'flex', gap:0, whiteSpace:'nowrap',
-        animation:'marquee 28s linear infinite',
-      }}>
+      <div style={{ display:'flex', gap:0, whiteSpace:'nowrap', animation:'marquee 28s linear infinite' }}>
         {[0,1,2].map(k => (
-          <span key={k} style={{ fontSize:12, color:primary, fontWeight:600, paddingRight:60 }}>
-            {text}
-          </span>
+          <span key={k} style={{ fontSize:12, color:primary, fontWeight:600, paddingRight:60 }}>{text}</span>
         ))}
       </div>
       <style>{`@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-33.33%)}}`}</style>
@@ -202,6 +200,243 @@ function StickyBuyBar({ product, primary, buyButtonText }: { product:Product; pr
   )
 }
 
+// ── Star Rating ───────────────────────────────────────────────────────────────
+function StarRow({ value, onChange, size=24 }: { value:number; onChange?:(v:number)=>void; size?:number }) {
+  const [hover, setHover] = useState(0)
+  return (
+    <div style={{ display:'flex', gap:2 }}>
+      {[1,2,3,4,5].map(i => (
+        <span key={i}
+          onClick={() => onChange?.(i)}
+          onMouseEnter={() => onChange && setHover(i)}
+          onMouseLeave={() => onChange && setHover(0)}
+          style={{ fontSize:size, cursor:onChange?'pointer':'default', lineHeight:1, transition:'transform 0.1s', transform: onChange && (hover||value)>=i ? 'scale(1.15)':'scale(1)', userSelect:'none' }}>
+          {(hover||value) >= i ? '⭐' : '☆'}
+        </span>
+      ))}
+    </div>
+  )
+}
+
+// ── Reviews Section ───────────────────────────────────────────────────────────
+function ReviewsSection({ productId, primary }: { productId:number; primary:string }) {
+  const [reviews, setReviews]   = useState<Review[]>([])
+  const [loading, setLoading]   = useState(true)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitted, setSubmitted]   = useState(false)
+  const [error, setError]       = useState('')
+
+  // Form state
+  const [name, setName]       = useState('')
+  const [rating, setRating]   = useState(0)
+  const [comment, setComment] = useState('')
+
+  const load = useCallback(async () => {
+    setLoading(true)
+    const res = await fetch(`/api/reviews?productId=${productId}`)
+    const data = await res.json()
+    setReviews(Array.isArray(data) ? data : [])
+    setLoading(false)
+  }, [productId])
+
+  useEffect(() => { load() }, [load])
+
+  const submit = async () => {
+    setError('')
+    if (!name.trim()) return setError('Vui lòng nhập tên của bạn')
+    if (rating === 0) return setError('Vui lòng chọn số sao')
+    if (!comment.trim()) return setError('Vui lòng nhập nội dung đánh giá')
+    if (comment.trim().length < 10) return setError('Đánh giá phải ít nhất 10 ký tự')
+
+    setSubmitting(true)
+    const res = await fetch('/api/reviews', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ productId, name, rating, comment }),
+    })
+    setSubmitting(false)
+    if (res.ok) {
+      setSubmitted(true)
+      setName(''); setRating(0); setComment('')
+      load()
+    } else {
+      const d = await res.json()
+      setError(d.error || 'Có lỗi xảy ra, thử lại sau')
+    }
+  }
+
+  const avgRating = reviews.length
+    ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1)
+    : null
+
+  const ratingDist = [5,4,3,2,1].map(star => ({
+    star,
+    count: reviews.filter(r => r.rating === star).length,
+    pct: reviews.length ? Math.round(reviews.filter(r => r.rating === star).length / reviews.length * 100) : 0,
+  }))
+
+  const inputStyle: React.CSSProperties = {
+    width:'100%', padding:'10px 14px', border:'1.5px solid #e5e7eb',
+    borderRadius:8, fontSize:13, outline:'none', boxSizing:'border-box',
+    fontFamily:'inherit', transition:'border-color 0.15s',
+  }
+
+  return (
+    <div style={{ background:'white', borderRadius:12, boxShadow:'0 2px 8px rgba(0,0,0,0.06)', marginBottom:16, overflow:'hidden' }}>
+      {/* Header */}
+      <div style={{ background:`${primary}0e`, padding:'14px 20px', borderBottom:`2px solid ${primary}33`, display:'flex', alignItems:'center', gap:10 }}>
+        <span style={{ fontSize:20 }}>💬</span>
+        <h2 style={{ margin:0, fontSize:16, fontWeight:700, color:primary }}>ĐÁNH GIÁ SẢN PHẨM</h2>
+        {reviews.length > 0 && (
+          <span style={{ fontSize:12, background:`${primary}18`, color:primary, padding:'2px 10px', borderRadius:20, fontWeight:600 }}>
+            {reviews.length} đánh giá
+          </span>
+        )}
+      </div>
+
+      <div style={{ padding:20 }}>
+
+        {/* Tổng quan rating */}
+        {reviews.length > 0 && (
+          <div style={{ display:'flex', gap:20, marginBottom:24, padding:16, background:'#fafafa', borderRadius:10, border:'1px solid #f0f0f0', flexWrap:'wrap' }}>
+            {/* Điểm trung bình */}
+            <div style={{ textAlign:'center', minWidth:80 }}>
+              <div style={{ fontSize:42, fontWeight:800, color:primary, lineHeight:1 }}>{avgRating}</div>
+              <StarRow value={Math.round(Number(avgRating))} size={16} />
+              <div style={{ fontSize:11, color:'#999', marginTop:4 }}>{reviews.length} đánh giá</div>
+            </div>
+            {/* Phân phối sao */}
+            <div style={{ flex:1, minWidth:160, display:'flex', flexDirection:'column', gap:5, justifyContent:'center' }}>
+              {ratingDist.map(({ star, count, pct }) => (
+                <div key={star} style={{ display:'flex', alignItems:'center', gap:8, fontSize:12 }}>
+                  <span style={{ width:12, textAlign:'right', color:'#555', fontWeight:600 }}>{star}</span>
+                  <span style={{ fontSize:13 }}>⭐</span>
+                  <div style={{ flex:1, height:6, background:'#f0f0f0', borderRadius:4, overflow:'hidden' }}>
+                    <div style={{ height:'100%', width:`${pct}%`, background: star >= 4 ? primary : star === 3 ? '#f39c12' : '#e74c3c', borderRadius:4, transition:'width 0.5s ease' }} />
+                  </div>
+                  <span style={{ width:28, color:'#999' }}>{count}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Danh sách đánh giá */}
+        {loading ? (
+          <div style={{ textAlign:'center', padding:'24px 0', color:'#aaa', fontSize:13 }}>Đang tải đánh giá...</div>
+        ) : reviews.length === 0 ? (
+          <div style={{ textAlign:'center', padding:'20px 0 8px', color:'#bbb' }}>
+            <div style={{ fontSize:36, marginBottom:6 }}>📝</div>
+            <div style={{ fontSize:13 }}>Chưa có đánh giá nào. Hãy là người đầu tiên!</div>
+          </div>
+        ) : (
+          <div style={{ display:'flex', flexDirection:'column', gap:12, marginBottom:24 }}>
+            {reviews.map(r => (
+              <div key={r.id} style={{ padding:'12px 14px', background:'#fafafa', borderRadius:8, border:'1px solid #f0f0f0' }}>
+                <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:6, flexWrap:'wrap' }}>
+                  <div style={{ width:32, height:32, borderRadius:'50%', background:`${primary}20`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:15, fontWeight:700, color:primary, flexShrink:0 }}>
+                    {r.name.charAt(0).toUpperCase()}
+                  </div>
+                  <span style={{ fontWeight:700, fontSize:13, color:'#222' }}>{r.name}</span>
+                  <StarRow value={r.rating} size={14} />
+                  <span style={{ fontSize:11, color:'#bbb', marginLeft:'auto' }}>
+                    {new Date(r.createdAt).toLocaleDateString('vi-VN')}
+                  </span>
+                </div>
+                <p style={{ margin:0, fontSize:13, color:'#444', lineHeight:1.7 }}>{r.comment}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Form đánh giá */}
+        <div style={{ borderTop:'1px solid #f0f0f0', paddingTop:20 }}>
+          <div style={{ fontSize:14, fontWeight:700, color:'#222', marginBottom:14 }}>
+            {submitted ? '✅ Cảm ơn bạn đã đánh giá!' : '✍️ Viết đánh giá của bạn'}
+          </div>
+
+          {submitted ? (
+            <div style={{ textAlign:'center', padding:'14px 0' }}>
+              <div style={{ fontSize:32, marginBottom:8 }}>🎉</div>
+              <div style={{ fontSize:13, color:'#555', marginBottom:12 }}>Đánh giá của bạn đã được ghi nhận. Cảm ơn bạn!</div>
+              <button onClick={()=>setSubmitted(false)} style={{ background:'none', border:`1.5px solid ${primary}`, color:primary, padding:'7px 18px', borderRadius:20, fontSize:13, fontWeight:600, cursor:'pointer' }}>
+                Thêm đánh giá khác
+              </button>
+            </div>
+          ) : (
+            <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+              <div>
+                <label style={{ fontSize:12, fontWeight:700, color:'#555', display:'block', marginBottom:4 }}>Tên của bạn *</label>
+                <input value={name} onChange={e=>setName(e.target.value)} placeholder="Nguyễn Văn A" style={inputStyle} maxLength={60}
+                  onFocus={e=>(e.target as HTMLInputElement).style.borderColor=primary}
+                  onBlur={e=>(e.target as HTMLInputElement).style.borderColor='#e5e7eb'} />
+              </div>
+              <div>
+                <label style={{ fontSize:12, fontWeight:700, color:'#555', display:'block', marginBottom:6 }}>Đánh giá sao *</label>
+                <StarRow value={rating} onChange={setRating} size={28} />
+                {rating > 0 && (
+                  <div style={{ fontSize:12, color:primary, marginTop:4, fontWeight:600 }}>
+                    {['','😞 Rất tệ','😕 Tệ','😐 Bình thường','😊 Tốt','🤩 Tuyệt vời'][rating]}
+                  </div>
+                )}
+              </div>
+              <div>
+                <label style={{ fontSize:12, fontWeight:700, color:'#555', display:'block', marginBottom:4 }}>Nội dung đánh giá *</label>
+                <textarea value={comment} onChange={e=>setComment(e.target.value)} placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm này..." rows={3} maxLength={1000}
+                  style={{ ...inputStyle, resize:'vertical', lineHeight:1.6 }}
+                  onFocus={e=>(e.target as HTMLTextAreaElement).style.borderColor=primary}
+                  onBlur={e=>(e.target as HTMLTextAreaElement).style.borderColor='#e5e7eb'} />
+                <div style={{ fontSize:11, color:'#bbb', textAlign:'right', marginTop:2 }}>{comment.length}/1000</div>
+              </div>
+              {error && (
+                <div style={{ background:'#fef2f2', border:'1px solid #fecaca', borderRadius:8, padding:'8px 12px', fontSize:12, color:'#dc2626' }}>
+                  ⚠️ {error}
+                </div>
+              )}
+              <button onClick={submit} disabled={submitting}
+                style={{ background:submitting?'#d1d5db':primary, color:'white', border:'none', padding:'11px 0', borderRadius:8, fontWeight:700, fontSize:14, cursor:submitting?'not-allowed':'pointer', transition:'background 0.2s', boxShadow:submitting?'none':`0 2px 10px ${primary}44` }}>
+                {submitting ? '⏳ Đang gửi...' : '📤 Gửi đánh giá'}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Social Links Footer helper ────────────────────────────────────────────────
+// Trả về mảng social links dựa theo settings, chỉ những cái có URL và được bật
+type SocialLink = { key: string; label: string; icon: string; href: string; bg: string }
+
+function buildSocialLinks(settings: Settings): SocialLink[] {
+  const all = [
+    { key: 'social_facebook', label: 'Facebook', icon: 'f', bg: '#1877f2', prefix: '' },
+    { key: 'social_shopee',   label: 'Shopee',   icon: '🛒', bg: '#ee4d2d', prefix: '' },
+    { key: 'social_zalo',     label: 'Zalo',     icon: 'Z',  bg: '#0068ff', prefix: 'https://zalo.me/' },
+    { key: 'social_tiktok',   label: 'TikTok',   icon: '♪',  bg: '#010101', prefix: '' },
+    { key: 'social_youtube',  label: 'YouTube',  icon: '▶',  bg: '#ff0000', prefix: '' },
+    { key: 'social_instagram',label: 'Instagram',icon: '📷', bg: '#e1306c', prefix: '' },
+  ]
+  return all
+    .filter(s => {
+      const val = settings[s.key]?.trim()
+      // Nếu admin đã set show toggle = false thì ẩn
+      const showKey = `${s.key}_show`
+      if (settings[showKey] === 'false') return false
+      return !!val
+    })
+    .map(s => {
+      let val = settings[s.key].trim()
+      // Zalo: nếu chỉ nhập SĐT thì build URL
+      if (s.key === 'social_zalo' && !val.startsWith('http')) {
+        val = `https://zalo.me/${val.replace(/\D/g,'')}`
+      }
+      if (!val.startsWith('http')) val = `https://${val}`
+      return { key: s.key, label: s.label, icon: s.icon, href: val, bg: s.bg }
+    })
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function ProductDetail({ product, related, settings={} }: { product:Product; related:Product[]; settings?:Settings }) {
   const [copied, setCopied] = useState(false)
@@ -218,6 +453,7 @@ export default function ProductDetail({ product, related, settings={} }: { produ
   const footerText    = settings.footer_text     || 'Tổng hợp sản phẩm giảm giá tốt nhất từ Shopee'
   const footerCopy    = settings.footer_copyright|| '© 2025 · Affiliate Website'
   const footerColor   = settings.footer_color    || '#1a1a1a'
+  const showReviews   = settings.show_reviews    !== 'false'
 
   const discount = product.oldPrice && product.oldPrice > product.price
     ? Math.round((1-product.price/product.oldPrice)*100) : null
@@ -228,16 +464,19 @@ export default function ProductDetail({ product, related, settings={} }: { produ
 
   const copyLink = () => { navigator.clipboard.writeText(window.location.href); setCopied(true); setTimeout(()=>setCopied(false),2000) }
 
+  const socialLinks = buildSocialLinks(settings)
+
   return (
     <div style={{ minHeight:'100vh', background:'#f5f5f5', fontFamily:"'Be Vietnam Pro', Arial, sans-serif", paddingBottom:80 }}>
-
-
       <style>{`
         @media(max-width:640px){
           .pd-grid{grid-template-columns:1fr!important}
           .pd-gallery{border-right:none!important;border-bottom:1px solid #f5f5f5}
         }
+        @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+        @keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-33.33%)}}
       `}</style>
+
       {/* ── Marquee trust bar ── */}
       <MarqueeBanner primary={primary} items={[shippingText, guaranteeText, returnText, shopeeBadge]} />
 
@@ -273,7 +512,6 @@ export default function ProductDetail({ product, related, settings={} }: { produ
 
         {/* ── Main product card ── */}
         <div style={{ background:'white', borderRadius:12, boxShadow:'0 2px 12px rgba(0,0,0,0.08)', marginBottom:16, overflow:'hidden' }}>
-          {/* Desktop: 2 cột | Mobile: 1 cột */}
           <div className="pd-grid" style={{ display:'grid', gridTemplateColumns:'min(420px,40%) 1fr' }}>
 
             {/* Left: Gallery */}
@@ -360,6 +598,9 @@ export default function ProductDetail({ product, related, settings={} }: { produ
           </div>
         )}
 
+        {/* ── Đánh giá sản phẩm ── */}
+        {showReviews && <ReviewsSection productId={product.id} primary={primary} />}
+
         {/* ── Sản phẩm liên quan ── */}
         {related.length>0 && (
           <div style={{ background:'white', borderRadius:12, boxShadow:'0 2px 8px rgba(0,0,0,0.06)', overflow:'hidden' }}>
@@ -401,6 +642,22 @@ export default function ProductDetail({ product, related, settings={} }: { produ
         <div style={{ maxWidth:1100, margin:'0 auto', textAlign:'center' }}>
           <div style={{ color:'white', fontWeight:800, fontSize:18, fontFamily:'Nunito,sans-serif', marginBottom:6 }}>{siteEmoji} {siteName}</div>
           <div style={{ fontSize:13, maxWidth:400, margin:'0 auto 20px', lineHeight:1.7, color:'rgba(255,255,255,0.4)' }}>{footerText}</div>
+
+          {/* Social Links */}
+          {socialLinks.length > 0 && (
+            <div style={{ display:'flex', justifyContent:'center', gap:10, flexWrap:'wrap', marginBottom:20 }}>
+              {socialLinks.map(s => (
+                <a key={s.key} href={s.href} target="_blank" rel="noopener noreferrer"
+                  style={{ display:'inline-flex', alignItems:'center', gap:6, background:s.bg, color:'white', padding:'7px 14px', borderRadius:20, fontSize:12, fontWeight:700, textDecoration:'none', transition:'opacity 0.15s, transform 0.15s', opacity:0.9 }}
+                  onMouseEnter={e=>{(e.currentTarget as HTMLAnchorElement).style.opacity='1';(e.currentTarget as HTMLAnchorElement).style.transform='translateY(-2px)'}}
+                  onMouseLeave={e=>{(e.currentTarget as HTMLAnchorElement).style.opacity='0.9';(e.currentTarget as HTMLAnchorElement).style.transform=''}}>
+                  <span style={{ fontSize:14 }}>{s.icon}</span>
+                  {s.label}
+                </a>
+              ))}
+            </div>
+          )}
+
           <div style={{ display:'flex', justifyContent:'center', gap:10, flexWrap:'wrap', marginBottom:20 }}>
             {[shippingText, guaranteeText, returnText].map((t,i)=>(
               <span key={i} style={{ fontSize:12, color:'rgba(255,255,255,0.45)', background:'rgba(255,255,255,0.06)', padding:'5px 14px', borderRadius:20, border:'1px solid rgba(255,255,255,0.08)' }}>{t}</span>

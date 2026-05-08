@@ -19,12 +19,13 @@ const PALETTES = [
 
 // ─── Tabs config ──────────────────────────────────────────────────────────
 const TABS = [
-  { id: 'giaodien', label: '🎨 Giao diện' },
-  { id: 'banner',   label: '📢 Banner' },
-  { id: 'noidung',  label: '📝 Nội dung' },
+  { id: 'giaodien',   label: '🎨 Giao diện' },
+  { id: 'banner',     label: '📢 Banner' },
+  { id: 'noidung',    label: '📝 Nội dung' },
   { id: 'chinh_sach', label: '📋 Chính sách' },
-  { id: 'mang_xa_hoi', label: '📱 Mạng XH' },
-  { id: 'seo',      label: '🔍 SEO' },
+  { id: 'mang_xa_hoi',label: '📱 Mạng XH' },
+  { id: 'danh_gia',   label: '💬 Đánh giá' },
+  { id: 'seo',        label: '🔍 SEO' },
 ]
 
 // ─── Fields theo tab ──────────────────────────────────────────────────────
@@ -37,14 +38,14 @@ const TAB_FIELDS: Record<string, { key: string; label: string; type: string; pla
     { key: 'grid_size',       label: 'Kích thước card sản phẩm', type: 'select_grid', placeholder: '180' },
   ],
   banner: [
-    { key: 'banner_show',     label: 'Hiện banner trang chủ',  type: 'toggle',   placeholder: 'true' },
-    { key: 'banner_title',    label: 'Tiêu đề banner',         type: 'text',     placeholder: '🔥 Deal Hot Mỗi Ngày' },
-    { key: 'banner_subtitle', label: 'Mô tả banner',           type: 'textarea', placeholder: 'Hàng ngàn sản phẩm giảm giá sâu...' },
-    { key: 'banner_cta_text', label: 'Text nút CTA (tùy chọn)', type: 'text',    placeholder: 'Xem ngay' },
-    { key: 'banner_cta_link', label: 'Link nút CTA',           type: 'text',     placeholder: '/?cat=dien-tu' },
-    { key: 'announcement_show', label: 'Hiện thông báo nổi',  type: 'toggle',   placeholder: 'false' },
-    { key: 'announcement_text', label: 'Nội dung thông báo',  type: 'text',     placeholder: '🎉 Miễn phí vận chuyển cho đơn từ 200k!' },
-    { key: 'announcement_color', label: 'Màu thông báo',      type: 'color',    placeholder: '#059669' },
+    { key: 'banner_show',       label: 'Hiện banner trang chủ',  type: 'toggle',   placeholder: 'true' },
+    { key: 'banner_title',      label: 'Tiêu đề banner',         type: 'text',     placeholder: '🔥 Deal Hot Mỗi Ngày' },
+    { key: 'banner_subtitle',   label: 'Mô tả banner',           type: 'textarea', placeholder: 'Hàng ngàn sản phẩm giảm giá sâu...' },
+    { key: 'banner_cta_text',   label: 'Text nút CTA (tùy chọn)', type: 'text',    placeholder: 'Xem ngay' },
+    { key: 'banner_cta_link',   label: 'Link nút CTA',           type: 'text',     placeholder: '/?cat=dien-tu' },
+    { key: 'announcement_show', label: 'Hiện thông báo nổi',     type: 'toggle',   placeholder: 'false' },
+    { key: 'announcement_text', label: 'Nội dung thông báo',     type: 'text',     placeholder: '🎉 Miễn phí vận chuyển cho đơn từ 200k!' },
+    { key: 'announcement_color',label: 'Màu thông báo',          type: 'color',    placeholder: '#059669' },
   ],
   noidung: [
     { key: 'site_name',        label: 'Tên website',        type: 'text',     placeholder: 'Shopee Deals' },
@@ -55,27 +56,36 @@ const TAB_FIELDS: Record<string, { key: string; label: string; type: string; pla
     { key: 'footer_copyright', label: 'Copyright',          type: 'text',     placeholder: '© 2025 · Affiliate Website' },
   ],
   chinh_sach: [
-    { key: 'shipping_text',    label: 'Vận chuyển',   type: 'text', placeholder: '🚚 Miễn phí vận chuyển · Giao trong 2-5 ngày' },
-    { key: 'guarantee_text',   label: 'Đảm bảo',     type: 'text', placeholder: '✅ Hoàn tiền nếu hàng không đúng mô tả' },
-    { key: 'return_text',      label: 'Đổi trả',      type: 'text', placeholder: '↩️ Đổi trả miễn phí trong 15 ngày' },
+    { key: 'shipping_text',    label: 'Vận chuyển',   type: 'text',   placeholder: '🚚 Miễn phí vận chuyển · Giao trong 2-5 ngày' },
+    { key: 'guarantee_text',   label: 'Đảm bảo',     type: 'text',   placeholder: '✅ Hoàn tiền nếu hàng không đúng mô tả' },
+    { key: 'return_text',      label: 'Đổi trả',      type: 'text',   placeholder: '↩️ Đổi trả miễn phí trong 15 ngày' },
     { key: 'show_fake_stats',  label: 'Hiện lượt xem & đã bán giả', type: 'toggle', placeholder: 'true', hint: 'Tạo độ tin tưởng cho khách hàng' },
     { key: 'show_related',     label: 'Hiện sản phẩm liên quan', type: 'toggle', placeholder: 'true' },
   ],
-  mang_xa_hoi: [
-    { key: 'social_facebook',  label: 'Facebook Page URL',  type: 'text', placeholder: 'https://facebook.com/...' },
-    { key: 'social_zalo',      label: 'Zalo / SĐT',         type: 'text', placeholder: '0912345678' },
-    { key: 'social_tiktok',    label: 'TikTok URL',          type: 'text', placeholder: 'https://tiktok.com/@...' },
-    { key: 'social_youtube',   label: 'YouTube URL',         type: 'text', placeholder: 'https://youtube.com/@...' },
-    { key: 'contact_email',    label: 'Email liên hệ',       type: 'text', placeholder: 'contact@example.com' },
+  // Tab mạng XH: mỗi mạng có URL + toggle show/hide
+  mang_xa_hoi: [], // Render riêng bên dưới
+  danh_gia: [
+    { key: 'show_reviews', label: 'Hiện section đánh giá sản phẩm', type: 'toggle', placeholder: 'true', hint: 'Cho phép người dùng xem và gửi đánh giá trên trang sản phẩm' },
   ],
   seo: [
-    { key: 'seo_title',        label: 'Tiêu đề trang (SEO)',       type: 'text',     placeholder: 'Shopee Deals – Săn Deal Mỗi Ngày', hint: 'Nên dưới 60 ký tự' },
-    { key: 'seo_description',  label: 'Mô tả (meta description)',  type: 'textarea', placeholder: 'Tổng hợp sản phẩm giảm giá tốt nhất từ Shopee...', hint: 'Nên từ 120–160 ký tự' },
-    { key: 'seo_keywords',     label: 'Keywords',                   type: 'text',     placeholder: 'shopee, deal, giảm giá, affiliate', hint: 'Ngăn cách bằng dấu phẩy' },
-    { key: 'ga_id',            label: 'Google Analytics ID',        type: 'text',     placeholder: 'G-XXXXXXXXXX' },
-    { key: 'fb_pixel',         label: 'Facebook Pixel ID',          type: 'text',     placeholder: '123456789' },
+    { key: 'seo_title',       label: 'Tiêu đề trang (SEO)',       type: 'text',     placeholder: 'Shopee Deals – Săn Deal Mỗi Ngày', hint: 'Nên dưới 60 ký tự' },
+    { key: 'seo_description', label: 'Mô tả (meta description)',  type: 'textarea', placeholder: 'Tổng hợp sản phẩm giảm giá tốt nhất từ Shopee...', hint: 'Nên từ 120–160 ký tự' },
+    { key: 'seo_keywords',    label: 'Keywords',                   type: 'text',     placeholder: 'shopee, deal, giảm giá, affiliate', hint: 'Ngăn cách bằng dấu phẩy' },
+    { key: 'ga_id',           label: 'Google Analytics ID',        type: 'text',     placeholder: 'G-XXXXXXXXXX' },
+    { key: 'fb_pixel',        label: 'Facebook Pixel ID',          type: 'text',     placeholder: '123456789' },
   ],
 }
+
+// Cấu hình từng mạng XH — thứ tự hiển thị
+const SOCIAL_CHANNELS = [
+  { key: 'social_shopee',    label: 'Shopee',    icon: '🛒', color: '#ee4d2d', placeholder: 'https://shopee.vn/shop/...',       hint: 'Link shop Shopee của bạn' },
+  { key: 'social_facebook',  label: 'Facebook',  icon: '📘', color: '#1877f2', placeholder: 'https://facebook.com/...',          hint: 'Link Facebook Page' },
+  { key: 'social_zalo',      label: 'Zalo',      icon: '💬', color: '#0068ff', placeholder: '0912345678 hoặc https://zalo.me/...', hint: 'Nhập SĐT hoặc link Zalo OA' },
+  { key: 'social_tiktok',    label: 'TikTok',    icon: '🎵', color: '#010101', placeholder: 'https://tiktok.com/@...',           hint: 'Link TikTok của bạn' },
+  { key: 'social_youtube',   label: 'YouTube',   icon: '▶️', color: '#ff0000', placeholder: 'https://youtube.com/@...',          hint: 'Link YouTube channel' },
+  { key: 'social_instagram', label: 'Instagram', icon: '📷', color: '#e1306c', placeholder: 'https://instagram.com/...',         hint: 'Link Instagram' },
+  { key: 'contact_email',    label: 'Email liên hệ', icon: '✉️', color: '#6b7280', placeholder: 'contact@example.com',          hint: 'Hiển thị ở footer' },
+]
 
 // ─── Helpers ─────────────────────────────────────────────────────────────
 function hexToRgb(hex: string) {
@@ -85,7 +95,6 @@ function hexToRgb(hex: string) {
   const b = parseInt(c.slice(4, 6), 16)
   return isNaN(r) ? '238,77,45' : `${r},${g},${b}`
 }
-
 function darken(hex: string, pct = 0.15) {
   const c = hex.replace('#', '')
   const r = Math.max(0, Math.round(parseInt(c.slice(0,2),16) * (1-pct)))
@@ -139,234 +148,202 @@ export default function SettingsPage() {
     </div>
   )
 
+  const fields = TAB_FIELDS[activeTab] || []
+
   return (
     <div style={{ fontFamily: "'Be Vietnam Pro', sans-serif" }}>
 
       {/* ── Topbar ── */}
-      <div style={{
-        display:'flex', alignItems:'center', justifyContent:'space-between',
-        marginBottom:24, flexWrap:'wrap', gap:12,
-      }}>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:24, flexWrap:'wrap', gap:12 }}>
         <div>
           <h2 style={{ margin:0, fontSize:22, fontWeight:800, color:'#111' }}>⚙️ Cài đặt website</h2>
-          <p style={{ margin:'4px 0 0', color:'#6b7280', fontSize:13 }}>
-            Tùy chỉnh giao diện và nội dung — không cần chỉnh code
-          </p>
+          <p style={{ margin:'4px 0 0', color:'#6b7280', fontSize:13 }}>Tùy chỉnh giao diện và nội dung — không cần chỉnh code</p>
         </div>
         <div style={{ display:'flex', gap:10 }}>
-          <button
-            onClick={() => setPreviewOpen(v => !v)}
-            style={{
-              background:'white', color:'#374151',
-              border:'1.5px solid #e5e7eb', padding:'9px 18px',
-              borderRadius:8, fontWeight:600, fontSize:13, cursor:'pointer',
-              display:'flex', alignItems:'center', gap:6,
-            }}
-          >
+          <button onClick={() => setPreviewOpen(v => !v)}
+            style={{ background:'white', color:'#374151', border:'1.5px solid #e5e7eb', padding:'9px 18px', borderRadius:8, fontWeight:600, fontSize:13, cursor:'pointer', display:'flex', alignItems:'center', gap:6 }}>
             👁️ {previewOpen ? 'Ẩn preview' : 'Live Preview'}
           </button>
           <button onClick={save} disabled={saving} style={{
             background: saving ? '#9ca3af' : saved ? '#059669' : primary,
-            color:'white', border:'none', padding:'9px 24px',
-            borderRadius:8, fontWeight:700, fontSize:14,
-            cursor: saving ? 'not-allowed' : 'pointer',
-            display:'flex', alignItems:'center', gap:8,
-            transition:'background 0.2s', boxShadow:`0 2px 8px rgba(${rgb},0.35)`,
+            color:'white', border:'none', padding:'9px 24px', borderRadius:8,
+            fontWeight:700, fontSize:13, cursor: saving ? 'not-allowed' : 'pointer',
+            boxShadow:`0 2px 10px rgba(${rgb},0.35)`, transition:'background 0.2s',
           }}>
-            {saving ? '⏳ Đang lưu...' : saved ? '✅ Đã lưu!' : '💾 Lưu thay đổi'}
+            {saving ? '⏳ Đang lưu...' : saved ? '✅ Đã lưu!' : '💾 Lưu'}
           </button>
         </div>
       </div>
 
-      {/* ── Layout: form + preview ── */}
-      <div style={{ display:'flex', gap:20, alignItems:'flex-start' }}>
+      <div style={{ display:'flex', gap:20, alignItems:'flex-start', flexWrap:'wrap' }}>
 
-        {/* ── Left: Tabs + Form ── */}
-        <div style={{ flex:1, minWidth:0 }}>
-
-          {/* Tabs */}
-          <div style={{
-            display:'flex', gap:4, marginBottom:20,
-            background:'white', padding:6, borderRadius:12,
-            boxShadow:'0 1px 4px rgba(0,0,0,0.08)',
-          }}>
-            {TABS.map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                style={{
-                  flex:1, padding:'9px 0', border:'none',
-                  borderRadius:8, fontSize:14, fontWeight:600,
-                  cursor:'pointer', transition:'all 0.15s',
-                  background: activeTab === tab.id ? primary : 'transparent',
-                  color:       activeTab === tab.id ? 'white' : '#6b7280',
-                  boxShadow:   activeTab === tab.id ? `0 2px 8px rgba(${rgb},0.3)` : 'none',
-                }}
-              >
-                {tab.label}
+        {/* ── Left: Tabs + Fields ── */}
+        <div style={{ flex:1, minWidth:320 }}>
+          {/* Tab bar */}
+          <div style={{ display:'flex', gap:4, marginBottom:20, flexWrap:'wrap' }}>
+            {TABS.map(t => (
+              <button key={t.id} onClick={() => setActiveTab(t.id)} style={{
+                padding:'8px 14px', borderRadius:8, border:'none', cursor:'pointer', fontSize:13, fontWeight:600,
+                background: activeTab === t.id ? primary : 'white',
+                color: activeTab === t.id ? 'white' : '#374151',
+                boxShadow: activeTab === t.id ? `0 2px 8px rgba(${rgb},0.35)` : '0 1px 3px rgba(0,0,0,0.08)',
+                transition:'all 0.15s',
+              }}>
+                {t.label}
               </button>
             ))}
           </div>
 
-          {/* Color palette (chỉ hiện ở tab Giao diện) */}
-          {activeTab === 'giaodien' && (
-            <div style={{
-              background:'white', borderRadius:12, padding:'16px 20px',
-              boxShadow:'0 1px 4px rgba(0,0,0,0.08)', marginBottom:16,
-            }}>
-              <div style={{ fontSize:13, fontWeight:700, color:'#374151', marginBottom:12 }}>
-                🎨 Bộ màu gợi ý — chọn 1 click
-              </div>
-              <div style={{ display:'flex', flexWrap:'wrap', gap:10 }}>
-                {PALETTES.map(p => (
-                  <button
-                    key={p.color}
-                    onClick={() => set('primary_color', p.color)}
-                    title={p.name}
-                    style={{
-                      display:'flex', alignItems:'center', gap:8,
-                      padding:'6px 12px', borderRadius:20,
-                      border: settings.primary_color === p.color
-                        ? `2.5px solid ${p.color}`
-                        : '2px solid #e5e7eb',
-                      background: settings.primary_color === p.color
-                        ? `rgba(${hexToRgb(p.color)},0.08)`
-                        : 'white',
-                      cursor:'pointer', fontSize:12, fontWeight:600,
-                      color:'#374151', transition:'all 0.15s',
-                    }}
-                  >
-                    <span style={{
-                      width:16, height:16, borderRadius:'50%',
-                      background:p.color, flexShrink:0,
-                      boxShadow: settings.primary_color === p.color ? `0 0 0 2px white, 0 0 0 4px ${p.color}` : 'none',
-                    }} />
-                    {p.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* Fields */}
-          <div style={{
-            background:'white', borderRadius:12,
-            boxShadow:'0 1px 4px rgba(0,0,0,0.08)', overflow:'hidden',
-          }}>
-            <div style={{ padding:'20px 24px', display:'flex', flexDirection:'column', gap:20 }}>
-              {TAB_FIELDS[activeTab].map(field => (
+          <div style={{ background:'white', borderRadius:12, padding:24, boxShadow:'0 1px 4px rgba(0,0,0,0.08)', display:'flex', flexDirection:'column', gap:20 }}>
+
+            {/* ── Tab Mạng XH: render riêng ── */}
+            {activeTab === 'mang_xa_hoi' ? (
+              <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+                <div style={{ fontSize:13, color:'#6b7280', background:'#f9fafb', border:'1px solid #e5e7eb', borderRadius:8, padding:'10px 14px' }}>
+                  💡 Nhập link hoặc thông tin từng kênh. Bật/tắt toggle để hiện hoặc ẩn khỏi footer website.
+                </div>
+                {SOCIAL_CHANNELS.map(ch => {
+                  const urlVal  = settings[ch.key] || ''
+                  const showKey = `${ch.key}_show`
+                  const isShown = settings[showKey] !== 'false'
+                  const hasUrl  = !!urlVal.trim()
+
+                  return (
+                    <div key={ch.key} style={{ border:'1.5px solid #e5e7eb', borderRadius:10, overflow:'hidden', opacity: hasUrl ? 1 : 0.7 }}>
+                      {/* Header row */}
+                      <div style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 14px', background:'#f9fafb', borderBottom:'1px solid #e5e7eb' }}>
+                        <span style={{ fontSize:20 }}>{ch.icon}</span>
+                        <span style={{ fontWeight:700, fontSize:14, color:'#111', flex:1 }}>{ch.label}</span>
+                        {/* Toggle show/hide */}
+                        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                          <span style={{ fontSize:12, color: isShown && hasUrl ? primary : '#9ca3af', fontWeight:600 }}>
+                            {isShown && hasUrl ? '👁️ Hiển thị' : '🙈 Ẩn'}
+                          </span>
+                          <div onClick={() => set(showKey, isShown ? 'false' : 'true')}
+                            style={{
+                              width:42, height:24, borderRadius:12, cursor:'pointer',
+                              background: isShown && hasUrl ? primary : '#d1d5db',
+                              position:'relative', transition:'background 0.2s', flexShrink:0,
+                            }}>
+                            <div style={{
+                              width:18, height:18, borderRadius:'50%', background:'white',
+                              position:'absolute', top:3,
+                              left: isShown ? 21 : 3,
+                              transition:'left 0.2s', boxShadow:'0 1px 3px rgba(0,0,0,0.2)',
+                            }} />
+                          </div>
+                        </div>
+                      </div>
+                      {/* URL input */}
+                      <div style={{ padding:'10px 14px' }}>
+                        {ch.hint && <div style={{ fontSize:11, color:'#9ca3af', marginBottom:6 }}>💡 {ch.hint}</div>}
+                        <input
+                          type="text"
+                          value={urlVal}
+                          onChange={e => set(ch.key, e.target.value)}
+                          placeholder={ch.placeholder}
+                          style={{ width:'100%', padding:'9px 12px', border:'1.5px solid #e5e7eb', borderRadius:8, fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'inherit', transition:'border-color 0.15s' }}
+                          onFocus={e => (e.target as HTMLInputElement).style.borderColor = ch.color}
+                          onBlur={e  => (e.target as HTMLInputElement).style.borderColor = '#e5e7eb'}
+                        />
+                        {urlVal.trim() && (
+                          <div style={{ marginTop:6, display:'flex', alignItems:'center', gap:6 }}>
+                            <div style={{ width:8, height:8, borderRadius:'50%', background: isShown ? '#22c55e' : '#d1d5db' }} />
+                            <span style={{ fontSize:11, color: isShown ? '#22c55e' : '#9ca3af' }}>
+                              {isShown ? 'Sẽ hiển thị ở footer' : 'Đang ẩn khỏi footer'}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            ) : (
+              /* ── Các tab khác: render fields bình thường ── */
+              fields.map(field => (
                 <FieldRow
                   key={field.key}
                   field={field}
-                  value={settings[field.key] || ''}
+                  value={settings[field.key] ?? ''}
                   primary={primary}
                   rgb={rgb}
                   onChange={v => set(field.key, v)}
                 />
-              ))}
-            </div>
+              ))
+            )}
+
+            {/* Palette nhanh ở tab giao diện */}
+            {activeTab === 'giaodien' && (
+              <div>
+                <label style={{ fontSize:13, fontWeight:700, color:'#374151', display:'block', marginBottom:8 }}>
+                  🎨 Bảng màu gợi ý
+                </label>
+                <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
+                  {PALETTES.map(p => (
+                    <button key={p.color} onClick={() => set('primary_color', p.color)}
+                      title={p.name}
+                      style={{
+                        width:36, height:36, borderRadius:8, border: settings.primary_color === p.color ? `3px solid ${p.color}` : '3px solid transparent',
+                        background:p.color, cursor:'pointer', outline: settings.primary_color === p.color ? `2px solid white` : 'none',
+                        outlineOffset:1, boxShadow:'0 2px 6px rgba(0,0,0,0.15)', transition:'transform 0.1s',
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* ── Right: Live Preview ── */}
+        {/* ── Right: Live Preview (chỉ tab giao diện) ── */}
         {previewOpen && (
-          <div style={{
-            width:400, flexShrink:0,
-            position:'sticky', top:20,
-          }}>
-            <div style={{
-              background:'white', borderRadius:12,
-              boxShadow:'0 1px 4px rgba(0,0,0,0.1)', overflow:'hidden',
-            }}>
-              <div style={{
-                padding:'10px 16px', borderBottom:'1px solid #f0f0f0',
-                fontSize:12, fontWeight:700, color:'#6b7280',
-                display:'flex', alignItems:'center', gap:6,
-              }}>
-                <span style={{ width:10, height:10, borderRadius:'50%', background:'#ef4444', display:'inline-block' }} />
-                <span style={{ width:10, height:10, borderRadius:'50%', background:'#f59e0b', display:'inline-block' }} />
-                <span style={{ width:10, height:10, borderRadius:'50%', background:'#10b981', display:'inline-block' }} />
-                <span style={{ marginLeft:8 }}>Preview trang chủ</span>
+          <div style={{ width:260, flexShrink:0 }}>
+            <div style={{ background:'white', borderRadius:12, overflow:'hidden', boxShadow:'0 1px 4px rgba(0,0,0,0.08)', border:'1px solid #e5e7eb' }}>
+              {/* Preview header */}
+              <div style={{ background:primary, padding:'8px 14px', display:'flex', alignItems:'center', gap:6 }}>
+                <span style={{ fontSize:14 }}>{settings.site_logo_emoji || '🛍️'}</span>
+                <span style={{ color:'white', fontWeight:700, fontSize:12 }}>{settings.site_name || 'Shopee Deals'}</span>
               </div>
-
-              {/* Mini preview */}
-              <div style={{ padding:0, fontSize:11, lineHeight:1.5 }}>
-                {/* Header preview */}
-                <div style={{
-                  background: `linear-gradient(135deg, ${primary} 0%, ${darken(primary,-0.15)} 100%)`,
-                  padding:'10px 14px', color:'white',
-                  display:'flex', alignItems:'center', gap:8,
-                }}>
-                  <span style={{ fontSize:16 }}>{settings.site_logo_emoji || '🛍️'}</span>
-                  <span style={{ fontWeight:800, fontSize:13 }}>{settings.site_name || 'Shopee Deals'}</span>
-                  <div style={{
-                    marginLeft:'auto', background:'rgba(255,255,255,0.2)',
-                    borderRadius:10, padding:'3px 10px', fontSize:10,
-                  }}>🔍 Tìm kiếm...</div>
-                </div>
-
-                {/* Category tabs preview */}
-                <div style={{ background:`rgba(${rgb},0.15)`, padding:'4px 14px', display:'flex', gap:4 }}>
-                  {['Tất cả','Điện tử','Thời trang','Nhà bếp'].map((c,i) => (
-                    <span key={c} style={{
-                      padding:'3px 8px', borderRadius:'4px 4px 0 0', fontSize:10,
-                      background: i===0 ? 'white' : 'transparent',
-                      color: i===0 ? primary : 'rgba(255,255,255,0.85)',
-                      fontWeight: i===0 ? 700 : 500,
-                    }}>{c}</span>
-                  ))}
-                </div>
-
-                {/* Banner preview */}
-                {settings.banner_show !== 'false' && (
-                  <div style={{
-                    background:`linear-gradient(135deg, ${primary} 0%, ${dark} 100%)`,
-                    padding:'12px 14px', color:'white', textAlign:'center',
-                  }}>
-                    <div style={{ fontWeight:800, fontSize:12 }}>{settings.banner_title || '🔥 Deal Hot Mỗi Ngày'}</div>
-                    <div style={{ fontSize:10, opacity:0.85, marginTop:2 }}>{settings.banner_subtitle || 'Hàng ngàn sản phẩm giảm giá sâu'}</div>
-                  </div>
-                )}
-
-                {/* Products preview */}
-                <div style={{ padding:'10px 14px', background:'#f5f5f5' }}>
-                  <div style={{ fontSize:10, color:'#888', marginBottom:8 }}>Tất cả sản phẩm — 24 sản phẩm</div>
-                  <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:6 }}>
-                    {[1,2,3,4,5,6].map(i => (
-                      <div key={i} style={{
-                        background:'white', borderRadius:6, overflow:'hidden',
-                        boxShadow:'0 1px 3px rgba(0,0,0,0.08)',
-                      }}>
-                        <div style={{ height:52, background:'#f0f0f0', display:'flex', alignItems:'center', justifyContent:'center', fontSize:16 }}>
-                          📦
-                        </div>
-                        <div style={{ padding:'4px 6px' }}>
-                          <div style={{ fontSize:9, fontWeight:600, color:'#333', marginBottom:2 }}>Sản phẩm {i}</div>
-                          <div style={{ fontSize:10, fontWeight:800, color:primary }}>120.000đ</div>
-                          <div style={{
-                            marginTop:4, background:primary, color:'white',
-                            textAlign:'center', borderRadius:4, padding:'2px 0',
-                            fontSize:9, fontWeight:700,
-                          }}>{settings.buy_button_text || 'Mua Ngay'}</div>
+              {/* Preview banner */}
+              <div style={{ background:`${primary}22`, padding:'10px 14px', textAlign:'center' }}>
+                <div style={{ fontSize:11, fontWeight:700, color:primary }}>{settings.banner_title || '🔥 Deal Hot Mỗi Ngày'}</div>
+              </div>
+              {/* Preview products */}
+              <div style={{ padding:10 }}>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:6 }}>
+                  {[1,2,3,4,5,6].map(i => (
+                    <div key={i} style={{ background:'white', borderRadius:6, overflow:'hidden', boxShadow:'0 1px 3px rgba(0,0,0,0.08)' }}>
+                      <div style={{ height:52, background:'#f0f0f0', display:'flex', alignItems:'center', justifyContent:'center', fontSize:16 }}>📦</div>
+                      <div style={{ padding:'4px 6px' }}>
+                        <div style={{ fontSize:9, fontWeight:600, color:'#333', marginBottom:2 }}>Sản phẩm {i}</div>
+                        <div style={{ fontSize:10, fontWeight:800, color:primary }}>120.000đ</div>
+                        <div style={{ marginTop:4, background:primary, color:'white', textAlign:'center', borderRadius:4, padding:'2px 0', fontSize:9, fontWeight:700 }}>
+                          {settings.buy_button_text || 'Mua Ngay'}
                         </div>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
                 </div>
-
-                {/* Footer preview */}
-                <div style={{ background:'#222', color:'#aaa', padding:'8px 14px', textAlign:'center' }}>
-                  <div style={{ color:'white', fontWeight:700, fontSize:11 }}>{settings.site_logo_emoji || '🛍️'} {settings.site_name || 'Shopee Deals'}</div>
-                  <div style={{ fontSize:9, marginTop:2 }}>{settings.footer_copyright || '© 2025 · Affiliate Website'}</div>
+              </div>
+              {/* Preview social in footer */}
+              <div style={{ background:'#222', padding:'8px 14px', textAlign:'center' }}>
+                <div style={{ color:'white', fontWeight:700, fontSize:11 }}>{settings.site_logo_emoji || '🛍️'} {settings.site_name || 'Shopee Deals'}</div>
+                {/* Hiện social badges preview */}
+                <div style={{ display:'flex', justifyContent:'center', gap:4, flexWrap:'wrap', marginTop:6 }}>
+                  {SOCIAL_CHANNELS.filter(ch => settings[ch.key]?.trim() && settings[`${ch.key}_show`] !== 'false').map(ch => (
+                    <span key={ch.key} style={{ fontSize:11, background:ch.color, color:'white', padding:'2px 7px', borderRadius:10, fontWeight:600 }}>
+                      {ch.icon}
+                    </span>
+                  ))}
                 </div>
+                <div style={{ fontSize:9, marginTop:4, color:'#666' }}>{settings.footer_copyright || '© 2025 · Affiliate Website'}</div>
               </div>
             </div>
 
-            {/* Màu đang dùng */}
-            <div style={{
-              marginTop:12, background:'white', borderRadius:12,
-              padding:'12px 16px', boxShadow:'0 1px 4px rgba(0,0,0,0.08)',
-            }}>
+            {/* Bảng màu hiện tại */}
+            <div style={{ marginTop:12, background:'white', borderRadius:12, padding:'12px 16px', boxShadow:'0 1px 4px rgba(0,0,0,0.08)' }}>
               <div style={{ fontSize:12, fontWeight:700, color:'#374151', marginBottom:8 }}>Bảng màu hiện tại</div>
               <div style={{ display:'flex', gap:8 }}>
                 {[primary, darken(primary,0.1), darken(primary,0.25), `rgba(${rgb},0.15)`, `rgba(${rgb},0.08)`].map((c,i) => (
@@ -427,15 +404,13 @@ function FieldRow({ field, value, primary, rgb, onChange }: {
 
       {field.type === 'toggle' ? (
         <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-          <div
-            onClick={() => onChange(value === 'true' ? 'false' : 'true')}
+          <div onClick={() => onChange(value === 'true' ? 'false' : 'true')}
             style={{
               width:48, height:26, borderRadius:13, cursor:'pointer',
               background: value === 'true' ? primary : '#d1d5db',
               position:'relative', transition:'background 0.2s', flexShrink:0,
               boxShadow: value === 'true' ? `0 0 0 3px rgba(${rgb},0.2)` : 'none',
-            }}
-          >
+            }}>
             <div style={{
               width:20, height:20, borderRadius:'50%', background:'white',
               position:'absolute', top:3,
@@ -450,36 +425,17 @@ function FieldRow({ field, value, primary, rgb, onChange }: {
 
       ) : field.type === 'color' ? (
         <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
-          <input
-            type="color"
-            value={value || field.placeholder}
-            onChange={e => onChange(e.target.value)}
-            style={{ width:48, height:40, borderRadius:8, border:'1.5px solid #e5e7eb', cursor:'pointer', padding:2 }}
-          />
-          <input
-            type="text"
-            value={value}
-            onChange={e => onChange(e.target.value)}
-            placeholder={field.placeholder}
-            style={{ ...base, width:130 }}
-          />
-          <div style={{
-            width:40, height:40, borderRadius:8,
-            background: value || field.placeholder,
-            border:'1px solid #e5e7eb',
-            boxShadow:`0 2px 8px rgba(${rgb},0.3)`,
-          }} />
+          <input type="color" value={value || field.placeholder} onChange={e => onChange(e.target.value)}
+            style={{ width:48, height:40, borderRadius:8, border:'1.5px solid #e5e7eb', cursor:'pointer', padding:2 }} />
+          <input type="text" value={value} onChange={e => onChange(e.target.value)} placeholder={field.placeholder}
+            style={{ ...base, width:130 }} />
+          <div style={{ width:40, height:40, borderRadius:8, background: value || field.placeholder, border:'1px solid #e5e7eb', boxShadow:`0 2px 8px rgba(${rgb},0.3)` }} />
           <span style={{ fontSize:12, color:'#9ca3af' }}>Preview</span>
         </div>
 
       ) : field.type === 'textarea' ? (
-        <textarea
-          value={value}
-          onChange={e => onChange(e.target.value)}
-          placeholder={field.placeholder}
-          rows={3}
-          style={{ ...base, resize:'vertical', lineHeight:1.6 }}
-        />
+        <textarea value={value} onChange={e => onChange(e.target.value)} placeholder={field.placeholder} rows={3}
+          style={{ ...base, resize:'vertical', lineHeight:1.6 }} />
 
       ) : field.type === 'select_grid' ? (
         <select value={value || '180'} onChange={e => onChange(e.target.value)} style={base}>
@@ -489,13 +445,7 @@ function FieldRow({ field, value, primary, rgb, onChange }: {
           <option value="280">Rất lớn — 3-4 sản phẩm/hàng</option>
         </select>
       ) : (
-        <input
-          type="text"
-          value={value}
-          onChange={e => onChange(e.target.value)}
-          placeholder={field.placeholder}
-          style={base}
-        />
+        <input type="text" value={value} onChange={e => onChange(e.target.value)} placeholder={field.placeholder} style={base} />
       )}
     </div>
   )
