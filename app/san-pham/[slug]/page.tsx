@@ -2,6 +2,15 @@ import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import ProductDetail from '@/components/ProductDetail'
 
+export const revalidate = 60
+
+async function getSettings() {
+  const rows = await prisma.setting.findMany()
+  const s: Record<string, string> = {}
+  for (const row of rows) s[row.key] = row.value
+  return s
+}
+
 export default async function ProductPage({
   params,
 }: {
@@ -9,10 +18,13 @@ export default async function ProductPage({
 }) {
   const { slug } = await params
 
-  const product = await prisma.product.findUnique({
-    where: { slug },
-    include: { category: true },
-  })
+  const [product, settings] = await Promise.all([
+    prisma.product.findUnique({
+      where: { slug },
+      include: { category: true },
+    }),
+    getSettings(),
+  ])
 
   if (!product || !product.isActive) notFound()
 
@@ -22,5 +34,5 @@ export default async function ProductPage({
     take: 6,
   })
 
-  return <ProductDetail product={product} related={related} />
+  return <ProductDetail product={product} related={related} settings={settings} />
 }
