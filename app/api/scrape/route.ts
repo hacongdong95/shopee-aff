@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
 
 Nhiệm vụ:
 1. Làm sạch tên sản phẩm (viết hoa đúng, bỏ ký tự thừa)
-2. Tìm giá trung bình thị trường Việt Nam của sản phẩm này trên Shopee (đơn vị VND, làm tròn đến nghìn, ví dụ: 85000, 199000, 450000)
+2. Xác định danh mục sản phẩm, sau đó ước tính giá bán lẻ hợp lý trên Shopee VN (đơn vị VND, làm tròn đến nghìn). VÍ DỤ: tủ lạnh mini 3.500.000, điện thoại Samsung tầm trung 7.000.000, kem dưỡng da 150.000. TUYỆT ĐỐI không cho giá thấp hơn mức tối thiểu của danh mục.
 3. Viết mô tả sản phẩm CỰC KỲ chi tiết theo format bên dưới
 
 Format mô tả (dùng ký hiệu <br> để xuống dòng, KHÔNG dùng ký tự xuống dòng thật):
@@ -72,7 +72,23 @@ Trả về JSON duy nhất, KHÔNG markdown, KHÔNG xuống dòng thật trong s
         messages: [
           {
             role: 'system',
-            content: 'Bạn là chuyên gia thương mại điện tử Việt Nam, biết rõ giá thị trường Shopee. Trả về JSON hợp lệ duy nhất. KHÔNG dùng ký tự xuống dòng thật trong JSON string — chỉ dùng <br>.',
+            content: `Bạn là chuyên gia định giá sản phẩm thương mại điện tử Việt Nam.
+Quy tắc định giá theo danh mục (giá bán lẻ phổ biến trên Shopee VN):
+- Điện thoại: 2.000.000 - 25.000.000đ
+- Laptop/Máy tính: 8.000.000 - 35.000.000đ
+- Tủ lạnh/Máy giặt/Điều hòa: 3.000.000 - 25.000.000đ
+- Tivi: 2.000.000 - 20.000.000đ
+- Máy lọc nước/Nồi cơm/Quạt/Bếp: 300.000 - 5.000.000đ
+- Mỹ phẩm/Skincare: 50.000 - 2.000.000đ
+- Thực phẩm/Đồ ăn: 30.000 - 500.000đ
+- Quần áo/Giày dép: 50.000 - 1.000.000đ
+- Đồ gia dụng nhỏ: 50.000 - 500.000đ
+- Đồ chơi trẻ em: 50.000 - 1.000.000đ
+- Phụ kiện điện tử: 20.000 - 500.000đ
+- Túi xách/Balo: 100.000 - 2.000.000đ
+- Đồng hồ: 200.000 - 5.000.000đ
+- Sức khỏe/Thực phẩm chức năng: 100.000 - 1.000.000đ
+QUAN TRỌNG: Phải xác định đúng danh mục rồi ước tính giá trong khoảng đó. Trả về JSON hợp lệ duy nhất. KHÔNG dùng ký tự xuống dòng thật trong JSON string.`,
           },
           { role: 'user', content: userPrompt },
         ],
