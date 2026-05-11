@@ -41,7 +41,6 @@ export default async function AdminReviewsPage() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
                   <span style={{ fontWeight: 700, fontSize: 14 }}>{r.name}</span>
                   <span style={{ color: '#f5a623' }}>{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</span>
-                  <span style={{ fontSize: 12, color: '#e74c3c', fontWeight: 600 }}>❤️ {r.likes}</span>
                   {r.isHidden && <span style={{ fontSize: 11, background: '#fee2e2', color: '#dc2626', padding: '1px 8px', borderRadius: 10, fontWeight: 600 }}>Đã ẩn</span>}
                   <span style={{ fontSize: 11, color: '#aaa' }}>
                     {new Date(r.createdAt).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
