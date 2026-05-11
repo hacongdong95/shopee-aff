@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma'
 async function getSiteSettings() {
   try {
     const rows = await prisma.setting.findMany({
-      where: { key: { in: ['site_name', 'seo_title', 'seo_description', 'seo_keywords', 'og_title', 'og_description', 'site_tagline'] } }
+      where: { key: { in: ['site_name', 'seo_title', 'seo_description', 'seo_keywords', 'og_title', 'og_description', 'og_image', 'site_tagline'] } }
     })
     const s: Record<string, string> = {}
     for (const r of rows) s[r.key] = r.value
@@ -24,6 +24,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const ogTitle = s.og_title || title
   const ogDescription = s.og_description || description
 
+  const ogImage = s.og_image || undefined
+
   return {
     title,
     description,
@@ -33,11 +35,13 @@ export async function generateMetadata(): Promise<Metadata> {
       description: ogDescription,
       siteName,
       type: 'website',
+      ...(ogImage ? { images: [{ url: ogImage, width: 1200, height: 630 }] } : {}),
     },
     twitter: {
-      card: 'summary',
+      card: ogImage ? 'summary_large_image' : 'summary',
       title: ogTitle,
       description: ogDescription,
+      ...(ogImage ? { images: [ogImage] } : {}),
     },
   }
 }
