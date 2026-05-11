@@ -1,10 +1,11 @@
-import { prisma } from '@/lib/prisma'
+﻿import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import ProductCard from '@/components/ProductCard'
 import ScrollReveal from '@/components/ScrollReveal'
 import SortFilter from '@/components/SortFilter'
 import FlashSaleCountdown from '@/components/FlashSaleCountdown'
 import PopupAd from '@/components/PopupAd'
+import CategoryNav from '@/components/CategoryNav'
 
 export const revalidate = 60
 
@@ -28,7 +29,10 @@ export default async function HomePage({
   const maxPrice  = params.maxPrice ? Number(params.maxPrice) : undefined
 
   const [categories, allProducts, settings] = await Promise.all([
-    prisma.category.findMany({ orderBy: { name: 'asc' } }),
+    prisma.category.findMany({
+      orderBy: [{ order: 'asc' }, { name: 'asc' }],
+      include: { _count: { select: { products: true } } },
+    }),
     prisma.product.findMany({
       where: {
         isActive: true,
@@ -51,12 +55,10 @@ export default async function HomePage({
     getSettings(),
   ])
 
-  // Sản phẩm hot nhất (top clicks, chỉ hiện khi không filter)
   const hotProducts = !catSlug && !query
     ? [...allProducts].sort((a, b) => b.clicks - a.clicks).slice(0, 6)
     : []
 
-  // Sắp xếp discount nếu cần
   const products = sort === 'discount'
     ? [...allProducts].sort((a, b) => {
         const da = a.oldPrice ? (a.oldPrice - a.price) / a.oldPrice : 0
@@ -67,30 +69,30 @@ export default async function HomePage({
 
   const primary         = settings.primary_color    || '#ee4d2d'
   const siteName        = settings.site_name        || 'Shopee Deals'
-  const siteEmoji       = settings.site_logo_emoji  || '🛍️'
+  const siteEmoji       = settings.site_logo_emoji  || 'ðŸ›ï¸'
   const siteTagline     = settings.site_tagline     || ''
   const bannerShow      = settings.banner_show      !== 'false'
-  const bannerTitle     = settings.banner_title     || '🔥 Deal Hot Mỗi Ngày'
-  const bannerSubtitle  = settings.banner_subtitle  || 'Hàng ngàn sản phẩm giảm giá sâu — mua ngay kẻo hết!'
-  const footerText      = settings.footer_text      || 'Tổng hợp sản phẩm giảm giá tốt nhất từ Shopee'
-  const footerCopyright = settings.footer_copyright || '© 2025 · Affiliate Website'
+  const bannerTitle     = settings.banner_title     || 'ðŸ”¥ Deal Hot Moi Ngay'
+  const bannerSubtitle  = settings.banner_subtitle  || 'Hang ngan san pham giam gia sau'
+  const footerText      = settings.footer_text      || 'Tong hop san pham giam gia tot nhat tu Shopee'
+  const footerCopyright = settings.footer_copyright || 'Â© 2025 Â· Affiliate Website'
   const footerColor     = settings.footer_color     || '#1a1a1a'
-  const shippingText    = settings.shipping_text    || '🚚 Miễn phí vận chuyển'
-  const guaranteeText   = settings.guarantee_text   || '✅ Hoàn tiền nếu không đúng'
-  const returnText      = settings.return_text      || '↩️ Đổi trả 15 ngày'
+  const shippingText    = settings.shipping_text    || 'ðŸšš Mien phi van chuyen'
+  const guaranteeText   = settings.guarantee_text   || 'âœ… Hoan tien neu khong dung'
+  const returnText      = settings.return_text      || 'â†©ï¸ Doi tra 15 ngay'
   const activeCatName   = catSlug ? categories.find(c => c.slug === catSlug)?.name : null
   const popupShow     = settings.popup_show     === 'true'
   const popupImage    = settings.popup_image    || ''
   const popupAffLink  = settings.popup_aff_link || ''
   const popupTitle    = settings.popup_title    || ''
   const popupSubtitle = settings.popup_subtitle || ''
-  const popupBtnText  = settings.popup_btn_text || 'Mua Ngay – Giá Tốt Nhất!'
+  const popupBtnText  = settings.popup_btn_text || 'Mua Ngay'
   const popupDelay    = Number(settings.popup_delay || '2')
 
   return (
     <div style={{ minHeight: '100vh', background: '#f5f5f5', fontFamily: "'Be Vietnam Pro', sans-serif" }}>
 
-      {/* ══ HEADER ══ */}
+      {/* HEADER */}
       <header style={{ background: `linear-gradient(135deg, ${primary} 0%, ${primary}bb 100%)`, position: 'sticky', top: 0, zIndex: 100, boxShadow: `0 2px 20px ${primary}44` }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 20px', height: 64, display: 'flex', alignItems: 'center', gap: 20 }}>
           <Link href="/" style={{ color: 'white', fontWeight: 800, fontSize: 20, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10, whiteSpace: 'nowrap', flexShrink: 0 }}>
@@ -101,28 +103,18 @@ export default async function HomePage({
             </div>
           </Link>
           <form method="GET" action="/" style={{ flex: 1, maxWidth: 560, position: 'relative' }}>
-            <input name="q" defaultValue={query} placeholder="Tìm kiếm sản phẩm giảm giá..." className="search-input"
+            <input name="q" defaultValue={query} placeholder="Tim kiem san pham giam gia..." className="search-input"
               style={{ width: '100%', padding: '11px 50px 11px 20px', borderRadius: 24, border: 'none', fontSize: 14, outline: 'none', boxShadow: '0 2px 12px rgba(0,0,0,0.12)', boxSizing: 'border-box', background: 'rgba(255,255,255,0.95)', transition: 'box-shadow 0.2s' }}
             />
-            <button type="submit" style={{ position: 'absolute', right: 5, top: '50%', transform: 'translateY(-50%)', background: primary, border: 'none', borderRadius: 20, width: 36, height: 36, cursor: 'pointer', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 2px 8px ${primary}66` }}>🔍</button>
+            <button type="submit" style={{ position: 'absolute', right: 5, top: '50%', transform: 'translateY(-50%)', background: primary, border: 'none', borderRadius: 20, width: 36, height: 36, cursor: 'pointer', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 2px 8px ${primary}66` }}>ðŸ”</button>
           </form>
         </div>
-        {/* Category tabs */}
-        <div style={{ background: 'rgba(0,0,0,0.14)', borderTop: '1px solid rgba(255,255,255,0.12)' }}>
-          <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 20px', display: 'flex', gap: 2, overflowX: 'auto', scrollbarWidth: 'none' }}>
-            {[{ name: 'Tất cả', slug: undefined }, ...categories].map(c => {
-              const active = c.slug ? catSlug === c.slug : !catSlug
-              return (
-                <Link key={c.slug || 'all'} href={c.slug ? `/?cat=${c.slug}` : '/'} className="cat-tab" style={{ padding: '10px 18px', color: active ? primary : 'rgba(255,255,255,0.88)', fontWeight: active ? 700 : 500, fontSize: 13, textDecoration: 'none', borderBottom: active ? '3px solid white' : '3px solid transparent', background: active ? 'white' : 'transparent', borderRadius: active ? '6px 6px 0 0' : 0, whiteSpace: 'nowrap', display: 'block' }}>
-                  {c.name}
-                </Link>
-              )
-            })}
-          </div>
-        </div>
+
+        {/* Category Nav dropdown */}
+        <CategoryNav categories={categories as any} activeCat={catSlug} primary={primary} />
       </header>
 
-      {/* ══ TRUST BAR ══ */}
+      {/* TRUST BAR */}
       <div className="trust-bar" style={{ background: 'white', borderBottom: '1px solid #eee', padding: '9px 20px' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', justifyContent: 'center', gap: 28, flexWrap: 'wrap' }}>
           {[shippingText, guaranteeText, returnText].map((t, i) => (
@@ -131,10 +123,10 @@ export default async function HomePage({
         </div>
       </div>
 
-      {/* ══ FLASH SALE COUNTDOWN ══ */}
+      {/* FLASH SALE */}
       {!catSlug && !query && <FlashSaleCountdown primary={primary} />}
 
-      {/* ══ BANNER ══ */}
+      {/* BANNER */}
       {bannerShow && !catSlug && !query && (
         <div style={{ background: `linear-gradient(135deg, ${primary}ee 0%, ${primary} 50%, ${primary}cc 100%)`, padding: '40px 20px', textAlign: 'center', color: 'white', position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', top: -40, right: -40, width: 160, height: 160, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', pointerEvents: 'none' }} />
@@ -143,7 +135,7 @@ export default async function HomePage({
             <div className="banner-title" style={{ fontSize: 32, fontWeight: 800, fontFamily: 'Nunito, sans-serif', marginBottom: 10, textShadow: '0 2px 12px rgba(0,0,0,0.15)', letterSpacing: '-0.5px' }}>{bannerTitle}</div>
             <div className="banner-sub" style={{ fontSize: 15, opacity: 0.9, maxWidth: 480, margin: '0 auto 20px' }}>{bannerSubtitle}</div>
             <Link href="#products" style={{ display: 'inline-block', background: 'white', color: primary, padding: '11px 28px', borderRadius: 24, fontWeight: 800, fontSize: 14, textDecoration: 'none', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}>
-              Xem ưu đãi ngay ↓
+              Xem uu dai ngay â†“
             </Link>
           </div>
         </div>
@@ -151,12 +143,12 @@ export default async function HomePage({
 
       <div id="products" style={{ maxWidth: 1200, margin: '0 auto', padding: '28px 16px' }}>
 
-        {/* ══ HOT PRODUCTS SECTION ══ */}
+        {/* HOT PRODUCTS */}
         {hotProducts.length > 0 && (
           <div style={{ marginBottom: 36 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
               <div style={{ width: 4, height: 24, background: primary, borderRadius: 2 }} />
-              <span style={{ fontSize: 18, fontWeight: 800, color: '#1a1a1a' }}>🔥 Bán Chạy Nhất</span>
+              <span style={{ fontSize: 18, fontWeight: 800, color: '#1a1a1a' }}>ðŸ”¥ Ban Chay Nhat</span>
               <span style={{ fontSize: 12, color: '#888', background: '#f0f0f0', padding: '2px 10px', borderRadius: 20 }}>Top {hotProducts.length}</span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 14 }}>
@@ -170,15 +162,8 @@ export default async function HomePage({
           </div>
         )}
 
-        {/* ══ SORT & FILTER ══ */}
-        <SortFilter
-          currentSort={sort}
-          currentMin={minPrice}
-          currentMax={maxPrice}
-          catSlug={catSlug}
-          query={query}
-          primary={primary}
-        />
+        {/* SORT FILTER */}
+        <SortFilter currentSort={sort} currentMin={minPrice} currentMax={maxPrice} catSlug={catSlug} query={query} primary={primary} />
 
         {/* Result bar */}
         <ScrollReveal>
@@ -186,15 +171,15 @@ export default async function HomePage({
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{ width: 4, height: 20, background: primary, borderRadius: 2, display: 'inline-block' }} />
               <span style={{ fontSize: 15, fontWeight: 700, color: '#1a1a1a' }}>
-                {query ? <>Kết quả "<span style={{ color: primary }}>{query}</span>"</> : activeCatName ? activeCatName : 'Tất cả sản phẩm'}
+                {query ? `Ket qua "${query}"` : activeCatName ? activeCatName : 'Tat ca san pham'}
               </span>
               <span style={{ fontSize: 13, color: '#888', background: '#f0f0f0', padding: '2px 10px', borderRadius: 20, fontWeight: 600 }}>
-                {products.length} sản phẩm
+                {products.length} san pham
               </span>
             </div>
             {(query || catSlug || minPrice || maxPrice) && (
               <Link href="/" style={{ fontSize: 13, color: primary, textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4, padding: '6px 14px', border: `1.5px solid ${primary}`, borderRadius: 20 }}>
-                ✕ Xóa bộ lọc
+                X Xoa bo loc
               </Link>
             )}
           </div>
@@ -203,11 +188,11 @@ export default async function HomePage({
         {products.length === 0 ? (
           <ScrollReveal>
             <div style={{ textAlign: 'center', padding: '80px 20px', color: '#999' }}>
-              <div style={{ fontSize: 64, marginBottom: 16 }}>🔍</div>
-              <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 8, color: '#444' }}>Không tìm thấy sản phẩm</div>
-              <div style={{ fontSize: 14, color: '#aaa', marginBottom: 24 }}>Thử từ khóa khác hoặc xem tất cả sản phẩm</div>
+              <div style={{ fontSize: 64, marginBottom: 16 }}>ðŸ”</div>
+              <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 8, color: '#444' }}>Khong tim thay san pham</div>
+              <div style={{ fontSize: 14, color: '#aaa', marginBottom: 24 }}>Thu tu khoa khac hoac xem tat ca san pham</div>
               <Link href="/" style={{ background: primary, color: 'white', padding: '12px 28px', borderRadius: 24, textDecoration: 'none', fontWeight: 700, fontSize: 14, boxShadow: `0 4px 16px ${primary}44` }}>
-                Xem tất cả sản phẩm
+                Xem tat ca san pham
               </Link>
             </div>
           </ScrollReveal>
@@ -222,20 +207,12 @@ export default async function HomePage({
         )}
       </div>
 
-      {/* ══ POPUP QC ══ */}
+      {/* POPUP */}
       {popupShow && popupImage && popupAffLink && (
-        <PopupAd
-          imageUrl={popupImage}
-          affLink={popupAffLink}
-          title={popupTitle}
-          subtitle={popupSubtitle}
-          btnText={popupBtnText}
-          primary={primary}
-          delaySeconds={popupDelay}
-        />
+        <PopupAd imageUrl={popupImage} affLink={popupAffLink} title={popupTitle} subtitle={popupSubtitle} btnText={popupBtnText} primary={primary} delaySeconds={popupDelay} />
       )}
 
-      {/* ══ FOOTER ══ */}
+      {/* FOOTER */}
       <footer style={{ background: footerColor, color: '#aaa', padding: '48px 20px 28px', marginTop: 48 }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', textAlign: 'center' }}>
           <div style={{ marginBottom: 16 }}>
