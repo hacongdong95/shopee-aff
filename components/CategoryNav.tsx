@@ -48,8 +48,8 @@ export default function CategoryNav({
   }
 
   return (
-    <div style={{ background: 'rgba(0,0,0,0.14)', borderTop: '1px solid rgba(255,255,255,0.12)' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 20px', display: 'flex', gap: 2, overflowX: 'auto', scrollbarWidth: 'none', position: 'relative' }}>
+    <div style={{ background: 'rgba(0,0,0,0.14)', borderTop: '1px solid rgba(255,255,255,0.12)', position: 'relative', zIndex: 100 }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 20px', display: 'flex', gap: 2, overflowX: 'auto', overflowY: 'visible', scrollbarWidth: 'none', position: 'static' }}>
 
         {/* Tab Tất cả */}
         <Link
@@ -146,6 +146,24 @@ export default function CategoryNav({
           )
         })}
       </div>
+
+      {/* Breadcrumb bar: hiện khi đang ở danh mục con */}
+      {(() => {
+        const activeChild = categories.find(c => c.slug === activeCat && c.parentId !== null)
+        const parentCat = activeChild ? categories.find(c => c.id === activeChild.parentId) : null
+        if (!activeChild || !parentCat) return null
+        return (
+          <div style={{ maxWidth: 1200, margin: '0 auto', padding: '4px 20px 6px', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+            <Link href={`/?cat=${parentCat.slug}`} style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>
+              {parentCat.name}
+            </Link>
+            <span style={{ color: 'rgba(255,255,255,0.5)' }}>›</span>
+            <span style={{ color: 'white', fontWeight: 700, background: 'rgba(255,255,255,0.2)', padding: '2px 10px', borderRadius: 20 }}>
+              {activeChild.name}
+            </span>
+          </div>
+        )
+      })()}
     </div>
   )
 }
