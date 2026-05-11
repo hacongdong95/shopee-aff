@@ -1,4 +1,4 @@
-﻿import { prisma } from '@/lib/prisma'
+import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import ProductCard from '@/components/ProductCard'
 import ScrollReveal from '@/components/ScrollReveal'
@@ -69,17 +69,17 @@ export default async function HomePage({
 
   const primary         = settings.primary_color    || '#ee4d2d'
   const siteName        = settings.site_name        || 'Shopee Deals'
-  const siteEmoji       = settings.site_logo_emoji  || 'ðŸ›ï¸'
+  const siteEmoji       = settings.site_logo_emoji  || '\uD83D\uDECD\uFE0F'
   const siteTagline     = settings.site_tagline     || ''
   const bannerShow      = settings.banner_show      !== 'false'
-  const bannerTitle     = settings.banner_title     || 'ðŸ”¥ Deal Hot Moi Ngay'
-  const bannerSubtitle  = settings.banner_subtitle  || 'Hang ngan san pham giam gia sau'
-  const footerText      = settings.footer_text      || 'Tong hop san pham giam gia tot nhat tu Shopee'
-  const footerCopyright = settings.footer_copyright || 'Â© 2025 Â· Affiliate Website'
+  const bannerTitle     = settings.banner_title     || '\uD83D\uDD25 Deal Hot M\u1ED9i Ng\u00E0y'
+  const bannerSubtitle  = settings.banner_subtitle  || 'H\u00E0ng ng\u00E0n s\u1EA3n ph\u1EA9m gi\u1EA3m gi\u00E1 s\u00E2u'
+  const footerText      = settings.footer_text      || 'T\u1ED5ng h\u1EE3p s\u1EA3n ph\u1EA9m gi\u1EA3m gi\u00E1 t\u1ED1t nh\u1EA5t'
+  const footerCopyright = settings.footer_copyright || '\u00A9 2025 \u00B7 Affiliate Website'
   const footerColor     = settings.footer_color     || '#1a1a1a'
-  const shippingText    = settings.shipping_text    || 'ðŸšš Mien phi van chuyen'
-  const guaranteeText   = settings.guarantee_text   || 'âœ… Hoan tien neu khong dung'
-  const returnText      = settings.return_text      || 'â†©ï¸ Doi tra 15 ngay'
+  const shippingText    = settings.shipping_text    || '\uD83D\uDE9A Mi\u1EC5n ph\u00ED v\u1EADn chuy\u1EC3n'
+  const guaranteeText   = settings.guarantee_text   || '\u2705 Ho\u00E0n ti\u1EC1n n\u1EBFu kh\u00F4ng \u0111\u00FAng'
+  const returnText      = settings.return_text      || '\u21A9\uFE0F \u0110\u1ED5i tr\u1EA3 15 ng\u00E0y'
   const activeCatName   = catSlug ? categories.find(c => c.slug === catSlug)?.name : null
   const popupShow     = settings.popup_show     === 'true'
   const popupImage    = settings.popup_image    || ''
@@ -103,10 +103,10 @@ export default async function HomePage({
             </div>
           </Link>
           <form method="GET" action="/" style={{ flex: 1, maxWidth: 560, position: 'relative' }}>
-            <input name="q" defaultValue={query} placeholder="Tim kiem san pham giam gia..." className="search-input"
+            <input name="q" defaultValue={query} placeholder="T\u00ECm ki\u1EBFm s\u1EA3n ph\u1EA9m gi\u1EA3m gi\u00E1..." className="search-input"
               style={{ width: '100%', padding: '11px 50px 11px 20px', borderRadius: 24, border: 'none', fontSize: 14, outline: 'none', boxShadow: '0 2px 12px rgba(0,0,0,0.12)', boxSizing: 'border-box', background: 'rgba(255,255,255,0.95)', transition: 'box-shadow 0.2s' }}
             />
-            <button type="submit" style={{ position: 'absolute', right: 5, top: '50%', transform: 'translateY(-50%)', background: primary, border: 'none', borderRadius: 20, width: 36, height: 36, cursor: 'pointer', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 2px 8px ${primary}66` }}>ðŸ”</button>
+            <button type="submit" style={{ position: 'absolute', right: 5, top: '50%', transform: 'translateY(-50%)', background: primary, border: 'none', borderRadius: 20, width: 36, height: 36, cursor: 'pointer', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 2px 8px ${primary}66` }}>{'\uD83D\uDD0D'}</button>
           </form>
         </div>
 
@@ -135,7 +135,7 @@ export default async function HomePage({
             <div className="banner-title" style={{ fontSize: 32, fontWeight: 800, fontFamily: 'Nunito, sans-serif', marginBottom: 10, textShadow: '0 2px 12px rgba(0,0,0,0.15)', letterSpacing: '-0.5px' }}>{bannerTitle}</div>
             <div className="banner-sub" style={{ fontSize: 15, opacity: 0.9, maxWidth: 480, margin: '0 auto 20px' }}>{bannerSubtitle}</div>
             <Link href="#products" style={{ display: 'inline-block', background: 'white', color: primary, padding: '11px 28px', borderRadius: 24, fontWeight: 800, fontSize: 14, textDecoration: 'none', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}>
-              Xem uu dai ngay â†“
+              Xem \u01B0u \u0111\u00E3i ngay \u2193
             </Link>
           </div>
         </div>
@@ -148,7 +148,7 @@ export default async function HomePage({
           <div style={{ marginBottom: 36 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
               <div style={{ width: 4, height: 24, background: primary, borderRadius: 2 }} />
-              <span style={{ fontSize: 18, fontWeight: 800, color: '#1a1a1a' }}>ðŸ”¥ Ban Chay Nhat</span>
+              <span style={{ fontSize: 18, fontWeight: 800, color: '#1a1a1a' }}>{'\uD83D\uDD25'} B\u00E1n Ch\u1EA1y Nh\u1EA5t</span>
               <span style={{ fontSize: 12, color: '#888', background: '#f0f0f0', padding: '2px 10px', borderRadius: 20 }}>Top {hotProducts.length}</span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 14 }}>
@@ -171,15 +171,15 @@ export default async function HomePage({
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{ width: 4, height: 20, background: primary, borderRadius: 2, display: 'inline-block' }} />
               <span style={{ fontSize: 15, fontWeight: 700, color: '#1a1a1a' }}>
-                {query ? `Ket qua "${query}"` : activeCatName ? activeCatName : 'Tat ca san pham'}
+                {query ? `K\u1EBFt qu\u1EA3 "${query}"` : activeCatName ? activeCatName : 'T\u1EA5t c\u1EA3 s\u1EA3n ph\u1EA9m'}
               </span>
               <span style={{ fontSize: 13, color: '#888', background: '#f0f0f0', padding: '2px 10px', borderRadius: 20, fontWeight: 600 }}>
-                {products.length} san pham
+                {products.length} s\u1EA3n ph\u1EA9m
               </span>
             </div>
             {(query || catSlug || minPrice || maxPrice) && (
               <Link href="/" style={{ fontSize: 13, color: primary, textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4, padding: '6px 14px', border: `1.5px solid ${primary}`, borderRadius: 20 }}>
-                X Xoa bo loc
+                \u2715 Xo\u00E1 b\u1ED9 l\u1ECDc
               </Link>
             )}
           </div>
@@ -188,11 +188,11 @@ export default async function HomePage({
         {products.length === 0 ? (
           <ScrollReveal>
             <div style={{ textAlign: 'center', padding: '80px 20px', color: '#999' }}>
-              <div style={{ fontSize: 64, marginBottom: 16 }}>ðŸ”</div>
-              <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 8, color: '#444' }}>Khong tim thay san pham</div>
-              <div style={{ fontSize: 14, color: '#aaa', marginBottom: 24 }}>Thu tu khoa khac hoac xem tat ca san pham</div>
+              <div style={{ fontSize: 64, marginBottom: 16 }}>{'\uD83D\uDD0D'}</div>
+              <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 8, color: '#444' }}>Kh\u00F4ng t\u00ECm th\u1EA5y s\u1EA3n ph\u1EA9m</div>
+              <div style={{ fontSize: 14, color: '#aaa', marginBottom: 24 }}>Th\u1EED t\u1EEB kho\u00E1 kh\u00E1c ho\u1EB7c xem t\u1EA5t c\u1EA3 s\u1EA3n ph\u1EA9m</div>
               <Link href="/" style={{ background: primary, color: 'white', padding: '12px 28px', borderRadius: 24, textDecoration: 'none', fontWeight: 700, fontSize: 14, boxShadow: `0 4px 16px ${primary}44` }}>
-                Xem tat ca san pham
+                Xem t\u1EA5t c\u1EA3 s\u1EA3n ph\u1EA9m
               </Link>
             </div>
           </ScrollReveal>
