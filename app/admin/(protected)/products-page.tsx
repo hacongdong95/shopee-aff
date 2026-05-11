@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState } from 'react'
 
@@ -60,12 +60,12 @@ export default function ProductsPage() {
 
   useEffect(() => {
     load()
-    // Kiểm tra có draft không
+    // Kiá»ƒm tra cÃ³ draft khÃ´ng
     const draft = localStorage.getItem(DRAFT_KEY)
     if (draft) setHasDraft(true)
   }, [])
 
-  // Tự động lưu draft mỗi khi form thay đổi
+  // Tá»± Ä‘á»™ng lÆ°u draft má»—i khi form thay Ä‘á»•i
   useEffect(() => {
     if (showForm) {
       localStorage.setItem(DRAFT_KEY, JSON.stringify(form))
@@ -73,7 +73,7 @@ export default function ProductsPage() {
   }, [form, showForm])
 
   const openNew = () => {
-    // Kiểm tra có draft cũ không
+    // Kiá»ƒm tra cÃ³ draft cÅ© khÃ´ng
     const draft = localStorage.getItem(DRAFT_KEY)
     if (draft) {
       try {
@@ -214,7 +214,7 @@ export default function ProductsPage() {
         boxShadow: '0 1px 4px rgba(0,0,0,0.07)', marginBottom: 16,
         display: 'flex', alignItems: 'center', gap: 10,
       }}>
-        <span style={{ color: '#9ca3af' }}>🔍</span>
+        <span style={{ color: '#9ca3af' }}>ðŸ”</span>
         <input value={search} onChange={e => setSearch(e.target.value)}
           placeholder="Tim kiem san pham..."
           style={{ border: 'none', outline: 'none', fontSize: 14, flex: 1, background: 'transparent' }}
@@ -224,7 +224,7 @@ export default function ProductsPage() {
       {/* Grid */}
       {filtered.length === 0 ? (
         <div style={{ background: 'white', borderRadius: 12, padding: 60, textAlign: 'center', color: '#9ca3af' }}>
-          <div style={{ fontSize: 48, marginBottom: 12 }}>📦</div>
+          <div style={{ fontSize: 48, marginBottom: 12 }}>ðŸ“¦</div>
           <p>Chua co san pham nao</p>
           <button onClick={openNew} style={{ background: '#ee4d2d', color: 'white', border: 'none', padding: '8px 20px', borderRadius: 8, cursor: 'pointer', fontWeight: 600 }}>+ Them ngay</button>
         </div>
@@ -235,7 +235,7 @@ export default function ProductsPage() {
               <div style={{ position: 'relative', paddingTop: '100%', background: '#f5f5f5' }}>
                 {p.imageUrl
                   ? <img src={p.imageUrl.split('\n')[0]} alt={p.name} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-                  : <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40, color: '#d1d5db' }}>🛍️</div>
+                  : <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40, color: '#d1d5db' }}>ðŸ›ï¸</div>
                 }
                 {disc(p.price, p.oldPrice) && (
                   <div style={{ position: 'absolute', top: 8, left: 8, background: '#ee4d2d', color: 'white', fontSize: 11, fontWeight: 700, padding: '2px 7px', borderRadius: 4 }}>-{disc(p.price, p.oldPrice)}%</div>
@@ -251,7 +251,7 @@ export default function ProductsPage() {
                   <span style={{ color: '#ee4d2d', fontWeight: 700, fontSize: 16 }}>{p.price.toLocaleString('vi-VN')}d</span>
                   {p.oldPrice && <span style={{ color: '#9ca3af', fontSize: 12, textDecoration: 'line-through' }}>{p.oldPrice.toLocaleString('vi-VN')}d</span>}
                 </div>
-                <div style={{ fontSize: 12, color: '#6b7280' }}>👆 {p.clicks} luot click</div>
+                <div style={{ fontSize: 12, color: '#6b7280' }}>ðŸ‘† {p.clicks} luot click</div>
                 <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
                   <button onClick={() => openEdit(p)} style={{ flex: 1, padding: '7px', border: '1.5px solid #ee4d2d', borderRadius: 7, color: '#ee4d2d', background: 'white', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Sua</button>
                   <button onClick={() => del(p.id)} style={{ flex: 1, padding: '7px', border: '1.5px solid #e5e7eb', borderRadius: 7, color: '#6b7280', background: 'white', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Xoa</button>
@@ -262,7 +262,7 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {/* Modal — overlay khong co onClick, chi dong bang nut X hoac Huy */}
+      {/* Modal â€” overlay khong co onClick, chi dong bang nut X hoac Huy */}
       {showForm && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
           <div
@@ -276,7 +276,7 @@ export default function ProductsPage() {
                 <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>{form.id ? 'Chinh sua san pham' : 'Them san pham moi'}</h3>
                 <p style={{ margin: '2px 0 0', fontSize: 13, color: '#6b7280' }}>Chi dong form bang nut X hoac Huy</p>
               </div>
-              <button onClick={closeForm} style={{ background: '#f3f4f6', border: 'none', borderRadius: 8, width: 36, height: 36, cursor: 'pointer', fontSize: 20, color: '#374151' }}>×</button>
+              <button onClick={closeForm} style={{ background: '#f3f4f6', border: 'none', borderRadius: 8, width: 36, height: 36, cursor: 'pointer', fontSize: 20, color: '#374151' }}>Ã—</button>
             </div>
 
             {/* Body */}
@@ -286,7 +286,7 @@ export default function ProductsPage() {
               {!form.id && (
                 <div style={{ background: '#fff7f0', borderRadius: 10, padding: '16px 20px', border: '1.5px solid #fed7aa' }}>
                   <div style={{ fontSize: 12, fontWeight: 700, color: '#ea580c', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                    ⚡ Tu dong dien tu link Shopee
+                    âš¡ Tu dong dien tu link Shopee
                   </div>
                   <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
                     <input
@@ -299,15 +299,15 @@ export default function ProductsPage() {
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button onClick={scrape} disabled={scrapeLoading || !scrapeUrl}
                       style={{ flex: 1, padding: '8px 0', background: scrapeLoading ? '#fca5a5' : '#ee4d2d', color: 'white', border: 'none', borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: scrapeLoading ? 'not-allowed' : 'pointer' }}>
-                      {scrapeLoading ? 'Dang lay...' : '🔍 Lay info'}
+                      {scrapeLoading ? 'Dang lay...' : 'ðŸ” Lay info'}
                     </button>
                     <button onClick={fetchImages} disabled={imgLoading || !scrapeUrl}
                       style={{ flex: 1, padding: '8px 0', background: imgLoading ? '#bfdbfe' : '#2563eb', color: 'white', border: 'none', borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: imgLoading ? 'not-allowed' : 'pointer' }}>
-                      {imgLoading ? 'Dang lay...' : '🖼️ Lay anh'}
+                      {imgLoading ? 'Dang lay...' : 'ðŸ–¼ï¸ Lay anh'}
                     </button>
                   </div>
                   <div style={{ fontSize: 11, color: '#9a3412', marginTop: 8 }}>
-                    1. Paste link → Lay info → dien ten/gia/mo ta &nbsp;|&nbsp; 2. Lay anh → tu dien URLs anh
+                    1. Paste link â†’ Lay info â†’ dien ten/gia/mo ta &nbsp;|&nbsp; 2. Lay anh â†’ tu dien URLs anh
                   </div>
                 </div>
               )}
