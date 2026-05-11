@@ -67,7 +67,7 @@ export default function PopupAd({
         position: 'relative',
       }}>
         {/* Close button */}
-        <button onClick={close} style={{
+        <button onClick={handleClick} style={{
           position: 'absolute', top: 12, right: 12, zIndex: 10,
           background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)',
           border: 'none', borderRadius: '50%', width: 32, height: 32,
