@@ -46,16 +46,6 @@ export default function CategoryNav({
   const handleMouseLeave = () => {
     leaveTimer.current = setTimeout(() => setOpenSlug(null), 150)
   }
-  const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  const handleMouseEnter = (slug: string) => {
-    if (leaveTimer.current) clearTimeout(leaveTimer.current)
-    setOpenSlug(slug)
-  }
-
-  const handleMouseLeave = () => {
-    leaveTimer.current = setTimeout(() => setOpenSlug(null), 150)
-  }
 
   return (
     <div style={{ background: 'rgba(0,0,0,0.14)', borderTop: '1px solid rgba(255,255,255,0.12)', position: 'relative', zIndex: 100 }}>
