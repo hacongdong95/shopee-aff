@@ -64,6 +64,8 @@ function flatTreeOptions(cats: Category[]): { id: number; name: string; isChild:
   roots.forEach(walk)
   return result
 }
+
+export default function ProductsPage() {
   const [products, setProducts]     = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [form, setForm]             = useState<typeof empty & { id?: number }>(empty)
