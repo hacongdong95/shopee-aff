@@ -128,7 +128,20 @@ export default function SettingsPage() {
 
   useEffect(() => {
     fetch('/api/settings').then(r => r.json()).then(data => {
-      setSettings(data)
+      // Gom tất cả fields từ tất cả tabs
+      const allFields = Object.values(TAB_FIELDS).flat()
+      const socialFields = SOCIAL_CHANNELS.flatMap(ch => [
+        { key: ch.key, placeholder: '' },
+        { key: `${ch.key}_show`, placeholder: 'true' },
+      ])
+      const merged = { ...data }
+      // Nếu key chưa có giá trị thì điền placeholder mặc định
+      for (const f of [...allFields, ...socialFields]) {
+        if (f.placeholder && (merged[f.key] === undefined || merged[f.key] === '')) {
+          merged[f.key] = f.placeholder
+        }
+      }
+      setSettings(merged)
       setLoading(false)
     })
   }, [])
