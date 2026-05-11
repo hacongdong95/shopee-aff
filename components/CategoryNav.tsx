@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
 type Category = {
   id: number
@@ -36,6 +36,16 @@ export default function CategoryNav({
 }) {
   const tree = buildTree(categories)
   const [openSlug, setOpenSlug] = useState<string | null>(null)
+  const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const handleMouseEnter = (slug: string) => {
+    if (leaveTimer.current) clearTimeout(leaveTimer.current)
+    setOpenSlug(slug)
+  }
+
+  const handleMouseLeave = () => {
+    leaveTimer.current = setTimeout(() => setOpenSlug(null), 150)
+  }
 
   return (
     <div style={{ background: 'rgba(0,0,0,0.14)', borderTop: '1px solid rgba(255,255,255,0.12)' }}>
@@ -66,8 +76,8 @@ export default function CategoryNav({
             <div
               key={cat.id}
               style={{ position: 'relative' }}
-              onMouseEnter={() => hasChildren && setOpenSlug(cat.slug)}
-              onMouseLeave={() => setOpenSlug(null)}
+              onMouseEnter={() => hasChildren && handleMouseEnter(cat.slug)}
+              onMouseLeave={handleMouseLeave}
             >
               <Link
                 href={`/?cat=${cat.slug}`}
@@ -89,7 +99,10 @@ export default function CategoryNav({
 
               {/* Dropdown */}
               {hasChildren && isOpen && (
-                <div style={{
+                <div
+                  onMouseEnter={() => handleMouseEnter(cat.slug)}
+                  onMouseLeave={handleMouseLeave}
+                  style={{
                   position: 'absolute', top: '100%', left: 0, zIndex: 200,
                   background: 'white', borderRadius: '0 8px 8px 8px',
                   boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
