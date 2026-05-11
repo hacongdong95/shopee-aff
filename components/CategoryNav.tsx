@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import Link from 'next/link'
 import { useState } from 'react'
@@ -41,7 +41,7 @@ export default function CategoryNav({
     <div style={{ background: 'rgba(0,0,0,0.14)', borderTop: '1px solid rgba(255,255,255,0.12)' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 20px', display: 'flex', gap: 2, overflowX: 'auto', scrollbarWidth: 'none', position: 'relative' }}>
 
-        {/* Tab Tat ca */}
+        {/* Tab Tất cả */}
         <Link
           href="/"
           style={{
@@ -53,10 +53,10 @@ export default function CategoryNav({
             whiteSpace: 'nowrap', display: 'block',
           }}
         >
-          Tat ca
+          Tất cả
         </Link>
 
-        {/* Danh muc cha */}
+        {/* Danh mục cha */}
         {tree.map(cat => {
           const active = activeCat === cat.slug || cat.children?.some(c => c.slug === activeCat)
           const hasChildren = (cat.children?.length ?? 0) > 0
@@ -83,7 +83,7 @@ export default function CategoryNav({
               >
                 {cat.name}
                 {hasChildren && (
-                  <span style={{ fontSize: 9, opacity: 0.7, marginTop: 1 }}>â–¼</span>
+                  <span style={{ fontSize: 9, opacity: 0.7, marginTop: 1 }}>▼</span>
                 )}
               </Link>
 
@@ -96,7 +96,7 @@ export default function CategoryNav({
                   minWidth: 180, overflow: 'hidden',
                   border: '1px solid #f0f0f0',
                 }}>
-                  {/* Link xem tat ca danh muc cha */}
+                  {/* Link xem tất cả danh mục cha */}
                   <Link
                     href={`/?cat=${cat.slug}`}
                     style={{
@@ -106,7 +106,7 @@ export default function CategoryNav({
                       background: '#fff5f3',
                     }}
                   >
-                    Tat ca {cat.name} â†’
+                    Tất cả {cat.name} →
                   </Link>
                   {cat.children!.map(child => (
                     <Link
