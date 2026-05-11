@@ -3,6 +3,8 @@ import './globals.css'
 import ThemeProvider from '@/components/ThemeProvider'
 import { prisma } from '@/lib/prisma'
 
+export const revalidate = 60
+
 async function getSiteSettings() {
   try {
     const rows = await prisma.setting.findMany({

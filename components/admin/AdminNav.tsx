@@ -8,13 +8,23 @@ export default function AdminNav({ email }: { email: string }) {
   const pathname = usePathname()
   const router = useRouter()
   const [unread, setUnread] = useState(0)
+  const [siteName, setSiteName] = useState('Admin')
+  const [siteEmoji, setSiteEmoji] = useState('🛒')
 
   useEffect(() => {
     fetch('/api/admin/reviews/unread')
       .then(r => r.json())
       .then(d => setUnread(d.count || 0))
       .catch(() => {})
-  }, [pathname])
+
+    fetch('/api/settings')
+      .then(r => r.json())
+      .then(s => {
+        if (s.site_name) setSiteName(s.site_name)
+        if (s.site_logo_emoji) setSiteEmoji(s.site_logo_emoji)
+      })
+      .catch(() => {})
+  }, [])
 
   const logout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' })
@@ -56,7 +66,7 @@ export default function AdminNav({ email }: { email: string }) {
         marginRight: 8, whiteSpace: 'nowrap', textDecoration: 'none',
         display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0,
       }}>
-        🛒 <span>Admin</span>
+        {siteEmoji} <span>{siteName}</span>
       </Link>
       {link('/admin', '📊 Dashboard')}
       {link('/admin/products', '📦 Sản phẩm')}
