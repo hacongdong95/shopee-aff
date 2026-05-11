@@ -518,9 +518,9 @@ export default function ProductDetail({ product, related, settings={} }: { produ
         <div style={{ maxWidth:1100, margin:'0 auto', padding:'0 16px', height:56, display:'flex', alignItems:'center', gap:12 }}>
           <Link href="/" style={{ color:'white', fontWeight:800, fontSize:18, textDecoration:'none', display:'flex', alignItems:'center', gap:8, flexShrink:0, minWidth:0 }}>
             <span style={{ background:'rgba(255,255,255,0.2)', borderRadius:8, width:34, height:34, display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0 }}>{siteEmoji}</span>
-            <div style={{ overflow:'hidden' }}>
-              <div style={{ fontFamily:'Nunito,sans-serif', letterSpacing:'-0.5px', lineHeight:1.1, fontSize:16, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', maxWidth:160 }}>{siteName}</div>
-              {siteTagline && <div style={{ fontSize:10, opacity:0.75, lineHeight:1, whiteSpace:'nowrap' }}>{siteTagline}</div>}
+            <div style={{ overflow:'hidden', minWidth:0 }}>
+              <div style={{ fontFamily:'Nunito,sans-serif', letterSpacing:'-0.5px', lineHeight:1.1, fontSize:16, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', maxWidth:220 }}>{siteName}</div>
+              {siteTagline && <div style={{ fontSize:10, opacity:0.8, lineHeight:1.3, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', maxWidth:220 }}>{siteTagline}</div>}
             </div>
           </Link>
           <div style={{ flex:1 }} />
