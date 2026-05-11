@@ -36,15 +36,17 @@ export default function PopupAd({
   }
 
   const handleClick = () => {
+    sessionStorage.setItem('popup_shown', '1')
     window.open(affLink, '_blank')
-    close()
+    setClosing(true)
+    setTimeout(() => { setShow(false); setClosing(false) }, 280)
   }
 
   if (!show) return null
 
   return (
     <div
-      onClick={e => { if (e.target === e.currentTarget) close() }}
+      onClick={handleClick}
       style={{
         position: 'fixed', inset: 0, zIndex: 9999,
         background: 'rgba(0,0,0,0.65)',
@@ -62,7 +64,8 @@ export default function PopupAd({
 
       <div style={{
         background: 'white', borderRadius: 20, overflow: 'hidden',
-        maxWidth: 420, width: '100%', boxShadow: '0 24px 80px rgba(0,0,0,0.35)',
+        maxWidth: 360, width: '90%', maxHeight: '88vh', overflowY: 'auto',
+        boxShadow: '0 24px 80px rgba(0,0,0,0.35)',
         animation: closing ? '' : 'slideUp 0.32s cubic-bezier(.22,1,.36,1)',
         position: 'relative',
       }}>
