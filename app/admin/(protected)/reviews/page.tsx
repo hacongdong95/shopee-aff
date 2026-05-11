@@ -15,17 +15,17 @@ export default async function AdminReviewsPage() {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-        <h2 style={{ margin: 0 }}>Binh luan san pham</h2>
+        <h2 style={{ margin: 0 }}>💬 Bình luận sản phẩm</h2>
         <div style={{ display: 'flex', gap: 12, fontSize: 13 }}>
-          <span style={{ background: '#f0fdf4', color: '#059669', padding: '4px 12px', borderRadius: 20, fontWeight: 600 }}>Hien: {visible}</span>
-          <span style={{ background: '#fef2f2', color: '#dc2626', padding: '4px 12px', borderRadius: 20, fontWeight: 600 }}>An: {hidden}</span>
-          <span style={{ background: '#f5f5f5', color: '#555', padding: '4px 12px', borderRadius: 20, fontWeight: 600 }}>Tong: {total}</span>
+          <span style={{ background: '#f0fdf4', color: '#059669', padding: '4px 12px', borderRadius: 20, fontWeight: 600 }}>✅ Hiện: {visible}</span>
+          <span style={{ background: '#fef2f2', color: '#dc2626', padding: '4px 12px', borderRadius: 20, fontWeight: 600 }}>🙈 Ẩn: {hidden}</span>
+          <span style={{ background: '#f5f5f5', color: '#555', padding: '4px 12px', borderRadius: 20, fontWeight: 600 }}>Tổng: {total}</span>
         </div>
       </div>
 
       {reviews.length === 0 && (
         <div className="card" style={{ padding: 40, textAlign: 'center', color: '#aaa' }}>
-          Chua co binh luan nao
+          Chưa có bình luận nào
         </div>
       )}
 
@@ -42,13 +42,13 @@ export default async function AdminReviewsPage() {
                   <span style={{ fontWeight: 700, fontSize: 14 }}>{r.name}</span>
                   <span style={{ color: '#f5a623' }}>{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</span>
                   <span style={{ fontSize: 12, color: '#e74c3c', fontWeight: 600 }}>❤️ {r.likes}</span>
-                  {r.isHidden && <span style={{ fontSize: 11, background: '#fee2e2', color: '#dc2626', padding: '1px 8px', borderRadius: 10, fontWeight: 600 }}>Da an</span>}
+                  {r.isHidden && <span style={{ fontSize: 11, background: '#fee2e2', color: '#dc2626', padding: '1px 8px', borderRadius: 10, fontWeight: 600 }}>Đã ẩn</span>}
                   <span style={{ fontSize: 11, color: '#aaa' }}>
                     {new Date(r.createdAt).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
                 <Link href={`/san-pham/${r.product.slug}`} target="_blank" style={{ fontSize: 12, color: '#ee4d2d', textDecoration: 'none', display: 'block', marginBottom: 6 }}>
-                  San pham: {r.product.name}
+                  📦 Sản phẩm: {r.product.name}
                 </Link>
                 <p style={{ margin: 0, fontSize: 14, color: '#333', lineHeight: 1.6 }}>{r.comment}</p>
               </div>

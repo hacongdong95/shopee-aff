@@ -51,15 +51,19 @@ export default function AdminNav({ email }: { email: string }) {
       boxShadow: '0 2px 8px rgba(238,77,45,0.3)',
       overflowX: 'auto', scrollbarWidth: 'none',
     }}>
-      <span style={{ color: 'white', fontFamily: 'Nunito', fontWeight: 800, fontSize: 18, marginRight: 8, whiteSpace: 'nowrap' }}>
-        Admin
-      </span>
-      {link('/admin', 'Dashboard')}
-      {link('/admin/products', 'San pham')}
-      {link('/admin/categories', 'Danh muc')}
-      {link('/admin/reviews', 'Binh luan', unread)}
-      {link('/admin/accounts', 'Tai khoan')}
-      {link('/admin/settings', 'Cai dat')}
+      <Link href="/admin" style={{
+        color: 'white', fontFamily: 'Nunito', fontWeight: 800, fontSize: 18,
+        marginRight: 8, whiteSpace: 'nowrap', textDecoration: 'none',
+        display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0,
+      }}>
+        🛒 <span>Admin</span>
+      </Link>
+      {link('/admin', '📊 Dashboard')}
+      {link('/admin/products', '📦 Sản phẩm')}
+      {link('/admin/categories', '🗂️ Danh mục')}
+      {link('/admin/reviews', '💬 Bình luận', unread)}
+      {link('/admin/accounts', '👥 Tài khoản')}
+      {link('/admin/settings', '⚙️ Cài đặt')}
       <div style={{ flex: 1 }} />
       <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: 13, whiteSpace: 'nowrap' }}>{email}</span>
       <button
@@ -70,7 +74,7 @@ export default function AdminNav({ email }: { email: string }) {
           cursor: 'pointer', fontSize: 13, whiteSpace: 'nowrap',
         }}
       >
-        Dang xuat
+        Đăng xuất
       </button>
     </nav>
   )

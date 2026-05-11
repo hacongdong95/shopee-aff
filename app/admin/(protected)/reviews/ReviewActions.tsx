@@ -10,7 +10,7 @@ export default function ReviewActions({ id, isHidden, comment }: { id: number; i
   const [editText, setEditText] = useState(comment)
 
   const action = async (type: 'toggle' | 'delete' | 'edit') => {
-    if (type === 'delete' && !confirm('Xoa binh luan nay?')) return
+    if (type === 'delete' && !confirm('Xoá bình luận này?')) return
     setLoading(true)
     if (type === 'edit') {
       await fetch(`/api/admin/reviews/${id}`, {
@@ -43,11 +43,11 @@ export default function ReviewActions({ id, isHidden, comment }: { id: number; i
       <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
         <button onClick={() => action('edit')} disabled={loading}
           style={{ padding: '5px 14px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer', border: 'none', background: '#ee4d2d', color: 'white' }}>
-          Luu
+          Lưu
         </button>
         <button onClick={() => { setEditing(false); setEditText(comment) }} disabled={loading}
           style={{ padding: '5px 14px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer', border: 'none', background: '#f5f5f5', color: '#555' }}>
-          Huy
+          Huỷ
         </button>
       </div>
     </div>
@@ -57,15 +57,15 @@ export default function ReviewActions({ id, isHidden, comment }: { id: number; i
     <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
       <button onClick={() => setEditing(true)} disabled={loading}
         style={{ padding: '5px 12px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer', border: 'none', background: '#eff6ff', color: '#2563eb' }}>
-        Sua
+        ✏️ Sửa
       </button>
       <button onClick={() => action('toggle')} disabled={loading}
         style={{ padding: '5px 12px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer', border: 'none', background: isHidden ? '#f0fdf4' : '#fef9c3', color: isHidden ? '#059669' : '#b45309' }}>
-        {isHidden ? 'Hien' : 'An'}
+        {isHidden ? '👁️ Hiện' : '🙈 Ẩn'}
       </button>
       <button onClick={() => action('delete')} disabled={loading}
         style={{ padding: '5px 12px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer', border: 'none', background: '#fef2f2', color: '#dc2626' }}>
-        Xoa
+        🗑️ Xoá
       </button>
     </div>
   )

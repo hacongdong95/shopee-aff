@@ -121,12 +121,12 @@ QUAN TRỌNG: Phải xác định đúng danh mục rồi ước tính giá tron
       }
     }
 
-    // Làm tròn giá về nghìn
-    const price = roundToThousand(parsed.price || 99000)
+    // Giá thị trường từ AI, sau đó giảm 20% để kích thích mua
+    const marketPrice = roundToThousand(parsed.price || 99000)
+    const price = roundToThousand(marketPrice * 0.8)
 
-    // Tính giá cũ: giảm random 30-60% so với giá cũ
-    // tức là giá cũ = price / (1 - discount/100)
-    const discount = randomDiscount()
+    // Giá gốc: random giảm 30-65% so với giá gốc (tức giá gốc cao hơn price)
+    const discount = Math.floor(Math.random() * 36) + 30 // 30-65%
     const oldPrice = roundToThousand(price / (1 - discount / 100))
 
     return NextResponse.json({
