@@ -26,6 +26,7 @@ const TABS = [
   { id: 'mang_xa_hoi',label: '📱 Mạng XH' },
   { id: 'danh_gia',   label: '💬 Đánh giá' },
   { id: 'seo',        label: '🔍 SEO' },
+  { id: 'popup',      label: '🎯 Popup QC' },
 ]
 
 // ─── Fields theo tab ──────────────────────────────────────────────────────
@@ -66,6 +67,15 @@ const TAB_FIELDS: Record<string, { key: string; label: string; type: string; pla
   mang_xa_hoi: [], // Render riêng bên dưới
   danh_gia: [
     { key: 'show_reviews', label: 'Hiện section đánh giá sản phẩm', type: 'toggle', placeholder: 'true', hint: 'Cho phép người dùng xem và gửi đánh giá trên trang sản phẩm' },
+  ],
+  popup: [
+    { key: 'popup_show',     label: 'Bật popup quảng cáo', type: 'toggle',   placeholder: 'false', hint: 'Popup xuất hiện sau vài giây khi khách vào trang' },
+    { key: 'popup_image',    label: 'Link ảnh popup',       type: 'text',     placeholder: 'https://...jpg', hint: 'Ảnh sản phẩm muốn quảng cáo' },
+    { key: 'popup_aff_link', label: 'Link affiliate',        type: 'text',     placeholder: 'https://shope.ee/...', hint: 'Bấm vào popup sẽ nhảy sang link này' },
+    { key: 'popup_title',    label: 'Tiêu đề popup',         type: 'text',     placeholder: '🔥 Deal Hôm Nay – Giảm 50%!' },
+    { key: 'popup_subtitle', label: 'Mô tả ngắn',            type: 'text',     placeholder: 'Ưu đãi có hạn – mua ngay kẻo hết!' },
+    { key: 'popup_btn_text', label: 'Text nút bấm',          type: 'text',     placeholder: 'Mua Ngay – Giá Tốt Nhất!' },
+    { key: 'popup_delay',    label: 'Delay xuất hiện (giây)', type: 'text',    placeholder: '2', hint: 'Mặc định 2 giây sau khi vào trang' },
   ],
   seo: [
     { key: 'seo_title',       label: 'Tiêu đề trang (SEO)',       type: 'text',     placeholder: 'Shopee Deals – Săn Deal Mỗi Ngày', hint: 'Nên dưới 60 ký tự' },

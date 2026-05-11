@@ -4,6 +4,7 @@ import ProductCard from '@/components/ProductCard'
 import ScrollReveal from '@/components/ScrollReveal'
 import SortFilter from '@/components/SortFilter'
 import FlashSaleCountdown from '@/components/FlashSaleCountdown'
+import PopupAd from '@/components/PopupAd'
 
 export const revalidate = 60
 
@@ -12,33 +13,6 @@ async function getSettings() {
   const s: Record<string, string> = {}
   for (const row of rows) s[row.key] = row.value
   return s
-}
-
-// Helper: build danh sách social links từ settings (giống ProductDetail)
-type SocialLink = { key: string; label: string; icon: string; href: string; bg: string }
-function buildSocialLinks(settings: Record<string, string>): SocialLink[] {
-  const all = [
-    { key: 'social_facebook', label: 'Facebook', icon: 'f', bg: '#1877f2' },
-    { key: 'social_shopee',   label: 'Shopee',   icon: '🛒', bg: '#ee4d2d' },
-    { key: 'social_zalo',     label: 'Zalo',     icon: 'Z',  bg: '#0068ff' },
-    { key: 'social_tiktok',   label: 'TikTok',   icon: '♪',  bg: '#010101' },
-    { key: 'social_youtube',  label: 'YouTube',  icon: '▶',  bg: '#ff0000' },
-    { key: 'social_instagram',label: 'Instagram',icon: '📷', bg: '#e1306c' },
-  ]
-  return all
-    .filter(s => {
-      const val = settings[s.key]?.trim()
-      if (settings[`${s.key}_show`] === 'false') return false
-      return !!val
-    })
-    .map(s => {
-      let val = settings[s.key].trim()
-      if (s.key === 'social_zalo' && !val.startsWith('http')) {
-        val = `https://zalo.me/${val.replace(/\D/g,'')}`
-      }
-      if (!val.startsWith('http')) val = `https://${val}`
-      return { key: s.key, label: s.label, icon: s.icon, href: val, bg: s.bg }
-    })
 }
 
 export default async function HomePage({
@@ -77,10 +51,12 @@ export default async function HomePage({
     getSettings(),
   ])
 
+  // Sản phẩm hot nhất (top clicks, chỉ hiện khi không filter)
   const hotProducts = !catSlug && !query
     ? [...allProducts].sort((a, b) => b.clicks - a.clicks).slice(0, 6)
     : []
 
+  // Sắp xếp discount nếu cần
   const products = sort === 'discount'
     ? [...allProducts].sort((a, b) => {
         const da = a.oldPrice ? (a.oldPrice - a.price) / a.oldPrice : 0
@@ -103,8 +79,13 @@ export default async function HomePage({
   const guaranteeText   = settings.guarantee_text   || '✅ Hoàn tiền nếu không đúng'
   const returnText      = settings.return_text      || '↩️ Đổi trả 15 ngày'
   const activeCatName   = catSlug ? categories.find(c => c.slug === catSlug)?.name : null
-
-  const socialLinks = buildSocialLinks(settings)
+  const popupShow     = settings.popup_show     === 'true'
+  const popupImage    = settings.popup_image    || ''
+  const popupAffLink  = settings.popup_aff_link || ''
+  const popupTitle    = settings.popup_title    || ''
+  const popupSubtitle = settings.popup_subtitle || ''
+  const popupBtnText  = settings.popup_btn_text || 'Mua Ngay – Giá Tốt Nhất!'
+  const popupDelay    = Number(settings.popup_delay || '2')
 
   return (
     <div style={{ minHeight: '100vh', background: '#f5f5f5', fontFamily: "'Be Vietnam Pro', sans-serif" }}>
@@ -241,6 +222,19 @@ export default async function HomePage({
         )}
       </div>
 
+      {/* ══ POPUP QC ══ */}
+      {popupShow && popupImage && popupAffLink && (
+        <PopupAd
+          imageUrl={popupImage}
+          affLink={popupAffLink}
+          title={popupTitle}
+          subtitle={popupSubtitle}
+          btnText={popupBtnText}
+          primary={primary}
+          delaySeconds={popupDelay}
+        />
+      )}
+
       {/* ══ FOOTER ══ */}
       <footer style={{ background: footerColor, color: '#aaa', padding: '48px 20px 28px', marginTop: 48 }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', textAlign: 'center' }}>
@@ -248,20 +242,6 @@ export default async function HomePage({
             <div style={{ color: 'white', fontWeight: 800, fontSize: 20, fontFamily: 'Nunito, sans-serif', marginBottom: 6 }}>{siteEmoji} {siteName}</div>
             <div style={{ fontSize: 13, maxWidth: 400, margin: '0 auto', lineHeight: 1.7, color: 'rgba(255,255,255,0.45)' }}>{footerText}</div>
           </div>
-
-          {/* Social Links */}
-          {socialLinks.length > 0 && (
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 20 }}>
-              {socialLinks.map(s => (
-                <a key={s.key} href={s.href} target="_blank" rel="noopener noreferrer"
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: s.bg, color: 'white', padding: '7px 14px', borderRadius: 20, fontSize: 12, fontWeight: 700, textDecoration: 'none', opacity: 0.9, transition: 'opacity 0.15s' }}>
-                  <span style={{ fontSize: 14 }}>{s.icon}</span>
-                  {s.label}
-                </a>
-              ))}
-            </div>
-          )}
-
           <div style={{ display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 28 }}>
             {[shippingText, guaranteeText, returnText].map((t, i) => (
               <span key={i} style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.06)', padding: '6px 14px', borderRadius: 20, border: '1px solid rgba(255,255,255,0.08)' }}>{t}</span>
