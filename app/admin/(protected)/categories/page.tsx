@@ -160,7 +160,15 @@ export default function CategoriesPage() {
     load()
   }
 
-  const flatList = flattenTree(tree)
+  const flatList = flattenTree(tree).filter(({ cat }) => {
+    let parentId = cat.parentId
+    while (parentId !== null && parentId !== undefined) {
+      if (!expanded.has(parentId)) return false
+      const parent = categories.find(c => c.id === parentId)
+      parentId = parent?.parentId ?? null
+    }
+    return true
+  })
 
   // Tất cả danh mục cha có thể chọn (loại trừ chính nó và con cháu)
   const validParents = (excludeId?: number) => {
