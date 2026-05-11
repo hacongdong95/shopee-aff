@@ -10,6 +10,8 @@ type Product = {
   description: string | null
 }
 
+const DRAFT_KEY = 'admin_product_draft'
+
 const empty = {
   name: '', description: '', price: '', oldPrice: '',
   imageUrl: '', affLink: '', categoryId: '', isActive: true,
@@ -42,6 +44,10 @@ export default function ProductsPage() {
   const [showForm, setShowForm] = useState(false)
   const [loading, setLoading] = useState(false)
   const [search, setSearch] = useState('')
+  const [scrapeUrl, setScrapeUrl] = useState('')
+  const [scrapeLoading, setScrapeLoading] = useState(false)
+  const [imgLoading, setImgLoading] = useState(false)
+  const [hasDraft, setHasDraft] = useState(false)
 
   const load = async () => {
     const [p, c] = await Promise.all([
@@ -52,9 +58,39 @@ export default function ProductsPage() {
     setCategories(c)
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    load()
+    // Kiểm tra có draft không
+    const draft = localStorage.getItem(DRAFT_KEY)
+    if (draft) setHasDraft(true)
+  }, [])
 
-  const openNew = () => { setForm(empty); setShowForm(true) }
+  // Tự động lưu draft mỗi khi form thay đổi
+  useEffect(() => {
+    if (showForm) {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(form))
+    }
+  }, [form, showForm])
+
+  const openNew = () => {
+    // Kiểm tra có draft cũ không
+    const draft = localStorage.getItem(DRAFT_KEY)
+    if (draft) {
+      try {
+        const parsed = JSON.parse(draft)
+        if (!parsed.id && parsed.name) {
+          if (confirm('Ban co draft chua luu. Tiep tuc chinh sua?')) {
+            setForm(parsed)
+            setShowForm(true)
+            return
+          }
+        }
+      } catch {}
+    }
+    setForm(empty)
+    setShowForm(true)
+  }
+
   const openEdit = (p: Product) => {
     setForm({
       id: p.id, name: p.name, description: p.description || '',
@@ -63,6 +99,13 @@ export default function ProductsPage() {
       categoryId: String(p.categoryId), isActive: p.isActive,
     })
     setShowForm(true)
+  }
+
+  const closeForm = () => {
+    setShowForm(false)
+    // Xoa draft khi dong bang X hoac Huy
+    localStorage.removeItem(DRAFT_KEY)
+    setHasDraft(false)
   }
 
   const save = async () => {
@@ -80,6 +123,8 @@ export default function ProductsPage() {
     })
     setLoading(false)
     setShowForm(false)
+    localStorage.removeItem(DRAFT_KEY)
+    setHasDraft(false)
     load()
   }
 
@@ -87,6 +132,51 @@ export default function ProductsPage() {
     if (!confirm('Xoa san pham nay?')) return
     await fetch(`/api/products/${id}`, { method: 'DELETE' })
     load()
+  }
+
+  const scrape = async () => {
+    if (!scrapeUrl) return
+    setScrapeLoading(true)
+    try {
+      const res = await fetch('/api/scrape', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: scrapeUrl }),
+      })
+      const d = await res.json()
+      if (d.ok) {
+        setForm(f => ({
+          ...f,
+          name: d.name || f.name,
+          price: d.price ? String(d.price) : f.price,
+          oldPrice: d.oldPrice ? String(d.oldPrice) : f.oldPrice,
+          description: d.description || f.description,
+          affLink: f.affLink || scrapeUrl,
+        }))
+      } else {
+        alert('Loi lay info: ' + d.error)
+      }
+    } catch { alert('Loi ket noi') }
+    setScrapeLoading(false)
+  }
+
+  const fetchImages = async () => {
+    if (!scrapeUrl) return
+    setImgLoading(true)
+    try {
+      const res = await fetch('/api/shopee-images', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: scrapeUrl }),
+      })
+      const d = await res.json()
+      if (d.imageUrls?.length) {
+        setForm(f => ({ ...f, imageUrl: d.imageUrls.join('\n') }))
+      } else {
+        alert('Khong lay duoc anh: ' + (d.error || 'Thu them anh thu cong'))
+      }
+    } catch { alert('Loi ket noi') }
+    setImgLoading(false)
   }
 
   const filtered = products.filter(p =>
@@ -104,11 +194,18 @@ export default function ProductsPage() {
           <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>Quan ly san pham</h2>
           <p style={{ margin: '2px 0 0', color: '#6b7280', fontSize: 13 }}>{products.length} san pham tong cong</p>
         </div>
-        <button onClick={openNew} style={{
-          background: '#ee4d2d', color: 'white', border: 'none',
-          padding: '10px 20px', borderRadius: 8, fontWeight: 700,
-          fontSize: 14, cursor: 'pointer',
-        }}>+ Them san pham</button>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          {hasDraft && (
+            <span style={{ fontSize: 12, color: '#b45309', background: '#fef9c3', padding: '4px 10px', borderRadius: 6, fontWeight: 600 }}>
+              Co draft chua luu
+            </span>
+          )}
+          <button onClick={openNew} style={{
+            background: '#ee4d2d', color: 'white', border: 'none',
+            padding: '10px 20px', borderRadius: 8, fontWeight: 700,
+            fontSize: 14, cursor: 'pointer',
+          }}>+ Them san pham</button>
+        </div>
       </div>
 
       {/* Search */}
@@ -137,7 +234,7 @@ export default function ProductsPage() {
             <div key={p.id} style={{ background: 'white', borderRadius: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.08)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
               <div style={{ position: 'relative', paddingTop: '100%', background: '#f5f5f5' }}>
                 {p.imageUrl
-                  ? <img src={p.imageUrl} alt={p.name} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ? <img src={p.imageUrl.split('\n')[0]} alt={p.name} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
                   : <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40, color: '#d1d5db' }}>🛍️</div>
                 }
                 {disc(p.price, p.oldPrice) && (
@@ -165,23 +262,55 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {/* Modal */}
+      {/* Modal — overlay khong co onClick, chi dong bang nut X hoac Huy */}
       {showForm && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, pointerEvents: 'none' }}>
-          
-          <div style={{ background: 'white', borderRadius: 16, width: '100%', maxWidth: 680, maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.2)', pointerEvents: 'auto' }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div
+            style={{ background: 'white', borderRadius: 16, width: '100%', maxWidth: 680, maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.25)' }}
+            onClick={e => e.stopPropagation()}
+          >
 
             {/* Header */}
             <div style={{ padding: '20px 28px', borderBottom: '1px solid #f3f4f6', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, background: 'white', zIndex: 1, borderRadius: '16px 16px 0 0' }}>
               <div>
                 <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>{form.id ? 'Chinh sua san pham' : 'Them san pham moi'}</h3>
-                <p style={{ margin: '2px 0 0', fontSize: 13, color: '#6b7280' }}>Dien day du thong tin san pham ben duoi</p>
+                <p style={{ margin: '2px 0 0', fontSize: 13, color: '#6b7280' }}>Chi dong form bang nut X hoac Huy</p>
               </div>
-              <button onClick={() => setShowForm(false)} style={{ background: '#f3f4f6', border: 'none', borderRadius: 8, width: 36, height: 36, cursor: 'pointer', fontSize: 20, color: '#374151' }}>×</button>
+              <button onClick={closeForm} style={{ background: '#f3f4f6', border: 'none', borderRadius: 8, width: 36, height: 36, cursor: 'pointer', fontSize: 20, color: '#374151' }}>×</button>
             </div>
 
             {/* Body */}
             <div style={{ padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+              {/* Scrape section */}
+              {!form.id && (
+                <div style={{ background: '#fff7f0', borderRadius: 10, padding: '16px 20px', border: '1.5px solid #fed7aa' }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#ea580c', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    ⚡ Tu dong dien tu link Shopee
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                    <input
+                      value={scrapeUrl}
+                      onChange={e => setScrapeUrl(e.target.value)}
+                      placeholder="Paste link Shopee vao day..."
+                      style={{ ...inputStyle, flex: 1 }}
+                    />
+                  </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button onClick={scrape} disabled={scrapeLoading || !scrapeUrl}
+                      style={{ flex: 1, padding: '8px 0', background: scrapeLoading ? '#fca5a5' : '#ee4d2d', color: 'white', border: 'none', borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: scrapeLoading ? 'not-allowed' : 'pointer' }}>
+                      {scrapeLoading ? 'Dang lay...' : '🔍 Lay info'}
+                    </button>
+                    <button onClick={fetchImages} disabled={imgLoading || !scrapeUrl}
+                      style={{ flex: 1, padding: '8px 0', background: imgLoading ? '#bfdbfe' : '#2563eb', color: 'white', border: 'none', borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: imgLoading ? 'not-allowed' : 'pointer' }}>
+                      {imgLoading ? 'Dang lay...' : '🖼️ Lay anh'}
+                    </button>
+                  </div>
+                  <div style={{ fontSize: 11, color: '#9a3412', marginTop: 8 }}>
+                    1. Paste link → Lay info → dien ten/gia/mo ta &nbsp;|&nbsp; 2. Lay anh → tu dien URLs anh
+                  </div>
+                </div>
+              )}
 
               {/* Thong tin co ban */}
               <div style={{ background: '#fafafa', borderRadius: 10, padding: '18px 20px', border: '1px solid #f0f0f0' }}>
@@ -190,8 +319,8 @@ export default function ProductsPage() {
                   <Field label="Ten san pham" required>
                     <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="VD: Tai nghe Bluetooth Sony WH-1000XM5" style={inputStyle} />
                   </Field>
-                  <Field label="Mo ta ngan">
-                    <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Mo ta noi bat cua san pham..." rows={3} style={{ ...inputStyle, resize: 'vertical' }} />
+                  <Field label="Mo ta">
+                    <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Mo ta noi bat cua san pham..." rows={4} style={{ ...inputStyle, resize: 'vertical' }} />
                   </Field>
                   <Field label="Danh muc" required>
                     <select value={form.categoryId} onChange={e => setForm(f => ({ ...f, categoryId: e.target.value }))} style={inputStyle}>
@@ -229,12 +358,20 @@ export default function ProductsPage() {
               <div style={{ background: '#fafafa', borderRadius: 10, padding: '18px 20px', border: '1px solid #f0f0f0' }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: '#6b7280', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Hinh anh & Lien ket</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  <Field label="Link anh san pham">
-                    <input value={form.imageUrl} onChange={e => setForm(f => ({ ...f, imageUrl: e.target.value }))} placeholder="https://..." style={inputStyle} />
-                    {form.imageUrl && (
-                      <img src={form.imageUrl} alt="preview" style={{ marginTop: 8, width: 80, height: 80, objectFit: 'cover', borderRadius: 8, border: '1px solid #e5e7eb' }}
-                        onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
-                    )}
+                  <Field label="Link anh san pham (moi link 1 dong)">
+                    <textarea value={form.imageUrl} onChange={e => setForm(f => ({ ...f, imageUrl: e.target.value }))} placeholder={'https://down-vn.img.susercontent.com/file/abc123\nhttps://down-vn.img.susercontent.com/file/def456'} rows={3} style={{ ...inputStyle, resize: 'vertical', fontFamily: 'monospace', fontSize: 12 }} />
+                    {form.imageUrl && (() => {
+                      const imgs = form.imageUrl.split('\n').map(u => u.trim()).filter(Boolean)
+                      return imgs.length > 0 ? (
+                        <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+                          {imgs.slice(0, 5).map((u, i) => (
+                            <img key={i} src={u} alt="" style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 6, border: '1px solid #e5e7eb' }}
+                              onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                          ))}
+                          {imgs.length > 5 && <div style={{ width: 56, height: 56, borderRadius: 6, border: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: '#6b7280' }}>+{imgs.length - 5}</div>}
+                        </div>
+                      ) : null
+                    })()}
                   </Field>
                   <Field label="Link affiliate Shopee" required>
                     <input value={form.affLink} onChange={e => setForm(f => ({ ...f, affLink: e.target.value }))} placeholder="https://shope.ee/..." style={inputStyle} />
@@ -258,7 +395,7 @@ export default function ProductsPage() {
 
             {/* Footer */}
             <div style={{ padding: '16px 28px', borderTop: '1px solid #f3f4f6', display: 'flex', gap: 10, justifyContent: 'flex-end', position: 'sticky', bottom: 0, background: 'white', borderRadius: '0 0 16px 16px' }}>
-              <button onClick={() => setShowForm(false)} style={{ padding: '10px 24px', border: '1.5px solid #e5e7eb', borderRadius: 8, cursor: 'pointer', background: 'white', fontWeight: 600, fontSize: 14, color: '#374151' }}>Huy</button>
+              <button onClick={closeForm} style={{ padding: '10px 24px', border: '1.5px solid #e5e7eb', borderRadius: 8, cursor: 'pointer', background: 'white', fontWeight: 600, fontSize: 14, color: '#374151' }}>Huy</button>
               <button onClick={save} disabled={loading} style={{ padding: '10px 32px', background: loading ? '#f87171' : '#ee4d2d', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: 14, cursor: loading ? 'not-allowed' : 'pointer', minWidth: 120 }}>
                 {loading ? 'Dang luu...' : form.id ? 'Cap nhat' : 'Them san pham'}
               </button>
