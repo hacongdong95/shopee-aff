@@ -36,19 +36,29 @@ function Field({ label, required, children }: {
 }
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState<Product[]>([])
+  const [products, setProducts]     = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
-  const [form, setForm] = useState<typeof empty & { id?: number }>(empty)
-  const [showForm, setShowForm] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [search, setSearch] = useState('')
-  const [selected, setSelected] = useState<Set<number>>(new Set())
-  const [deleting, setDeleting] = useState(false)
+  const [form, setForm]             = useState<typeof empty & { id?: number }>(empty)
+  const [showForm, setShowForm]     = useState(false)
+  const [loading, setLoading]       = useState(false)
+  const [search, setSearch]         = useState('')
+  const [selected, setSelected]     = useState<Set<number>>(new Set())
+  const [deleting, setDeleting]     = useState(false)
+
+  // Quick edit state
+  const [quickEdit, setQuickEdit]   = useState<{ id: number; price: string; oldPrice: string } | null>(null)
+
+  // Import hàng loạt
+  const [showImport, setShowImport] = useState(false)
+  const [importLinks, setImportLinks] = useState('')
+  const [importCat, setImportCat]   = useState('')
+  const [importing, setImporting]   = useState(false)
+  const [importLog, setImportLog]   = useState<string[]>([])
 
   // Scrape state
-  const [scrapeUrl, setScrapeUrl] = useState('')
-  const [scraping, setScraping] = useState(false)
-  const [scrapeMsg, setScrapeMsg] = useState('')
+  const [scrapeUrl, setScrapeUrl]         = useState('')
+  const [scraping, setScraping]           = useState(false)
+  const [scrapeMsg, setScrapeMsg]         = useState('')
   const [fetchingImages, setFetchingImages] = useState(false)
 
   const load = async () => {
@@ -63,7 +73,7 @@ export default function ProductsPage() {
 
   useEffect(() => { load() }, [])
 
-  const openNew = () => { setForm(empty); setScrapeUrl(''); setScrapeMsg(''); setShowForm(true) }
+  const openNew  = () => { setForm(empty); setScrapeUrl(''); setScrapeMsg(''); setShowForm(true) }
   const openEdit = (p: Product) => {
     setForm({
       id: p.id, name: p.name, description: p.description || '',
@@ -71,170 +81,206 @@ export default function ProductsPage() {
       imageUrl: p.imageUrl || '', affLink: p.affLink,
       categoryId: String(p.categoryId), isActive: p.isActive,
     })
-    setScrapeUrl('')
-    setScrapeMsg('')
-    setShowForm(true)
+    setScrapeUrl(''); setScrapeMsg(''); setShowForm(true)
   }
 
-  // ── Scrape thông tin từ link Shopee ───────────────────────────────────────
-  const handleScrape = async () => {
-    if (!scrapeUrl.includes('shopee')) {
-      setScrapeMsg('❌ Vui lòng nhập link Shopee hợp lệ')
-      return
-    }
-    setScraping(true)
-    setScrapeMsg('⏳ Đang lấy thông tin...')
-    try {
-      const res = await fetch('/api/scrape', {
-        method: 'POST',
+  // ── Duplicate sản phẩm ────────────────────────────────────────────────────
+  const duplicate = async (p: Product) => {
+    if (!confirm(`Nhân bản sản phẩm "${p.name}"?`)) return
+    await fetch('/api/products', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: p.name + ' (copy)',
+        description: p.description,
+        price: p.price,
+        oldPrice: p.oldPrice,
+        imageUrl: p.imageUrl,
+        affLink: p.affLink,
+        categoryId: p.categoryId,
+        isActive: false, // ẩn mặc định, tránh spam
+      }),
+    })
+    load()
+  }
+
+  // ── Quick edit lưu ────────────────────────────────────────────────────────
+  const saveQuickEdit = async () => {
+    if (!quickEdit) return
+    await fetch(`/api/products/${quickEdit.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ price: Number(quickEdit.price), oldPrice: quickEdit.oldPrice ? Number(quickEdit.oldPrice) : null }),
+    })
+    setQuickEdit(null)
+    load()
+  }
+
+  // ── Bulk toggle ẩn/hiện ───────────────────────────────────────────────────
+  const bulkToggle = async (active: boolean) => {
+    if (selected.size === 0) return
+    await Promise.all([...selected].map(id =>
+      fetch(`/api/products/${id}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: scrapeUrl }),
+        body: JSON.stringify({ isActive: active }),
       })
-      const data = await res.json()
-      if (!res.ok || data.error) {
-        setScrapeMsg(`❌ ${data.error || 'Scrape thất bại'}`)
-        return
-      }
-      setForm(f => ({
-        ...f,
-        name:        data.name        || f.name,
-        description: data.description || f.description,
-        price:       data.price       ? String(data.price)    : f.price,
-        oldPrice:    data.oldPrice    ? String(data.oldPrice) : f.oldPrice,
-        affLink:     scrapeUrl,
-      }))
-      setScrapeMsg('✅ Đã điền thông tin! Kiểm tra lại giá và bấm "Lấy ảnh từ Shopee" nhé.')
-    } catch (e) {
-      setScrapeMsg(`❌ Lỗi: ${e}`)
-    } finally {
-      setScraping(false)
-    }
+    ))
+    load()
   }
 
-  // ── Lấy ảnh từ Shopee API ─────────────────────────────────────────────────
+  // ── Import hàng loạt ──────────────────────────────────────────────────────
+  const handleImport = async () => {
+    const links = importLinks.split('\n').map(l => l.trim()).filter(l => l.includes('shopee'))
+    if (links.length === 0) { alert('Không tìm thấy link Shopee hợp lệ!'); return }
+    if (!importCat) { alert('Chọn danh mục trước!'); return }
+    setImporting(true)
+    setImportLog([`🚀 Bắt đầu import ${links.length} sản phẩm...`])
+
+    for (let i = 0; i < links.length; i++) {
+      const url = links[i]
+      setImportLog(prev => [...prev, `⏳ [${i+1}/${links.length}] Đang xử lý...`])
+      try {
+        const res = await fetch('/api/scrape', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url }),
+        })
+        const data = await res.json()
+        if (!res.ok || data.error) {
+          setImportLog(prev => [...prev.slice(0,-1), `❌ [${i+1}/${links.length}] ${data.error || 'Scrape thất bại'}`])
+          continue
+        }
+        await fetch('/api/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: data.name,
+            description: data.description,
+            price: data.price,
+            oldPrice: data.oldPrice,
+            imageUrl: null,
+            affLink: url,
+            categoryId: Number(importCat),
+            isActive: true,
+          }),
+        })
+        setImportLog(prev => [...prev.slice(0,-1), `✅ [${i+1}/${links.length}] ${data.name}`])
+      } catch (e) {
+        setImportLog(prev => [...prev.slice(0,-1), `❌ [${i+1}/${links.length}] Lỗi: ${e}`])
+      }
+      if (i < links.length - 1) await new Promise(r => setTimeout(r, 1500))
+    }
+
+    setImportLog(prev => [...prev, '🎉 Hoàn tất!'])
+    setImporting(false)
+    load()
+  }
+
+  // ── Scrape ────────────────────────────────────────────────────────────────
+  const handleScrape = async () => {
+    if (!scrapeUrl.includes('shopee')) { setScrapeMsg('❌ Vui lòng nhập link Shopee hợp lệ'); return }
+    setScraping(true); setScrapeMsg('⏳ Đang lấy thông tin...')
+    try {
+      const res  = await fetch('/api/scrape', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: scrapeUrl }) })
+      const data = await res.json()
+      if (!res.ok || data.error) { setScrapeMsg(`❌ ${data.error || 'Scrape thất bại'}`); return }
+      setForm(f => ({ ...f, name: data.name || f.name, description: data.description || f.description, price: data.price ? String(data.price) : f.price, oldPrice: data.oldPrice ? String(data.oldPrice) : f.oldPrice, affLink: scrapeUrl }))
+      setScrapeMsg('✅ Đã điền thông tin! Kiểm tra lại giá và bấm "Lấy ảnh" nhé.')
+    } catch (e) { setScrapeMsg(`❌ Lỗi: ${e}`) }
+    finally { setScraping(false) }
+  }
+
   const handleFetchImages = async () => {
     const shopeeLink = form.affLink || scrapeUrl
-    if (!shopeeLink) {
-      setScrapeMsg('❌ Nhập link Shopee vào ô Affiliate hoặc ô Scrape trước!')
-      return
-    }
-    setFetchingImages(true)
-    setScrapeMsg('⏳ Đang lấy ảnh...')
+    if (!shopeeLink) { setScrapeMsg('❌ Nhập link Shopee vào ô Affiliate trước!'); return }
+    setFetchingImages(true); setScrapeMsg('⏳ Đang lấy ảnh...')
     try {
-      const res = await fetch('/api/shopee-images', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: shopeeLink }),
-      })
+      const res  = await fetch('/api/shopee-images', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: shopeeLink }) })
       const data = await res.json()
-      if (!res.ok || data.error) {
-        setScrapeMsg(`❌ ${data.error}`)
-        return
-      }
+      if (!res.ok || data.error) { setScrapeMsg(`❌ ${data.error}`); return }
       setForm(f => ({ ...f, imageUrl: data.imageUrls.join('\n') }))
       setScrapeMsg(`✅ Lấy được ${data.count} ảnh!`)
-    } catch (e) {
-      setScrapeMsg(`❌ Lỗi: ${e}`)
-    } finally {
-      setFetchingImages(false)
-    }
+    } catch (e) { setScrapeMsg(`❌ Lỗi: ${e}`) }
+    finally { setFetchingImages(false) }
   }
 
   const save = async () => {
-    if (!form.name || !form.price || !form.affLink || !form.categoryId) {
-      alert('Vui lòng điền đầy đủ các trường bắt buộc!')
-      return
-    }
+    if (!form.name || !form.price || !form.affLink || !form.categoryId) { alert('Vui lòng điền đầy đủ các trường bắt buộc!'); return }
     setLoading(true)
     const method = form.id ? 'PUT' : 'POST'
-    const url = form.id ? `/api/products/${form.id}` : '/api/products'
-    await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    })
-    setLoading(false)
-    setShowForm(false)
-    load()
+    const url    = form.id ? `/api/products/${form.id}` : '/api/products'
+    await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+    setLoading(false); setShowForm(false); load()
   }
 
   const del = async (id: number) => {
     if (!confirm('Xóa sản phẩm này?')) return
-    await fetch(`/api/products/${id}`, { method: 'DELETE' })
-    load()
+    await fetch(`/api/products/${id}`, { method: 'DELETE' }); load()
   }
 
-  // ── Xóa nhiều ─────────────────────────────────────────────────────────────
   const toggleSelect = (id: number) => {
-    setSelected(prev => {
-      const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
-      return next
-    })
+    setSelected(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next })
   }
-
   const toggleAll = () => {
     if (selected.size === filtered.length) setSelected(new Set())
     else setSelected(new Set(filtered.map(p => p.id)))
   }
-
   const deleteSelected = async () => {
-    if (selected.size === 0) return
     if (!confirm(`Xóa ${selected.size} sản phẩm đã chọn?`)) return
     setDeleting(true)
-    await Promise.all([...selected].map(id =>
-      fetch(`/api/products/${id}`, { method: 'DELETE' })
-    ))
-    setDeleting(false)
-    load()
+    await Promise.all([...selected].map(id => fetch(`/api/products/${id}`, { method: 'DELETE' })))
+    setDeleting(false); load()
   }
 
-  const filtered = products.filter(p =>
-    p.name.toLowerCase().includes(search.toLowerCase())
-  )
-
-  const allSelected = filtered.length > 0 && selected.size === filtered.length
+  const filtered     = products.filter(p => p.name.toLowerCase().includes(search.toLowerCase()))
+  const allSelected  = filtered.length > 0 && selected.size === filtered.length
   const someSelected = selected.size > 0
-
-  const disc = (price: number, old: number | null) =>
-    old && old > price ? Math.round((1 - price / old) * 100) : null
+  const disc = (price: number, old: number | null) => old && old > price ? Math.round((1 - price / old) * 100) : null
 
   return (
     <div>
-      {/* Header */}
+      {/* ── Header ── */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
         <div>
           <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>Quản lý sản phẩm</h2>
           <p style={{ margin: '2px 0 0', color: '#6b7280', fontSize: 13 }}>{products.length} sản phẩm tổng cộng</p>
         </div>
-        <button onClick={openNew} style={{
-          background: '#ee4d2d', color: 'white', border: 'none',
-          padding: '10px 20px', borderRadius: 8, fontWeight: 700,
-          fontSize: 14, cursor: 'pointer',
-        }}>+ Thêm sản phẩm</button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button onClick={() => { setShowImport(true); setImportLog([]) }} style={{ background: '#7c3aed', color: 'white', border: 'none', padding: '10px 16px', borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+            📥 Import hàng loạt
+          </button>
+          <button onClick={openNew} style={{ background: '#ee4d2d', color: 'white', border: 'none', padding: '10px 20px', borderRadius: 8, fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
+            + Thêm sản phẩm
+          </button>
+        </div>
       </div>
 
-      {/* Search + toolbar */}
+      {/* ── Search + toolbar ── */}
       <div style={{ background: 'white', borderRadius: 10, padding: '10px 16px', boxShadow: '0 1px 4px rgba(0,0,0,0.07)', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-        <input type="checkbox" checked={allSelected} onChange={toggleAll}
-          style={{ width: 16, height: 16, cursor: 'pointer', accentColor: '#ee4d2d' }} title="Chọn tất cả" />
+        <input type="checkbox" checked={allSelected} onChange={toggleAll} style={{ width: 16, height: 16, cursor: 'pointer', accentColor: '#ee4d2d' }} title="Chọn tất cả" />
         <span style={{ color: '#9ca3af' }}>🔍</span>
-        <input value={search} onChange={e => setSearch(e.target.value)}
-          placeholder="Tìm kiếm sản phẩm..."
+        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tìm kiếm sản phẩm..."
           style={{ border: 'none', outline: 'none', fontSize: 14, flex: 1, background: 'transparent', minWidth: 150 }} />
         {someSelected && (
           <>
-            <button onClick={deleteSelected} disabled={deleting} style={{ background: deleting ? '#fca5a5' : '#ef4444', color: 'white', border: 'none', padding: '7px 16px', borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-              🗑️ Xóa {selected.size} mục {deleting ? '...' : ''}
+            <button onClick={() => bulkToggle(true)} style={{ background: '#059669', color: 'white', border: 'none', padding: '7px 14px', borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              👁 Hiện {selected.size}
             </button>
-            <button onClick={() => setSelected(new Set())} style={{ background: 'white', border: '1.5px solid #e5e7eb', color: '#6b7280', padding: '7px 14px', borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
+            <button onClick={() => bulkToggle(false)} style={{ background: '#6b7280', color: 'white', border: 'none', padding: '7px 14px', borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              🚫 Ẩn {selected.size}
+            </button>
+            <button onClick={deleteSelected} disabled={deleting} style={{ background: deleting ? '#fca5a5' : '#ef4444', color: 'white', border: 'none', padding: '7px 16px', borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              🗑️ Xóa {selected.size}
+            </button>
+            <button onClick={() => setSelected(new Set())} style={{ background: 'white', border: '1.5px solid #e5e7eb', color: '#6b7280', padding: '7px 14px', borderRadius: 8, fontWeight: 600, fontSize: 12, cursor: 'pointer' }}>
               Bỏ chọn
             </button>
           </>
         )}
       </div>
 
-      {/* Grid */}
+      {/* ── Grid ── */}
       {filtered.length === 0 ? (
         <div style={{ background: 'white', borderRadius: 12, padding: 60, textAlign: 'center', color: '#9ca3af' }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>📦</div>
@@ -245,11 +291,15 @@ export default function ProductsPage() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: 16 }}>
           {filtered.map(p => {
             const isSelected = selected.has(p.id)
+            const isQuickEdit = quickEdit?.id === p.id
             return (
               <div key={p.id} style={{ background: 'white', borderRadius: 12, boxShadow: isSelected ? '0 0 0 2px #ee4d2d, 0 1px 4px rgba(0,0,0,0.08)' : '0 1px 4px rgba(0,0,0,0.08)', overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative', transition: 'box-shadow 0.15s' }}>
+
+                {/* Checkbox */}
                 <div onClick={() => toggleSelect(p.id)} style={{ position: 'absolute', top: 8, left: 8, zIndex: 10, width: 22, height: 22, borderRadius: 6, background: isSelected ? '#ee4d2d' : 'rgba(255,255,255,0.9)', border: isSelected ? '2px solid #ee4d2d' : '2px solid #d1d5db', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 1px 3px rgba(0,0,0,0.15)', transition: 'all 0.15s' }}>
                   {isSelected && <span style={{ color: 'white', fontSize: 13, fontWeight: 700 }}>✓</span>}
                 </div>
+
                 <div style={{ position: 'relative', paddingTop: '100%', background: '#f5f5f5' }}>
                   {p.imageUrl
                     ? <img src={p.imageUrl.split('\n')[0].trim()} alt={p.name} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -262,18 +312,39 @@ export default function ProductsPage() {
                     {p.isActive ? 'Hiện' : 'Ẩn'}
                   </div>
                 </div>
+
                 <div style={{ padding: '12px 14px', flex: 1, display: 'flex', flexDirection: 'column', gap: 5 }}>
                   <div style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{p.name}</div>
                   <div style={{ fontSize: 11, color: '#ee4d2d', fontWeight: 600 }}>{p.category.name}</div>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                    <span style={{ color: '#ee4d2d', fontWeight: 700, fontSize: 16 }}>{p.price.toLocaleString('vi-VN')}đ</span>
-                    {p.oldPrice && <span style={{ color: '#9ca3af', fontSize: 12, textDecoration: 'line-through' }}>{p.oldPrice.toLocaleString('vi-VN')}đ</span>}
-                  </div>
-                  <div style={{ fontSize: 12, color: '#6b7280' }}>👆 {p.clicks} lượt click</div>
-                  <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                    <button onClick={() => openEdit(p)} style={{ flex: 1, padding: '7px', border: '1.5px solid #ee4d2d', borderRadius: 7, color: '#ee4d2d', background: 'white', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Sửa</button>
-                    <button onClick={() => del(p.id)} style={{ flex: 1, padding: '7px', border: '1.5px solid #e5e7eb', borderRadius: 7, color: '#6b7280', background: 'white', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Xóa</button>
-                  </div>
+
+                  {/* Quick edit giá */}
+                  {isQuickEdit ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 4 }}>
+                      <input type="number" value={quickEdit.price} onChange={e => setQuickEdit(q => q ? { ...q, price: e.target.value } : q)}
+                        placeholder="Giá hiện tại" style={{ ...inputStyle, padding: '6px 10px', fontSize: 12 }} />
+                      <input type="number" value={quickEdit.oldPrice} onChange={e => setQuickEdit(q => q ? { ...q, oldPrice: e.target.value } : q)}
+                        placeholder="Giá cũ" style={{ ...inputStyle, padding: '6px 10px', fontSize: 12 }} />
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <button onClick={saveQuickEdit} style={{ flex: 1, padding: '6px', background: '#059669', color: 'white', border: 'none', borderRadius: 6, fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>✓ Lưu</button>
+                        <button onClick={() => setQuickEdit(null)} style={{ flex: 1, padding: '6px', background: '#f3f4f6', color: '#374151', border: 'none', borderRadius: 6, fontWeight: 600, fontSize: 12, cursor: 'pointer' }}>✕</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                        <span style={{ color: '#ee4d2d', fontWeight: 700, fontSize: 16 }}>{p.price.toLocaleString('vi-VN')}đ</span>
+                        {p.oldPrice && <span style={{ color: '#9ca3af', fontSize: 12, textDecoration: 'line-through' }}>{p.oldPrice.toLocaleString('vi-VN')}đ</span>}
+                      </div>
+                      <div style={{ fontSize: 12, color: '#6b7280' }}>👆 {p.clicks} lượt click</div>
+                      {/* Buttons */}
+                      <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+                        <button onClick={() => openEdit(p)} style={{ flex: 1, padding: '6px', border: '1.5px solid #ee4d2d', borderRadius: 7, color: '#ee4d2d', background: 'white', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}>Sửa</button>
+                        <button onClick={() => setQuickEdit({ id: p.id, price: String(p.price), oldPrice: p.oldPrice ? String(p.oldPrice) : '' })} style={{ flex: 1, padding: '6px', border: '1.5px solid #7c3aed', borderRadius: 7, color: '#7c3aed', background: 'white', fontWeight: 600, fontSize: 12, cursor: 'pointer' }} title="Sửa nhanh giá">💰</button>
+                        <button onClick={() => duplicate(p)} style={{ flex: 1, padding: '6px', border: '1.5px solid #059669', borderRadius: 7, color: '#059669', background: 'white', fontWeight: 600, fontSize: 12, cursor: 'pointer' }} title="Nhân bản">⎘</button>
+                        <button onClick={() => del(p.id)} style={{ flex: 1, padding: '6px', border: '1.5px solid #e5e7eb', borderRadius: 7, color: '#6b7280', background: 'white', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}>🗑️</button>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             )
@@ -281,13 +352,62 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {/* Modal */}
+      {/* ── Modal Import hàng loạt ── */}
+      {showImport && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+          onClick={e => { if (e.target === e.currentTarget && !importing) setShowImport(false) }}>
+          <div style={{ background: 'white', borderRadius: 16, width: '100%', maxWidth: 600, maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+            <div style={{ padding: '20px 28px', borderBottom: '1px solid #f3f4f6', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>📥 Import hàng loạt</h3>
+                <p style={{ margin: '2px 0 0', fontSize: 13, color: '#6b7280' }}>Paste nhiều link Shopee, mỗi link 1 dòng</p>
+              </div>
+              {!importing && <button onClick={() => setShowImport(false)} style={{ background: '#f3f4f6', border: 'none', borderRadius: 8, width: 36, height: 36, cursor: 'pointer', fontSize: 20 }}>×</button>}
+            </div>
+            <div style={{ padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <Field label="Danh mục" required>
+                <select value={importCat} onChange={e => setImportCat(e.target.value)} style={inputStyle}>
+                  <option value="">-- Chọn danh mục --</option>
+                  {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </Field>
+              <Field label="Danh sách link Shopee (mỗi link 1 dòng)">
+                <textarea value={importLinks} onChange={e => setImportLinks(e.target.value)}
+                  placeholder={"https://shopee.vn/san-pham-1-i.123.456\nhttps://shopee.vn/san-pham-2-i.789.012\nhttps://shopee.vn/san-pham-3-i.345.678"}
+                  rows={8} disabled={importing}
+                  style={{ ...inputStyle, resize: 'vertical', fontFamily: 'monospace', fontSize: 12, lineHeight: 1.6 }} />
+                <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 3 }}>
+                  {importLinks.split('\n').filter(l => l.trim().includes('shopee')).length} link hợp lệ
+                </div>
+              </Field>
+
+              {/* Log */}
+              {importLog.length > 0 && (
+                <div style={{ background: '#1a1a1a', borderRadius: 8, padding: '12px 16px', maxHeight: 200, overflowY: 'auto', fontFamily: 'monospace', fontSize: 12 }}>
+                  {importLog.map((log, i) => (
+                    <div key={i} style={{ color: log.startsWith('✅') ? '#4ade80' : log.startsWith('❌') ? '#f87171' : log.startsWith('🎉') ? '#fbbf24' : '#94a3b8', marginBottom: 4 }}>
+                      {log}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div style={{ padding: '16px 28px', borderTop: '1px solid #f3f4f6', display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              {!importing && <button onClick={() => setShowImport(false)} style={{ padding: '10px 24px', border: '1.5px solid #e5e7eb', borderRadius: 8, cursor: 'pointer', background: 'white', fontWeight: 600, fontSize: 14, color: '#374151' }}>Đóng</button>}
+              <button onClick={handleImport} disabled={importing} style={{ padding: '10px 32px', background: importing ? '#9ca3af' : '#7c3aed', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: 14, cursor: importing ? 'not-allowed' : 'pointer', minWidth: 140 }}>
+                {importing ? '⏳ Đang import...' : '🚀 Bắt đầu import'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal Thêm/Sửa ── */}
       {showForm && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
           onClick={e => { if (e.target === e.currentTarget) setShowForm(false) }}>
           <div style={{ background: 'white', borderRadius: 16, width: '100%', maxWidth: 680, maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
 
-            {/* Header */}
             <div style={{ padding: '20px 28px', borderBottom: '1px solid #f3f4f6', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, background: 'white', zIndex: 1, borderRadius: '16px 16px 0 0' }}>
               <div>
                 <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>{form.id ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới'}</h3>
@@ -296,18 +416,13 @@ export default function ProductsPage() {
               <button onClick={() => setShowForm(false)} style={{ background: '#f3f4f6', border: 'none', borderRadius: 8, width: 36, height: 36, cursor: 'pointer', fontSize: 20, color: '#374151' }}>×</button>
             </div>
 
-            {/* Body */}
             <div style={{ padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 16 }}>
 
               {/* SCRAPE BOX */}
               <div style={{ background: '#fff8f0', borderRadius: 10, padding: '18px 20px', border: '1.5px solid #fcd9c4' }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: '#c2410c', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                  🪄 Tự động điền từ link Shopee
-                </div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#c2410c', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>🪄 Tự động điền từ link Shopee</div>
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <input value={scrapeUrl} onChange={e => setScrapeUrl(e.target.value)}
-                    placeholder="Paste link Shopee vào đây..."
-                    style={{ ...inputStyle, flex: 1 }} />
+                  <input value={scrapeUrl} onChange={e => setScrapeUrl(e.target.value)} placeholder="Paste link Shopee vào đây..." style={{ ...inputStyle, flex: 1 }} />
                   <button onClick={handleScrape} disabled={scraping} style={{ background: scraping ? '#fed7aa' : '#ee4d2d', color: 'white', border: 'none', borderRadius: 8, padding: '0 18px', fontWeight: 700, fontSize: 13, cursor: scraping ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap' }}>
                     {scraping ? '⏳...' : '🔍 Lấy info'}
                   </button>
@@ -315,14 +430,8 @@ export default function ProductsPage() {
                     {fetchingImages ? '⏳...' : '🖼️ Lấy ảnh'}
                   </button>
                 </div>
-                {scrapeMsg && (
-                  <div style={{ marginTop: 8, fontSize: 13, color: scrapeMsg.startsWith('✅') ? '#065f46' : scrapeMsg.startsWith('⏳') ? '#92400e' : '#991b1b', fontWeight: 500 }}>
-                    {scrapeMsg}
-                  </div>
-                )}
-                <div style={{ marginTop: 6, fontSize: 11, color: '#9ca3af' }}>
-                  1. Paste link → 🔍 Lấy info → điền tên/giá/mô tả &nbsp;|&nbsp; 2. 🖼️ Lấy ảnh → tự điền URLs ảnh
-                </div>
+                {scrapeMsg && <div style={{ marginTop: 8, fontSize: 13, color: scrapeMsg.startsWith('✅') ? '#065f46' : scrapeMsg.startsWith('⏳') ? '#92400e' : '#991b1b', fontWeight: 500 }}>{scrapeMsg}</div>}
+                <div style={{ marginTop: 6, fontSize: 11, color: '#9ca3af' }}>1. Paste link → 🔍 Lấy info | 2. 🖼️ Lấy ảnh → tự điền URLs</div>
               </div>
 
               {/* Thông tin cơ bản */}
@@ -372,20 +481,14 @@ export default function ProductsPage() {
                 <div style={{ fontSize: 12, fontWeight: 700, color: '#6b7280', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Hình ảnh & Liên kết</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   <Field label="Link ảnh sản phẩm (mỗi link 1 dòng)">
-                    <textarea
-                      value={form.imageUrl}
-                      onChange={e => setForm(f => ({ ...f, imageUrl: e.target.value }))}
+                    <textarea value={form.imageUrl} onChange={e => setForm(f => ({ ...f, imageUrl: e.target.value }))}
                       placeholder={"https://down-vn.img.susercontent.com/file/abc123\nhttps://down-vn.img.susercontent.com/file/def456"}
-                      rows={5}
-                      style={{ ...inputStyle, resize: 'vertical', fontFamily: 'monospace', fontSize: 11, lineHeight: 1.6 }}
-                    />
-                    <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 3 }}>
-                      Mỗi URL 1 dòng — ảnh đầu tiên là ảnh đại diện — hoặc bấm 🖼️ Lấy ảnh ở trên
-                    </div>
+                      rows={5} style={{ ...inputStyle, resize: 'vertical', fontFamily: 'monospace', fontSize: 11, lineHeight: 1.6 }} />
+                    <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 3 }}>Mỗi URL 1 dòng — ảnh đầu tiên là ảnh đại diện</div>
                     {form.imageUrl && (
                       <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
                         {form.imageUrl.split('\n').map(u => u.trim()).filter(Boolean).map((url, i) => (
-                          <img key={i} src={url} alt={`preview ${i + 1}`}
+                          <img key={i} src={url} alt={`preview ${i+1}`}
                             style={{ width: 56, height: 56, objectFit: 'contain', borderRadius: 6, border: i === 0 ? '2px solid #ee4d2d' : '1px solid #e5e7eb', background: '#fafafa', padding: 2 }}
                             onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
                         ))}
@@ -412,7 +515,6 @@ export default function ProductsPage() {
               </div>
             </div>
 
-            {/* Footer */}
             <div style={{ padding: '16px 28px', borderTop: '1px solid #f3f4f6', display: 'flex', gap: 10, justifyContent: 'flex-end', position: 'sticky', bottom: 0, background: 'white', borderRadius: '0 0 16px 16px' }}>
               <button onClick={() => setShowForm(false)} style={{ padding: '10px 24px', border: '1.5px solid #e5e7eb', borderRadius: 8, cursor: 'pointer', background: 'white', fontWeight: 600, fontSize: 14, color: '#374151' }}>Hủy</button>
               <button onClick={save} disabled={loading} style={{ padding: '10px 32px', background: loading ? '#f87171' : '#ee4d2d', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: 14, cursor: loading ? 'not-allowed' : 'pointer', minWidth: 120 }}>
