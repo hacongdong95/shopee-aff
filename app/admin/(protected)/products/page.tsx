@@ -47,7 +47,23 @@ function buildCategoryTree(cats: Category[]) {
   return { map, roots }
 }
 
-export default function ProductsPage() {
+// Flatten cây → options theo đúng thứ tự cha → con
+function flatTreeOptions(cats: Category[]): { id: number; name: string; isChild: boolean }[] {
+  const map: Record<number, Category & { children: Category[] }> = {}
+  cats.forEach(c => { map[c.id] = { ...c, children: [] } })
+  const roots: (Category & { children: Category[] })[] = []
+  cats.forEach(c => {
+    if (c.parentId && map[c.parentId]) map[c.parentId].children.push(map[c.id])
+    else roots.push(map[c.id])
+  })
+  const result: { id: number; name: string; isChild: boolean }[] = []
+  const walk = (node: Category & { children: Category[] }) => {
+    result.push({ id: node.id, name: node.name, isChild: node.parentId !== null })
+    node.children.forEach(walk)
+  }
+  roots.forEach(walk)
+  return result
+}
   const [products, setProducts]     = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [form, setForm]             = useState<typeof empty & { id?: number }>(empty)
@@ -412,9 +428,9 @@ export default function ProductsPage() {
               <select value={moveToCat} onChange={e => setMoveToCat(e.target.value)}
                 style={{ ...inputStyle, fontSize: 14 }}>
                 <option value="">-- Chọn danh mục đích --</option>
-                {categories.map(c => (
+                {flatTreeOptions(categories).map(c => (
                   <option key={c.id} value={c.id}>
-                    {c.parentId ? `  └─ ${c.name}` : `📁 ${c.name}`}
+                    {c.isChild ? `  └─ ${c.name}` : `📁 ${c.name}`}
                   </option>
                 ))}
               </select>
@@ -451,7 +467,7 @@ export default function ProductsPage() {
               <Field label="Danh mục" required>
                 <select value={importCat} onChange={e => setImportCat(e.target.value)} style={inputStyle}>
                   <option value="">-- Chọn danh mục --</option>
-                  {categories.map(c => <option key={c.id} value={c.id}>{c.parentId ? `  └─ ${c.name}` : c.name}</option>)}
+                  {flatTreeOptions(categories).map(c => <option key={c.id} value={c.id}>{c.isChild ? `  └─ ${c.name}` : c.name}</option>)}
                 </select>
               </Field>
               <Field label="Danh sách link Shopee (mỗi link 1 dòng)">
@@ -523,7 +539,7 @@ export default function ProductsPage() {
                   <Field label="Danh mục" required>
                     <select value={form.categoryId} onChange={e => setForm(f => ({ ...f, categoryId: e.target.value }))} style={inputStyle}>
                       <option value="">-- Chọn danh mục --</option>
-                      {categories.map(c => <option key={c.id} value={c.id}>{c.parentId ? `  └─ ${c.name}` : `📁 ${c.name}`}</option>)}
+                      {flatTreeOptions(categories).map(c => <option key={c.id} value={c.id}>{c.isChild ? `  └─ ${c.name}` : `📁 ${c.name}`}</option>)}
                     </select>
                   </Field>
                 </div>
