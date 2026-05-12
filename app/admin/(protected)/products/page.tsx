@@ -78,6 +78,7 @@ export default function ProductsPage() {
     })
   }
   const [showForm, setShowForm]     = useState(false)
+  const [toast, setToast]           = useState('')
   const [loading, setLoading]       = useState(false)
   const [search, setSearch]         = useState('')
   const [selected, setSelected]     = useState<Set<number>>(new Set())
@@ -217,7 +218,10 @@ export default function ProductsPage() {
         alert('Lỗi lưu sản phẩm: ' + (err.error || res.status))
         setLoading(false); return
       }
-      setShowForm(false); load()
+      setShowForm(false)
+      setToast(form.id ? '✅ Đã cập nhật sản phẩm!' : '✅ Đã thêm sản phẩm mới!')
+      setTimeout(() => setToast(''), 3000)
+      load()
     } catch (e) {
       alert('Lỗi kết nối: ' + e)
     } finally {
@@ -633,6 +637,12 @@ export default function ProductsPage() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+    {/* Toast */}
+      {toast && (
+        <div style={{ position:'fixed', bottom:24, left:'50%', transform:'translateX(-50%)', background:'#1a1a1a', color:'white', padding:'12px 24px', borderRadius:12, fontSize:14, fontWeight:600, zIndex:99999, boxShadow:'0 4px 20px rgba(0,0,0,0.3)', display:'flex', alignItems:'center', gap:8, whiteSpace:'nowrap' }}>
+          {toast}
         </div>
       )}
     </div>
