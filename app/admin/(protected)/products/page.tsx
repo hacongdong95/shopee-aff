@@ -230,7 +230,22 @@ export default function ProductsPage() {
   const save = async () => {
     if (!form.name || !form.price || !form.affLink || !form.categoryId) { alert('Điền đầy đủ các trường bắt buộc!'); return }
     setLoading(true)
-    await fetch(form.id ? `/api/products/${form.id}` : '/api/products', { method: form.id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+    const res = await fetch(form.id ? `/api/products/${form.id}` : '/api/products', {
+      method: form.id ? 'PUT' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form),
+    })
+    // Nếu thêm mới → tự động generate reviews
+    if (!form.id && res.ok) {
+      const newProduct = await res.json()
+      if (newProduct?.id) {
+        fetch('/api/reviews/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productId: newProduct.id, productName: form.name, count: 7 }),
+        }).catch(() => {}) // fire & forget, không block UI
+      }
+    }
     setLoading(false); setShowForm(false); load()
   }
 
