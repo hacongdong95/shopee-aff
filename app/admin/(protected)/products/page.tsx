@@ -208,10 +208,21 @@ export default function ProductsPage() {
   const save = async () => {
     if (!form.name || !form.price || !form.affLink || !form.categoryId) { alert('Vui lòng điền đầy đủ các trường bắt buộc!'); return }
     setLoading(true)
-    const method = form.id ? 'PUT' : 'POST'
-    const url    = form.id ? `/api/products/${form.id}` : '/api/products'
-    await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
-    setLoading(false); setShowForm(false); load()
+    try {
+      const method = form.id ? 'PUT' : 'POST'
+      const url    = form.id ? `/api/products/${form.id}` : '/api/products'
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Lỗi không xác định' }))
+        alert('Lỗi lưu sản phẩm: ' + (err.error || res.status))
+        setLoading(false); return
+      }
+      setShowForm(false); load()
+    } catch (e) {
+      alert('Lỗi kết nối: ' + e)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const del = async (id: number) => {
