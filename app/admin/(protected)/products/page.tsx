@@ -2,7 +2,24 @@
 
 import { useEffect, useState } from 'react'
 
-type Category = { id: number; name: string }
+type Category = { id: number; name: string; parentId: number | null }
+
+function flatTreeOptions(cats: Category[]): { id: number; label: string }[] {
+  const map: Record<number, Category & { children: Category[] }> = {}
+  cats.forEach(c => { map[c.id] = { ...c, children: [] } })
+  const roots: (Category & { children: Category[] })[] = []
+  cats.forEach(c => {
+    if (c.parentId && map[c.parentId]) map[c.parentId].children.push(map[c.id])
+    else roots.push(map[c.id])
+  })
+  const result: { id: number; label: string }[] = []
+  const walk = (node: Category & { children: Category[] }) => {
+    result.push({ id: node.id, label: node.parentId ? `  └─ ${node.name}` : `📁 ${node.name}` })
+    node.children.forEach(walk)
+  }
+  roots.forEach(walk)
+  return result
+}
 type Product = {
   id: number; name: string; price: number; oldPrice: number | null
   imageUrl: string | null; affLink: string; isActive: boolean
@@ -370,7 +387,7 @@ export default function ProductsPage() {
               <Field label="Danh mục" required>
                 <select value={importCat} onChange={e => setImportCat(e.target.value)} style={inputStyle}>
                   <option value="">-- Chọn danh mục --</option>
-                  {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  {flatTreeOptions(categories).map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
                 </select>
               </Field>
               <Field label="Danh sách link Shopee (mỗi link 1 dòng)">
@@ -453,7 +470,7 @@ export default function ProductsPage() {
                   <Field label="Danh mục" required>
                     <select value={form.categoryId} onChange={e => setForm(f => ({ ...f, categoryId: e.target.value }))} style={inputStyle}>
                       <option value="">-- Chọn danh mục --</option>
-                      {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                      {flatTreeOptions(categories).map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
                     </select>
                   </Field>
                 </div>
