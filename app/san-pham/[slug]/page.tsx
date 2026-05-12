@@ -28,11 +28,35 @@ export default async function ProductPage({
 
   if (!product || !product.isActive) notFound()
 
-  const related = await prisma.product.findMany({
+  // Lấy sản phẩm cùng danh mục con (ưu tiên)
+  const relatedSame = await prisma.product.findMany({
     where: { categoryId: product.categoryId, isActive: true, NOT: { id: product.id } },
     include: { category: true },
-    take: 6,
+    orderBy: { clicks: 'desc' },
+    take: 8,
   })
+
+  // Nếu chưa đủ 8, bổ sung từ các danh mục con khác cùng cha
+  let related = relatedSame
+  if (relatedSame.length < 8 && product.category.parentId) {
+    const siblingCats = await prisma.category.findMany({
+      where: { parentId: product.category.parentId, NOT: { id: product.categoryId } },
+      select: { id: true },
+    })
+    if (siblingCats.length > 0) {
+      const extra = await prisma.product.findMany({
+        where: {
+          categoryId: { in: siblingCats.map(c => c.id) },
+          isActive: true,
+          NOT: { id: product.id },
+        },
+        include: { category: true },
+        orderBy: { clicks: 'desc' },
+        take: 8 - relatedSame.length,
+      })
+      related = [...relatedSame, ...extra]
+    }
+  }
 
   return <ProductDetail product={product} related={related} settings={settings} />
 }

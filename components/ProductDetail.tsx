@@ -694,9 +694,9 @@ export default function ProductDetail({ product, related, settings={} }: { produ
             </div>
           )}
 
-          <div style={{ display:'flex', justifyContent:'center', gap:10, flexWrap:'wrap', marginBottom:20 }}>
+          <div style={{ display:'flex', justifyContent:'center', gap:8, flexWrap:'wrap', marginBottom:20, padding:'0 8px' }}>
             {[shippingText, guaranteeText, returnText].map((t,i)=>(
-              <span key={i} style={{ fontSize:12, color:'rgba(255,255,255,0.45)', background:'rgba(255,255,255,0.06)', padding:'5px 14px', borderRadius:20, border:'1px solid rgba(255,255,255,0.08)' }}>{t}</span>
+              <span key={i} style={{ fontSize:12, color:'rgba(255,255,255,0.55)', background:'rgba(255,255,255,0.06)', padding:'6px 14px', borderRadius:20, border:'1px solid rgba(255,255,255,0.08)', textAlign:'center', lineHeight:1.5 }}>{t}</span>
             ))}
           </div>
           <div style={{ borderTop:'1px solid rgba(255,255,255,0.07)', paddingTop:16, fontSize:12, color:'rgba(255,255,255,0.25)' }}>{footerCopy}</div>

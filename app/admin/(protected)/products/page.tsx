@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 type Category = { id: number; name: string; parentId: number | null }
 type Product = {
@@ -69,6 +69,14 @@ export default function ProductsPage() {
   const [products, setProducts]     = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [form, setForm]             = useState<typeof empty & { id?: number }>(empty)
+  const draftForm = useRef<typeof empty & { id?: number }>(empty)
+  const setFormWithDraft = (updater: typeof empty & { id?: number } | ((prev: typeof empty & { id?: number }) => typeof empty & { id?: number })) => {
+    setForm(prev => {
+      const next = typeof updater === 'function' ? updater(prev) : updater
+      draftForm.current = next
+      return next
+    })
+  }
   const [showForm, setShowForm]     = useState(false)
   const [loading, setLoading]       = useState(false)
   const [search, setSearch]         = useState('')
@@ -111,9 +119,14 @@ export default function ProductsPage() {
 
   useEffect(() => { load() }, [])
 
-  const openNew  = () => { setForm(empty); setScrapeUrl(''); setScrapeMsg(''); setShowForm(true) }
+  const openNew  = () => { draftForm.current = empty; setForm(empty); setScrapeUrl(''); setScrapeMsg(''); setShowForm(true) }
   const openEdit = (p: Product) => {
-    setForm({ id: p.id, name: p.name, description: p.description || '', price: String(p.price), oldPrice: p.oldPrice ? String(p.oldPrice) : '', imageUrl: p.imageUrl || '', affLink: p.affLink, categoryId: String(p.categoryId), isActive: p.isActive })
+    const data = { id: p.id, name: p.name, description: p.description || '', price: String(p.price), oldPrice: p.oldPrice ? String(p.oldPrice) : '', imageUrl: p.imageUrl || '', affLink: p.affLink, categoryId: String(p.categoryId), isActive: p.isActive }
+    // Nếu đang có draft của đúng sản phẩm này thì khôi phục draft
+    const draft = draftForm.current
+    const restored = draft.id === p.id ? draft : data
+    draftForm.current = restored
+    setForm(restored)
     setScrapeUrl(''); setScrapeMsg(''); setShowForm(true)
   }
 
@@ -501,8 +514,7 @@ export default function ProductsPage() {
 
       {/* ── Modal Thêm/Sửa ── */}
       {showForm && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
-          onClick={e => { if (e.target === e.currentTarget) setShowForm(false) }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
           <div style={{ background: 'white', borderRadius: 16, width: '100%', maxWidth: 680, maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
             <div style={{ padding: '20px 28px', borderBottom: '1px solid #f3f4f6', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, background: 'white', zIndex: 1, borderRadius: '16px 16px 0 0' }}>
               <div>
@@ -533,13 +545,13 @@ export default function ProductsPage() {
                 <div style={{ fontSize: 12, fontWeight: 700, color: '#6b7280', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Thông tin cơ bản</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   <Field label="Tên sản phẩm" required>
-                    <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="VD: Tai nghe Bluetooth Sony WH-1000XM5" style={inputStyle} />
+                    <input value={form.name} onChange={e => setFormWithDraft(f => ({ ...f, name: e.target.value }))} placeholder="VD: Tai nghe Bluetooth Sony WH-1000XM5" style={inputStyle} />
                   </Field>
                   <Field label="Mô tả">
-                    <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Mô tả nổi bật của sản phẩm..." rows={4} style={{ ...inputStyle, resize: 'vertical' }} />
+                    <textarea value={form.description} onChange={e => setFormWithDraft(f => ({ ...f, description: e.target.value }))} placeholder="Mô tả nổi bật của sản phẩm..." rows={4} style={{ ...inputStyle, resize: 'vertical' }} />
                   </Field>
                   <Field label="Danh mục" required>
-                    <select value={form.categoryId} onChange={e => setForm(f => ({ ...f, categoryId: e.target.value }))} style={inputStyle}>
+                    <select value={form.categoryId} onChange={e => setFormWithDraft(f => ({ ...f, categoryId: e.target.value }))} style={inputStyle}>
                       <option value="">-- Chọn danh mục --</option>
                       {flatTreeOptions(categories).map(c => <option key={c.id} value={c.id}>{c.isChild ? `  └─ ${c.name}` : `📁 ${c.name}`}</option>)}
                     </select>
@@ -553,14 +565,14 @@ export default function ProductsPage() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                   <Field label="Giá hiện tại" required>
                     <div style={{ position: 'relative' }}>
-                      <input type="number" value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} placeholder="119000" style={{ ...inputStyle, paddingRight: 36 }} />
+                      <input type="number" value={form.price} onChange={e => setFormWithDraft(f => ({ ...f, price: e.target.value }))} placeholder="119000" style={{ ...inputStyle, paddingRight: 36 }} />
                       <span style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', fontSize: 13 }}>đ</span>
                     </div>
                     {form.price && <div style={{ fontSize: 11, color: PRIMARY, marginTop: 3 }}>{Number(form.price).toLocaleString('vi-VN')}đ</div>}
                   </Field>
                   <Field label="Giá cũ (gạch ngang)">
                     <div style={{ position: 'relative' }}>
-                      <input type="number" value={form.oldPrice} onChange={e => setForm(f => ({ ...f, oldPrice: e.target.value }))} placeholder="189000" style={{ ...inputStyle, paddingRight: 36 }} />
+                      <input type="number" value={form.oldPrice} onChange={e => setFormWithDraft(f => ({ ...f, oldPrice: e.target.value }))} placeholder="189000" style={{ ...inputStyle, paddingRight: 36 }} />
                       <span style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', fontSize: 13 }}>đ</span>
                     </div>
                     {form.price && form.oldPrice && Number(form.oldPrice) > Number(form.price) && (
@@ -575,7 +587,7 @@ export default function ProductsPage() {
                 <div style={{ fontSize: 12, fontWeight: 700, color: '#6b7280', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Hình ảnh & Liên kết</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   <Field label="Link ảnh sản phẩm (mỗi link 1 dòng)">
-                    <textarea value={form.imageUrl} onChange={e => setForm(f => ({ ...f, imageUrl: e.target.value }))} rows={4} style={{ ...inputStyle, resize: 'vertical', fontFamily: 'monospace', fontSize: 11, lineHeight: 1.6 }} />
+                    <textarea value={form.imageUrl} onChange={e => setFormWithDraft(f => ({ ...f, imageUrl: e.target.value }))} rows={4} style={{ ...inputStyle, resize: 'vertical', fontFamily: 'monospace', fontSize: 11, lineHeight: 1.6 }} />
                     {form.imageUrl && (
                       <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
                         {form.imageUrl.split('\n').map(u => u.trim()).filter(Boolean).map((url, i) => (
@@ -585,7 +597,7 @@ export default function ProductsPage() {
                     )}
                   </Field>
                   <Field label="Link affiliate Shopee" required>
-                    <input value={form.affLink} onChange={e => setForm(f => ({ ...f, affLink: e.target.value }))} placeholder="https://shope.ee/..." style={inputStyle} />
+                    <input value={form.affLink} onChange={e => setFormWithDraft(f => ({ ...f, affLink: e.target.value }))} placeholder="https://shope.ee/..." style={inputStyle} />
                   </Field>
                 </div>
               </div>
@@ -596,7 +608,7 @@ export default function ProductsPage() {
                   <div style={{ fontSize: 14, fontWeight: 600 }}>Hiển thị sản phẩm</div>
                   <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>Sản phẩm sẽ {form.isActive ? 'xuất hiện' : 'bị ẩn'} trên trang chủ</div>
                 </div>
-                <div onClick={() => setForm(f => ({ ...f, isActive: !f.isActive }))}
+                <div onClick={() => setFormWithDraft(f => ({ ...f, isActive: !f.isActive }))}
                   style={{ width: 48, height: 26, borderRadius: 13, cursor: 'pointer', background: form.isActive ? PRIMARY : '#d1d5db', position: 'relative', transition: 'background 0.2s' }}>
                   <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'white', position: 'absolute', top: 3, left: form.isActive ? 25 : 3, transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
                 </div>
