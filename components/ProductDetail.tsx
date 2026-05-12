@@ -618,10 +618,16 @@ export default function ProductDetail({ product, related, settings={} }: { produ
     <div style={{ minHeight:'100vh', background:'#f5f5f5', fontFamily:"'Be Vietnam Pro', Arial, sans-serif", paddingBottom:80, overflowX:'hidden' }}>
       <style>{`
         *,*::before,*::after{box-sizing:border-box}
-        @media(max-width:640px){
-          .pd-grid{grid-template-columns:1fr!important}
-          .pd-gallery{border-right:none!important;border-bottom:1px solid #f5f5f5}
+        @media(max-width:768px){
+          .pd-grid{grid-template-columns:1fr!important;display:block!important}
+          .pd-gallery{border-right:none!important;border-bottom:1px solid #f5f5f5;padding:12px!important}
           .pd-info{padding:14px!important}
+          .pd-price{font-size:24px!important}
+          .pd-title{font-size:15px!important}
+          .pd-stats{font-size:11px!important;gap:6px!important}
+          .pd-policies{font-size:12px!important}
+          .pd-cta{flex-direction:column!important}
+          .pd-cta button{width:100%!important;flex:none!important}
         }
         img{max-width:100%;height:auto}
         @keyframes fadeIn{from{opacity:0}to{opacity:1}}
@@ -690,10 +696,10 @@ export default function ProductDetail({ product, related, settings={} }: { produ
                 <ShareButton product={product} primary={primary} />
               </div>
 
-              <h1 style={{ margin:'0 0 10px', fontSize:18, fontWeight:500, lineHeight:1.5, color:'#222' }}>{product.name}</h1>
+              <h1 className='pd-title' style={{ margin:'0 0 10px', fontSize:18, fontWeight:500, lineHeight:1.5, color:'#222' }}>{product.name}</h1>
 
               {/* Stats */}
-              <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:14, paddingBottom:14, borderBottom:'1px solid #f5f5f5', fontSize:12, color:'#666', flexWrap:'wrap' }}>
+              <div className='pd-stats' style={{ display:'flex', alignItems:'center', gap:10, marginBottom:14, paddingBottom:14, borderBottom:'1px solid #f5f5f5', fontSize:12, color:'#666', flexWrap:'wrap' }}>
                 <span style={{ color:'#f5a623', fontWeight:600 }}>⭐ {rating} <span style={{ color:'#aaa', fontWeight:400 }}>({reviews.toLocaleString('vi-VN')})</span></span>
                 <span style={{ color:'#ddd' }}>|</span>
                 <span>🛒 <b style={{ color:primary }}>{sold.toLocaleString('vi-VN')}</b> đã bán</span>
@@ -704,7 +710,7 @@ export default function ProductDetail({ product, related, settings={} }: { produ
               {/* Price */}
               <div style={{ background:'#fafafa', padding:'14px 16px', marginBottom:14, borderRadius:8 }}>
                 <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
-                  <span style={{ fontSize:30, fontWeight:800, color:primary }}>{product.price.toLocaleString('vi-VN')}₫</span>
+                  <span className='pd-price' style={{ fontSize:30, fontWeight:800, color:primary }}>{product.price.toLocaleString('vi-VN')}₫</span>
                   {product.oldPrice && product.oldPrice > product.price && <>
                     <span style={{ fontSize:15, color:'#bbb', textDecoration:'line-through' }}>{product.oldPrice.toLocaleString('vi-VN')}₫</span>
                     {discount && <span style={{ background:primary, color:'white', fontSize:12, fontWeight:700, padding:'2px 8px', borderRadius:4 }}>-{discount}%</span>}
@@ -724,7 +730,7 @@ export default function ProductDetail({ product, related, settings={} }: { produ
               </div>
 
               {/* CTA */}
-              <div style={{ display:'flex', gap:10, marginTop:'auto', flexWrap:'wrap' }}>
+              <div className='pd-cta' style={{ display:'flex', gap:10, marginTop:'auto', flexWrap:'wrap' }}>
                 <BuyButton productId={product.id} affLink={product.affLink} variant="outline" label="Xem Mô Tả" />
                 <BuyButton productId={product.id} affLink={product.affLink} variant="primary" label={buyBtnText} />
               </div>
