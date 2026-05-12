@@ -500,12 +500,15 @@ export default function ProductDetail({ product, related, settings={} }: { produ
   const socialLinks = buildSocialLinks(settings)
 
   return (
-    <div style={{ minHeight:'100vh', background:'#f5f5f5', fontFamily:"'Be Vietnam Pro', Arial, sans-serif", paddingBottom:80 }}>
+    <div style={{ minHeight:'100vh', background:'#f5f5f5', fontFamily:"'Be Vietnam Pro', Arial, sans-serif", paddingBottom:80, overflowX:'hidden' }}>
       <style>{`
+        *,*::before,*::after{box-sizing:border-box}
         @media(max-width:640px){
           .pd-grid{grid-template-columns:1fr!important}
           .pd-gallery{border-right:none!important;border-bottom:1px solid #f5f5f5}
+          .pd-info{padding:14px!important}
         }
+        img{max-width:100%;height:auto}
         @keyframes fadeIn{from{opacity:0}to{opacity:1}}
         @keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-33.33%)}}
       `}</style>
@@ -565,7 +568,7 @@ export default function ProductDetail({ product, related, settings={} }: { produ
             </div>
 
             {/* Right: Info */}
-            <div style={{ padding:'20px 20px 20px', display:'flex', flexDirection:'column', minWidth:0 }}>
+            <div className="pd-info" style={{ padding:'20px 20px 20px', display:'flex', flexDirection:'column', minWidth:0, overflow:'hidden' }}>
               {/* Category + share */}
               <div style={{ marginBottom:8, display:'flex', alignItems:'center', justifyContent:'space-between', gap:8, flexWrap:'wrap' }}>
                 <span style={{ fontSize:11, color:primary, fontWeight:700, background:`${primary}12`, padding:'3px 10px', borderRadius:20, border:`1px solid ${primary}33` }}>{product.category.name}</span>
