@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import ProductDetail from '@/components/ProductDetail'
+import type { Metadata } from 'next'
 
 export const revalidate = 60
 
@@ -9,6 +10,46 @@ async function getSettings() {
   const s: Record<string, string> = {}
   for (const row of rows) s[row.key] = row.value
   return s
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}): Promise<Metadata> {
+  const { slug } = await params
+  const [product, settings] = await Promise.all([
+    prisma.product.findUnique({ where: { slug }, include: { category: true } }),
+    getSettings(),
+  ])
+  if (!product) return {}
+
+  const siteName = settings.site_name || 'Shopee Deals'
+  const thumb = product.imageUrl?.split('\n')[0].trim() || ''
+  const discount = product.oldPrice && product.oldPrice > product.price
+    ? Math.round((1 - product.price / product.oldPrice) * 100) : null
+  const title = `${product.name}${discount ? ` -${discount}%` : ''} | ${siteName}`
+  const description = product.description
+    ? product.description.replace(/<[^>]+>/g, '').replace(/\\n/g, ' ').slice(0, 160)
+    : `${product.name} giá ${product.price.toLocaleString('vi-VN')}đ${discount ? `, giảm ${discount}%` : ''}. Mua tại ${siteName}.`
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      siteName,
+      type: 'website',
+      ...(thumb ? { images: [{ url: thumb, width: 800, height: 800, alt: product.name }] } : {}),
+    },
+    twitter: {
+      card: thumb ? 'summary_large_image' : 'summary',
+      title,
+      description,
+      ...(thumb ? { images: [thumb] } : {}),
+    },
+  }
 }
 
 export default async function ProductPage({

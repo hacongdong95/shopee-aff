@@ -6,6 +6,7 @@ import SortFilter from '@/components/SortFilter'
 import FlashSaleCountdown from '@/components/FlashSaleCountdown'
 import PopupAd from '@/components/PopupAd'
 import CategoryNav from '@/components/CategoryNav'
+import SearchBox from '@/components/SearchBox'
 
 export const revalidate = 60
 
@@ -109,12 +110,7 @@ export default async function HomePage({
               {siteTagline && <div style={{ fontSize: 11, fontWeight: 400, opacity: 0.75, lineHeight: 1 }}>{siteTagline}</div>}
             </div>
           </Link>
-          <form method="GET" action="/" style={{ flex: 1, maxWidth: 560, position: 'relative' }}>
-            <input name="q" defaultValue={query} placeholder="Tìm kiếm sản phẩm giảm giá..." className="search-input"
-              style={{ width: '100%', padding: '11px 50px 11px 20px', borderRadius: 24, border: 'none', fontSize: 14, outline: 'none', boxShadow: '0 2px 12px rgba(0,0,0,0.12)', boxSizing: 'border-box', background: 'rgba(255,255,255,0.95)', transition: 'box-shadow 0.2s' }}
-            />
-            <button type="submit" style={{ position: 'absolute', right: 5, top: '50%', transform: 'translateY(-50%)', background: primary, border: 'none', borderRadius: 20, width: 36, height: 36, cursor: 'pointer', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 2px 8px ${primary}66` }}>🔍</button>
-          </form>
+          <SearchBox defaultValue={query} primary={primary} catSlug={catSlug} />
         </div>
 
         {/* Category Nav dropdown */}

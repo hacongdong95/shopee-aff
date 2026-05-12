@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import BuyButton from '@/components/BuyButton'
 
@@ -470,9 +470,124 @@ function buildSocialLinks(settings: Settings): SocialLink[] {
     })
 }
 
+// ── Share Button ──────────────────────────────────────────────────────────────
+function ShareButton({ product, primary }: { product: Product; primary: string }) {
+  const [open, setOpen] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false) }
+    document.addEventListener('mousedown', h)
+    return () => document.removeEventListener('mousedown', h)
+  }, [])
+
+  const getUrl = () => typeof window !== 'undefined' ? window.location.href : ''
+
+  const shareZalo = () => {
+    window.open(`https://zalo.me/share/url?url=${encodeURIComponent(getUrl())}&title=${encodeURIComponent(product.name)}`, '_blank')
+    setOpen(false)
+  }
+  const shareFacebook = () => {
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(getUrl())}`, '_blank', 'width=600,height=400')
+    setOpen(false)
+  }
+  const copyLink = async () => {
+    await navigator.clipboard.writeText(getUrl())
+    setCopied(true); setTimeout(() => setCopied(false), 2000)
+    setOpen(false)
+  }
+  const shareNative = async () => {
+    try { await navigator.share({ title: product.name, url: getUrl() }) } catch {}
+    setOpen(false)
+  }
+
+  const hasNativeShare = typeof navigator !== 'undefined' && !!navigator.share
+
+  return (
+    <div ref={ref} style={{ position:'relative' }}>
+      <button
+        onClick={() => hasNativeShare ? shareNative() : setOpen(o => !o)}
+        style={{ background:'none', border:'1px solid #e5e7eb', borderRadius:20, padding:'4px 12px', fontSize:12, color:'#666', cursor:'pointer', display:'flex', alignItems:'center', gap:4, whiteSpace:'nowrap', transition:'border-color 0.15s' }}
+      >
+        {copied ? '✅ Đã copy!' : '🔗 Chia sẻ'}
+      </button>
+
+      {open && !hasNativeShare && (
+        <div style={{ position:'absolute', top:'calc(100% + 6px)', right:0, background:'white', borderRadius:12, boxShadow:'0 8px 24px rgba(0,0,0,0.12)', border:'1px solid #f0f0f0', minWidth:180, zIndex:999, overflow:'hidden' }}>
+          <button onClick={shareFacebook} style={{ width:'100%', display:'flex', alignItems:'center', gap:10, padding:'11px 16px', border:'none', background:'white', cursor:'pointer', fontSize:13, color:'#1877F2', fontWeight:600, borderBottom:'1px solid #f5f5f5', textAlign:'left' }}>
+            <span style={{ width:28, height:28, borderRadius:'50%', background:'#1877F2', color:'white', display:'flex', alignItems:'center', justifyContent:'center', fontSize:14, flexShrink:0 }}>f</span>
+            Chia sẻ Facebook
+          </button>
+          <button onClick={shareZalo} style={{ width:'100%', display:'flex', alignItems:'center', gap:10, padding:'11px 16px', border:'none', background:'white', cursor:'pointer', fontSize:13, color:'#0068FF', fontWeight:600, borderBottom:'1px solid #f5f5f5', textAlign:'left' }}>
+            <span style={{ width:28, height:28, borderRadius:'50%', background:'#0068FF', color:'white', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:800, flexShrink:0 }}>Zalo</span>
+            Chia sẻ Zalo
+          </button>
+          <button onClick={copyLink} style={{ width:'100%', display:'flex', alignItems:'center', gap:10, padding:'11px 16px', border:'none', background:'white', cursor:'pointer', fontSize:13, color:'#555', fontWeight:500, textAlign:'left' }}>
+            <span style={{ width:28, height:28, borderRadius:'50%', background:'#f0f0f0', color:'#555', display:'flex', alignItems:'center', justifyContent:'center', fontSize:14, flexShrink:0 }}>🔗</span>
+            {copied ? '✅ Đã copy!' : 'Copy link'}
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Social Proof Popup ────────────────────────────────────────────────────────
+const NAMES = ['Nguyễn V.A','Trần T.B','Lê M.C','Phạm T.D','Hoàng V.E','Vũ T.F','Đặng V.G','Bùi T.H','Đỗ M.I','Ngô T.K','Dương V.L','Lý T.M','Phan V.N','Trịnh T.O','Đinh V.P']
+const ACTIONS = ['vừa xem sản phẩm này','vừa mua sản phẩm này','vừa thêm vào giỏ hàng','vừa đặt hàng thành công']
+const TIMES = ['vài giây trước','1 phút trước','2 phút trước','5 phút trước','10 phút trước']
+const LOCS = ['Hà Nội','TP.HCM','Đà Nẵng','Hải Phòng','Cần Thơ','Huế','Nha Trang','Vinh','Thái Nguyên','Bình Dương']
+
+function SocialProofPopup({ primary }: { primary: string }) {
+  const [visible, setVisible] = useState(false)
+  const [data, setData] = useState({ name:'', action:'', time:'', loc:'' })
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const pick = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)]
+
+  const show = () => {
+    setData({ name: pick(NAMES), action: pick(ACTIONS), time: pick(TIMES), loc: pick(LOCS) })
+    setVisible(true)
+    timerRef.current = setTimeout(() => setVisible(false), 4000)
+  }
+
+  useEffect(() => {
+    const initial = setTimeout(show, 3000)
+    const interval = setInterval(show, 12000)
+    return () => { clearTimeout(initial); clearInterval(interval); if (timerRef.current) clearTimeout(timerRef.current) }
+  }, [])
+
+  if (!visible) return null
+
+  return (
+    <div
+      onClick={() => setVisible(false)}
+      style={{
+        position:'fixed', bottom:90, left:16, zIndex:9999,
+        background:'white', borderRadius:12, padding:'10px 14px',
+        boxShadow:'0 4px 20px rgba(0,0,0,0.12)', border:'1px solid #f0f0f0',
+        display:'flex', alignItems:'center', gap:10, maxWidth:280,
+        animation:'slideInLeft 0.35s ease', cursor:'pointer',
+      }}
+    >
+      <style>{`@keyframes slideInLeft{from{transform:translateX(-120%);opacity:0}to{transform:translateX(0);opacity:1}}`}</style>
+      <div style={{ width:36, height:36, borderRadius:'50%', background:`${primary}15`, border:`2px solid ${primary}33`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0 }}>
+        👤
+      </div>
+      <div style={{ minWidth:0 }}>
+        <div style={{ fontSize:12, fontWeight:700, color:'#222' }}>{data.name} <span style={{ color:'#888', fontWeight:400 }}>· {data.loc}</span></div>
+        <div style={{ fontSize:12, color:'#555', marginTop:1 }}>{data.action}</div>
+        <div style={{ fontSize:11, color:'#bbb', marginTop:1 }}>{data.time}</div>
+      </div>
+    </div>
+  )
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function ProductDetail({ product, related, settings={} }: { product:Product; related:Product[]; settings?:Settings }) {
   const [copied, setCopied] = useState(false)
+  const [openReviews, setOpenReviews] = useState(false)
 
   const primary       = settings.primary_color   || '#ee4d2d'
   const siteName      = settings.site_name       || 'Shopee Deals'
@@ -572,9 +687,7 @@ export default function ProductDetail({ product, related, settings={} }: { produ
               {/* Category + share */}
               <div style={{ marginBottom:8, display:'flex', alignItems:'center', justifyContent:'space-between', gap:8, flexWrap:'wrap' }}>
                 <span style={{ fontSize:11, color:primary, fontWeight:700, background:`${primary}12`, padding:'3px 10px', borderRadius:20, border:`1px solid ${primary}33` }}>{product.category.name}</span>
-                <button onClick={copyLink} style={{ background:'none', border:'1px solid #e5e7eb', borderRadius:20, padding:'4px 12px', fontSize:12, color:'#666', cursor:'pointer', display:'flex', alignItems:'center', gap:4, whiteSpace:'nowrap' }}>
-                  {copied?'✅ Đã copy!':'🔗 Chia sẻ'}
-                </button>
+                <ShareButton product={product} primary={primary} />
               </div>
 
               <h1 style={{ margin:'0 0 10px', fontSize:18, fontWeight:500, lineHeight:1.5, color:'#222' }}>{product.name}</h1>
@@ -635,7 +748,19 @@ export default function ProductDetail({ product, related, settings={} }: { produ
         )}
 
         {/* ── Đánh giá sản phẩm ── */}
-        {showReviews && <ReviewsSection productId={product.id} primary={primary} />}
+        {showReviews && (
+          <div style={{ background:'white', borderRadius:12, boxShadow:'0 2px 8px rgba(0,0,0,0.06)', overflow:'hidden', marginBottom:16 }}>
+            <div onClick={() => setOpenReviews(o => !o)}
+              style={{ padding:'14px 20px', display:'flex', alignItems:'center', justifyContent:'space-between', cursor:'pointer', userSelect:'none', background: openReviews ? `${primary}0e` : 'white', borderBottom: openReviews ? `2px solid ${primary}33` : 'none' }}>
+              <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                <span style={{ fontSize:20 }}>💬</span>
+                <h2 style={{ margin:0, fontSize:16, fontWeight:700, color:primary }}>ĐÁNH GIÁ SẢN PHẨM</h2>
+              </div>
+              <span style={{ fontSize:20, color:primary, transition:'transform 0.2s', display:'inline-block', transform: openReviews ? 'rotate(180deg)' : 'rotate(0deg)' }}>▾</span>
+            </div>
+            {openReviews && <ReviewsSection productId={product.id} primary={primary} />}
+          </div>
+        )}
 
         {/* ── Sản phẩm liên quan ── */}
         {related.length>0 && (
@@ -702,6 +827,9 @@ export default function ProductDetail({ product, related, settings={} }: { produ
           <div style={{ borderTop:'1px solid rgba(255,255,255,0.07)', paddingTop:16, fontSize:12, color:'rgba(255,255,255,0.25)' }}>{footerCopy}</div>
         </div>
       </footer>
+
+      {/* ── Social Proof Popup ── */}
+      <SocialProofPopup primary={primary} />
 
       {/* ── Sticky Buy Bar mobile ── */}
       <StickyBuyBar product={product} primary={primary} buyButtonText={buyBtnText} />
