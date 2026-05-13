@@ -78,26 +78,28 @@ export default async function HomePage({
 
   const primary         = settings.primary_color    || '#ee4d2d'
   const siteName        = settings.site_name        || 'Shopee Deals'
-  const siteEmoji       = settings.site_logo_emoji  || '🛍️'
+  const siteEmoji       = settings.site_logo_emoji  || '\u{1F6CD}\uFE0F'
   const siteTagline     = settings.site_tagline     || ''
   const bannerShow      = settings.banner_show      !== 'false'
-  const bannerTitle     = settings.banner_title     || '🔥 Deal Hot Mỗi Ngày'
-  const bannerSubtitle  = settings.banner_subtitle  || 'Hàng ngàn sản phẩm giảm giá sâu'
-  const footerText      = settings.footer_text      || 'Tổng hợp sản phẩm giảm giá tốt nhất'
-  const footerCopyright = settings.footer_copyright || '© 2025 · Affiliate Website'
+  const bannerImage     = settings.banner_image     || ''
+  const bannerLink      = settings.banner_link      || ''
+  const bannerTitle     = settings.banner_title     || '\uD83D\uDD25 Deal Hot M\u1ED7i Ng\u00E0y'
+  const bannerSubtitle  = settings.banner_subtitle  || 'H\u00E0ng ng\u00E0n s\u1EA3n ph\u1EA9m gi\u1EA3m gi\u00E1 s\u00E2u'
+  const footerText      = settings.footer_text      || 'T\u1ED5ng h\u1EE3p s\u1EA3n ph\u1EA9m gi\u1EA3m gi\u00E1 t\u1ED1t nh\u1EA5t'
+  const footerCopyright = settings.footer_copyright || '\u00A9 2025 \u00B7 Affiliate Website'
   const footerColor     = settings.footer_color     || '#1a1a1a'
-  const shippingText    = settings.shipping_text    || '🚚 Miễn phí vận chuyển'
-  const guaranteeText   = settings.guarantee_text   || '✅ Hoàn tiền nếu không đúng'
-  const returnText      = settings.return_text      || '↩️ Đổi trả 15 ngày'
+  const shippingText    = settings.shipping_text    || '\uD83D\uDE9A Mi\u1EC5n ph\u00ED v\u1EADn chuy\u1EC3n'
+  const guaranteeText   = settings.guarantee_text   || '\u2705 Ho\u00E0n ti\u1EC1n n\u1EBFu kh\u00F4ng \u0111\u00FAng'
+  const returnText      = settings.return_text      || '\u21A9\uFE0F \u0110\u1ED5i tr\u1EA3 15 ng\u00E0y'
   const activeCatName   = catSlug ? categories.find(c => c.slug === catSlug)?.name : null
-  const popupShow     = settings.popup_show     === 'true'
-  const popupImage    = settings.popup_image    || ''
-  const popupAffLink  = settings.popup_aff_link || ''
-  const popupTitle    = settings.popup_title    || ''
-  const popupSubtitle = settings.popup_subtitle || ''
-  const popupBtnText  = settings.popup_btn_text || 'Mua Ngay'
-  const popupDelay    = Number(settings.popup_delay || '2')
-  const voucherText   = settings.voucher_text || ''
+  const popupShow       = settings.popup_show     === 'true'
+  const popupImage      = settings.popup_image    || ''
+  const popupAffLink    = settings.popup_aff_link || ''
+  const popupTitle      = settings.popup_title    || ''
+  const popupSubtitle   = settings.popup_subtitle || ''
+  const popupBtnText    = settings.popup_btn_text || 'Mua Ngay'
+  const popupDelay      = Number(settings.popup_delay || '2')
+  const voucherText     = settings.voucher_text   || ''
 
   return (
     <div style={{ minHeight: '100vh', background: '#f5f5f5', fontFamily: "'Be Vietnam Pro', sans-serif" }}>
@@ -114,8 +116,6 @@ export default async function HomePage({
           </Link>
           <SearchBox defaultValue={query} primary={primary} catSlug={catSlug} />
         </div>
-
-        {/* Category Nav dropdown */}
         <CategoryNav categories={categories as any} activeCat={catSlug} primary={primary} />
       </header>
 
@@ -133,17 +133,29 @@ export default async function HomePage({
 
       {/* BANNER */}
       {bannerShow && !catSlug && !query && (
-        <div style={{ background: `linear-gradient(135deg, ${primary}ee 0%, ${primary} 50%, ${primary}cc 100%)`, padding: '40px 20px', textAlign: 'center', color: 'white', position: 'relative', overflow: 'hidden' }}>
-          <div style={{ position: 'absolute', top: -40, right: -40, width: 160, height: 160, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', bottom: -30, left: 40, width: 100, height: 100, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', pointerEvents: 'none' }} />
-          <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative' }}>
-            <div className="banner-title" style={{ fontSize: 32, fontWeight: 800, fontFamily: 'Nunito, sans-serif', marginBottom: 10, textShadow: '0 2px 12px rgba(0,0,0,0.15)', letterSpacing: '-0.5px' }}>{bannerTitle}</div>
-            <div className="banner-sub" style={{ fontSize: 15, opacity: 0.9, maxWidth: 480, margin: '0 auto 20px' }}>{bannerSubtitle}</div>
-            <Link href="#products" style={{ display: 'inline-block', background: 'white', color: primary, padding: '11px 28px', borderRadius: 24, fontWeight: 800, fontSize: 14, textDecoration: 'none', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}>
-              Xem ưu đãi ngay ↓
-            </Link>
+        bannerImage ? (
+          bannerLink ? (
+            <a href={bannerLink} style={{ display: 'block', width: '100%', lineHeight: 0 }}>
+              <img src={bannerImage} alt={bannerTitle} style={{ width: '100%', maxHeight: 320, objectFit: 'cover', display: 'block' }} />
+            </a>
+          ) : (
+            <div style={{ width: '100%', lineHeight: 0 }}>
+              <img src={bannerImage} alt={bannerTitle} style={{ width: '100%', maxHeight: 320, objectFit: 'cover', display: 'block' }} />
+            </div>
+          )
+        ) : (
+          <div style={{ background: `linear-gradient(135deg, ${primary}ee 0%, ${primary} 50%, ${primary}cc 100%)`, padding: '40px 20px', textAlign: 'center', color: 'white', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: -40, right: -40, width: 160, height: 160, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', bottom: -30, left: 40, width: 100, height: 100, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', pointerEvents: 'none' }} />
+            <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative' }}>
+              <div className="banner-title" style={{ fontSize: 32, fontWeight: 800, fontFamily: 'Nunito, sans-serif', marginBottom: 10, textShadow: '0 2px 12px rgba(0,0,0,0.15)', letterSpacing: '-0.5px' }}>{bannerTitle}</div>
+              <div className="banner-sub" style={{ fontSize: 15, opacity: 0.9, maxWidth: 480, margin: '0 auto 20px' }}>{bannerSubtitle}</div>
+              <Link href="#products" style={{ display: 'inline-block', background: 'white', color: primary, padding: '11px 28px', borderRadius: 24, fontWeight: 800, fontSize: 14, textDecoration: 'none', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}>
+                Xem ưu đãi ngay ↓
+              </Link>
+            </div>
           </div>
-        </div>
+        )
       )}
 
       <div id="products" style={{ maxWidth: 1200, margin: '0 auto', padding: '28px 16px' }}>
@@ -167,10 +179,8 @@ export default async function HomePage({
           </div>
         )}
 
-        {/* SORT FILTER */}
         <SortFilter currentSort={sort} currentMin={minPrice} currentMax={maxPrice} catSlug={catSlug} query={query} primary={primary} />
 
-        {/* Result bar */}
         <ScrollReveal>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 8 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -212,15 +222,12 @@ export default async function HomePage({
         )}
       </div>
 
-      {/* POPUP */}
       {popupShow && popupImage && popupAffLink && (
         <PopupAd imageUrl={popupImage} affLink={popupAffLink} title={popupTitle} subtitle={popupSubtitle} btnText={popupBtnText} primary={primary} delaySeconds={popupDelay} />
       )}
 
-      {/* BACK TO TOP */}
       <BackToTop primary={primary} />
 
-      {/* FOOTER */}
       <footer style={{ background: footerColor, color: '#aaa', padding: '48px 20px 28px', marginTop: 48 }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', textAlign: 'center' }}>
           <div style={{ marginBottom: 16 }}>

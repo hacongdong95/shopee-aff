@@ -40,7 +40,9 @@ const TAB_FIELDS: Record<string, { key: string; label: string; type: string; pla
   ],
   banner: [
     { key: 'banner_show',       label: 'Hiện banner trang chủ',  type: 'toggle',   placeholder: 'true' },
-    { key: 'banner_title',      label: 'Tiêu đề banner',         type: 'text',     placeholder: '🔥 Deal Hot Mỗi Ngày' },
+    { key: 'banner_image',      label: 'Ảnh banner (để trống = dùng màu gradient)', type: 'text', placeholder: 'https://i.ibb.co/...jpg', hint: 'GIF động cũng được! Kích thước lý tưởng: 1200x280px' },
+    { key: 'banner_link',       label: 'Link khi bấm vào ảnh banner', type: 'text', placeholder: '/?sort=popular', hint: 'Để trống nếu không muốn click được' },
+    { key: 'banner_title',      label: 'Tiêu đề banner (khi không có ảnh)', type: 'text', placeholder: '🔥 Deal Hot Mỗi Ngày' },
     { key: 'banner_subtitle',   label: 'Mô tả banner',           type: 'textarea', placeholder: 'Hàng ngàn sản phẩm giảm giá sâu...' },
     { key: 'banner_cta_text',   label: 'Text nút CTA (tùy chọn)', type: 'text',    placeholder: 'Xem ngay' },
     { key: 'banner_cta_link',   label: 'Link nút CTA',           type: 'text',     placeholder: '/?cat=dien-tu' },
