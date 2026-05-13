@@ -24,6 +24,16 @@ function parseImages(imageUrl: string | null): string[] {
 function seededRandom(seed: number) {
   const x = Math.sin(seed + 1) * 10000; return x - Math.floor(x)
 }
+function maskName(name: string): string {
+  const parts = name.trim().split(' ')
+  if (parts.length === 0) return '***'
+  return parts.map((p, i) => {
+    if (p.length <= 1) return p
+    if (i === parts.length - 1) return p[0] + '*'.repeat(Math.min(p.length - 1, 3))
+    return p[0] + '*'.repeat(Math.min(p.length - 1, 2))
+  }).join(' ')
+}
+
 function getFakeStats(id: number) {
   const sold    = Math.floor(seededRandom(id * 3)  * 8000  + 2000)
   const views   = sold + Math.floor(seededRandom(id * 7)  * 20000 + 5000)
@@ -314,18 +324,7 @@ function ReviewsSection({ productId, primary }: { productId:number; primary:stri
   }
 
   return (
-    <div style={{ background:'white', borderRadius:12, boxShadow:'0 2px 8px rgba(0,0,0,0.06)', marginBottom:16, overflow:'hidden' }}>
-      {/* Header */}
-      <div style={{ background:`${primary}0e`, padding:'14px 20px', borderBottom:`2px solid ${primary}33`, display:'flex', alignItems:'center', gap:10 }}>
-        <span style={{ fontSize:20 }}>💬</span>
-        <h2 style={{ margin:0, fontSize:16, fontWeight:700, color:primary }}>ĐÁNH GIÁ SẢN PHẨM</h2>
-        {reviews.length > 0 && (
-          <span style={{ fontSize:12, background:`${primary}18`, color:primary, padding:'2px 10px', borderRadius:20, fontWeight:600 }}>
-            {reviews.length} đánh giá
-          </span>
-        )}
-      </div>
-
+    <div>
       <div style={{ padding:20 }}>
 
         {/* Tổng quan rating */}
@@ -369,7 +368,7 @@ function ReviewsSection({ productId, primary }: { productId:number; primary:stri
                   <div style={{ width:32, height:32, borderRadius:'50%', background:`${primary}20`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:15, fontWeight:700, color:primary, flexShrink:0 }}>
                     {r.name.charAt(0).toUpperCase()}
                   </div>
-                  <span style={{ fontWeight:700, fontSize:13, color:'#222' }}>{r.name}</span>
+                  <span style={{ fontWeight:700, fontSize:13, color:'#222' }}>{maskName(r.name)}</span>
                   <StarRow value={r.rating} size={14} />
                   <span style={{ fontSize:11, color:'#bbb', marginLeft:'auto' }}>
                     {new Date(r.createdAt).toLocaleDateString('vi-VN')}
@@ -434,7 +433,6 @@ function ReviewsSection({ productId, primary }: { productId:number; primary:stri
           )}
         </div>
       </div>
-    </div>
   )
 }
 
