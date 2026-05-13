@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/prisma'
+﻿import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import ProductDetail from '@/components/ProductDetail'
 import type { Metadata } from 'next'
@@ -31,7 +31,7 @@ export async function generateMetadata({
   const title = `${product.name}${discount ? ` -${discount}%` : ''} | ${siteName}`
   const description = product.description
     ? product.description.replace(/<[^>]+>/g, '').replace(/\\n/g, ' ').slice(0, 160)
-    : `${product.name} giá ${product.price.toLocaleString('vi-VN')}đ${discount ? `, giảm ${discount}%` : ''}. Mua tại ${siteName}.`
+    : `${product.name} giÃ¡ ${product.price.toLocaleString('vi-VN')}Ä‘${discount ? `, giáº£m ${discount}%` : ''}. Mua táº¡i ${siteName}.`
 
   return {
     title,
@@ -55,13 +55,12 @@ export default async function ProductPage({
 }) {
   const { slug } = await params
 
-  const [product, settings, categories] = await Promise.all([
+  const [product, settings] = await Promise.all([
     prisma.product.findUnique({
       where: { slug },
       include: { category: true },
     }),
     getSettings(),
-    prisma.category.findMany({ orderBy: { name: 'asc' } }), // ← thêm để hiện category tabs
   ])
 
   if (!product || !product.isActive) notFound()
@@ -94,5 +93,5 @@ export default async function ProductPage({
     }
   }
 
-  return <ProductDetail product={product} related={related} settings={settings} categories={categories} />
+  return <ProductDetail product={product} related={related} settings={settings} />
 }
