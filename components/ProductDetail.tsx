@@ -284,6 +284,7 @@ function ReviewsSection({ productId, primary }: { productId:number; primary:stri
   const [name, setName]       = useState('')
   const [rating, setRating]   = useState(0)
   const [comment, setComment] = useState('')
+  const [filterStar, setFilterStar] = useState<number | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
