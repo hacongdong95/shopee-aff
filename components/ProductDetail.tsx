@@ -279,6 +279,7 @@ function ReviewsSection({ productId, primary }: { productId:number; primary:stri
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted]   = useState(false)
   const [error, setError]       = useState('')
+  const [filterStar, setFilterStar] = useState<number | null>(null)
 
   // Form state
   const [name, setName]       = useState('')
@@ -335,57 +336,60 @@ function ReviewsSection({ productId, primary }: { productId:number; primary:stri
     fontFamily:'inherit', transition:'border-color 0.15s',
   }
 
-  return (
-    <div style={{ background:'white', borderRadius:12, boxShadow:'0 2px 8px rgba(0,0,0,0.06)', marginBottom:16, overflow:'hidden' }}>
-      {/* Header */}
-      <div style={{ background:`${primary}0e`, padding:'14px 20px', borderBottom:`2px solid ${primary}33`, display:'flex', alignItems:'center', gap:10 }}>
-        <span style={{ fontSize:20 }}>💬</span>
-        <h2 style={{ margin:0, fontSize:16, fontWeight:700, color:primary }}>ĐÁNH GIÁ SẢN PHẨM</h2>
-        {reviews.length > 0 && (
-          <span style={{ fontSize:12, background:`${primary}18`, color:primary, padding:'2px 10px', borderRadius:20, fontWeight:600 }}>
-            {reviews.length} đánh giá
-          </span>
-        )}
-      </div>
+  const filteredReviews = filterStar ? reviews.filter(r => r.rating === filterStar) : reviews
 
-      <div style={{ padding:20 }}>
+  return (
+    <div style={{ padding:20 }}>
 
         {/* Tổng quan rating */}
         {reviews.length > 0 && (
-          <div style={{ display:'flex', gap:20, marginBottom:24, padding:16, background:'#fafafa', borderRadius:10, border:'1px solid #f0f0f0', flexWrap:'wrap' }}>
+          <div style={{ display:'flex', gap:20, marginBottom:16, padding:16, background:'#fafafa', borderRadius:10, border:'1px solid #f0f0f0', flexWrap:'wrap' }}>
             {/* Điểm trung bình */}
             <div style={{ textAlign:'center', minWidth:80 }}>
               <div style={{ fontSize:42, fontWeight:800, color:primary, lineHeight:1 }}>{avgRating}</div>
               <StarRow value={Math.round(Number(avgRating))} size={16} />
               <div style={{ fontSize:11, color:'#999', marginTop:4 }}>{reviews.length} đánh giá</div>
             </div>
-            {/* Phân phối sao */}
+            {/* Phân phối sao — click để lọc */}
             <div style={{ flex:1, minWidth:160, display:'flex', flexDirection:'column', gap:5, justifyContent:'center' }}>
               {ratingDist.map(({ star, count, pct }) => (
-                <div key={star} style={{ display:'flex', alignItems:'center', gap:8, fontSize:12 }}>
-                  <span style={{ width:12, textAlign:'right', color:'#555', fontWeight:600 }}>{star}</span>
+                <div key={star} onClick={() => setFilterStar(filterStar === star ? null : star)}
+                  style={{ display:'flex', alignItems:'center', gap:8, fontSize:12, cursor:'pointer', borderRadius:6, padding:'2px 4px', background: filterStar === star ? `${primary}12` : 'transparent', transition:'background 0.15s' }}>
+                  <span style={{ width:12, textAlign:'right', color: filterStar === star ? primary : '#555', fontWeight:600 }}>{star}</span>
                   <span style={{ fontSize:13 }}>⭐</span>
                   <div style={{ flex:1, height:6, background:'#f0f0f0', borderRadius:4, overflow:'hidden' }}>
                     <div style={{ height:'100%', width:`${pct}%`, background: star >= 4 ? primary : star === 3 ? '#f39c12' : '#e74c3c', borderRadius:4, transition:'width 0.5s ease' }} />
                   </div>
-                  <span style={{ width:28, color:'#999' }}>{count}</span>
+                  <span style={{ width:28, color: filterStar === star ? primary : '#999', fontWeight: filterStar === star ? 700 : 400 }}>{count}</span>
                 </div>
               ))}
             </div>
           </div>
         )}
 
+        {/* Filter tag */}
+        {filterStar && (
+          <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12 }}>
+            <span style={{ fontSize:13, color:'#555' }}>Đang lọc:</span>
+            <span style={{ background:`${primary}15`, color:primary, padding:'3px 12px', borderRadius:20, fontSize:12, fontWeight:600, display:'flex', alignItems:'center', gap:4 }}>
+              {'⭐'.repeat(filterStar)} {filterStar} sao
+              <button onClick={() => setFilterStar(null)} style={{ background:'none', border:'none', cursor:'pointer', color:primary, fontSize:14, padding:'0 0 0 4px', lineHeight:1 }}>×</button>
+            </span>
+            <span style={{ fontSize:12, color:'#aaa' }}>{filteredReviews.length} đánh giá</span>
+          </div>
+        )}
+
         {/* Danh sách đánh giá */}
         {loading ? (
           <div style={{ textAlign:'center', padding:'24px 0', color:'#aaa', fontSize:13 }}>Đang tải đánh giá...</div>
-        ) : reviews.length === 0 ? (
+        ) : filteredReviews.length === 0 ? (
           <div style={{ textAlign:'center', padding:'20px 0 8px', color:'#bbb' }}>
             <div style={{ fontSize:36, marginBottom:6 }}>📝</div>
-            <div style={{ fontSize:13 }}>Chưa có đánh giá nào. Hãy là người đầu tiên!</div>
+            <div style={{ fontSize:13 }}>{filterStar ? `Chưa có đánh giá ${filterStar} sao nào.` : 'Chưa có đánh giá nào. Hãy là người đầu tiên!'}</div>
           </div>
         ) : (
           <div style={{ display:'flex', flexDirection:'column', gap:12, marginBottom:24 }}>
-            {reviews.map(r => (
+            {filteredReviews.map(r => (
               <div key={r.id} style={{ padding:'12px 14px', background:'#fafafa', borderRadius:8, border:'1px solid #f0f0f0' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:6, flexWrap:'wrap' }}>
                   <div style={{ width:32, height:32, borderRadius:'50%', background:`${primary}20`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:15, fontWeight:700, color:primary, flexShrink:0 }}>
@@ -455,7 +459,6 @@ function ReviewsSection({ productId, primary }: { productId:number; primary:stri
             </div>
           )}
         </div>
-      </div>
     </div>
   )
 }
