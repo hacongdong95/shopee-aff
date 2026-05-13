@@ -171,7 +171,7 @@ export default async function HomePage({
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 14 }}>
               {hotProducts.map((p, i) => (
                 <ScrollReveal key={p.id} delay={i * 50}>
-                  <ProductCard product={p} voucherText={voucherText} />
+                  <ProductCard product={p} />
                 </ScrollReveal>
               ))}
             </div>
@@ -215,7 +215,7 @@ export default async function HomePage({
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 14 }}>
             {products.map((p, i) => (
               <ScrollReveal key={p.id} delay={Math.min(i % 6 * 60, 300)}>
-                <ProductCard product={p} voucherText={voucherText} />
+                <ProductCard product={p} />
               </ScrollReveal>
             ))}
           </div>
