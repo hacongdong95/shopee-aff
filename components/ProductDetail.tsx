@@ -24,16 +24,6 @@ function parseImages(imageUrl: string | null): string[] {
 function seededRandom(seed: number) {
   const x = Math.sin(seed + 1) * 10000; return x - Math.floor(x)
 }
-function maskName(name: string): string {
-  const parts = name.trim().split(' ')
-  if (parts.length === 0) return '***'
-  return parts.map((p, i) => {
-    if (p.length <= 1) return p
-    if (i === parts.length - 1) return p[0] + '*'.repeat(Math.min(p.length - 1, 3))
-    return p[0] + '*'.repeat(Math.min(p.length - 1, 2))
-  }).join(' ')
-}
-
 function getFakeStats(id: number) {
   const sold    = Math.floor(seededRandom(id * 3)  * 8000  + 2000)
   const views   = sold + Math.floor(seededRandom(id * 7)  * 20000 + 5000)
@@ -261,6 +251,27 @@ function LikeButton({ reviewId, initialLikes, primary }: { reviewId: number; ini
 }
 
 // ── Reviews Section ───────────────────────────────────────────────────────────
+// Mask tên kiểu Shopee: "Nguyễn Văn Minh" → "Nguyễn V*** h"
+function maskName(name: string): string {
+  const parts = name.trim().split(' ')
+  if (parts.length === 1) {
+    const w = parts[0]
+    if (w.length <= 2) return w
+    return w[0] + '***' + w[w.length - 1]
+  }
+  // Họ giữ nguyên, đệm ẩn, tên ẩn giữa
+  return parts.map((w, i) => {
+    if (i === 0) return w // Họ: giữ nguyên
+    if (i === parts.length - 1) {
+      // Tên cuối: giữ chữ đầu + *** + chữ cuối
+      if (w.length <= 1) return w + '***'
+      return w[0] + '***' + w[w.length - 1]
+    }
+    // Đệm giữa: chỉ giữ chữ đầu + ***
+    return w[0] + '***'
+  }).join(' ')
+}
+
 function ReviewsSection({ productId, primary }: { productId:number; primary:string }) {
   const [reviews, setReviews]   = useState<Review[]>([])
   const [loading, setLoading]   = useState(true)
@@ -324,7 +335,19 @@ function ReviewsSection({ productId, primary }: { productId:number; primary:stri
   }
 
   return (
-    <div style={{ padding:20 }}>
+    <div style={{ background:'white', borderRadius:12, boxShadow:'0 2px 8px rgba(0,0,0,0.06)', marginBottom:16, overflow:'hidden' }}>
+      {/* Header */}
+      <div style={{ background:`${primary}0e`, padding:'14px 20px', borderBottom:`2px solid ${primary}33`, display:'flex', alignItems:'center', gap:10 }}>
+        <span style={{ fontSize:20 }}>💬</span>
+        <h2 style={{ margin:0, fontSize:16, fontWeight:700, color:primary }}>ĐÁNH GIÁ SẢN PHẨM</h2>
+        {reviews.length > 0 && (
+          <span style={{ fontSize:12, background:`${primary}18`, color:primary, padding:'2px 10px', borderRadius:20, fontWeight:600 }}>
+            {reviews.length} đánh giá
+          </span>
+        )}
+      </div>
+
+      <div style={{ padding:20 }}>
 
         {/* Tổng quan rating */}
         {reviews.length > 0 && (
@@ -430,8 +453,9 @@ function ReviewsSection({ productId, primary }: { productId:number; primary:stri
               </button>
             </div>
           )}
-          </div>
         </div>
+      </div>
+    </div>
   )
 }
 

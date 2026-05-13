@@ -1,146 +1,96 @@
-// app/api/reviews/generate/route.ts
+// app/api/products/[id]/generate-reviews/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-const NAMES = [
-  'Nguyễn Thị Lan','Trần Văn Minh','Lê Thị Hoa','Phạm Văn Đức','Hoàng Thị Mai',
-  'Vũ Văn Hùng','Đặng Thị Thu','Bùi Văn Nam','Đỗ Thị Linh','Ngô Văn Tuấn',
-  'Dương Thị Hằng','Lý Văn Khoa','Phan Thị Ngọc','Trịnh Văn Long','Đinh Thị Yến',
-  'Cao Văn Bình','Tạ Thị Hương','Lưu Văn Thắng','Vương Thị Diệu','Mai Văn Phúc',
-]
+const GROQ_API_KEY = process.env.GROQ_API_KEY!
 
-function seeded(seed: number) {
-  const x = Math.sin(seed) * 10000; return x - Math.floor(x)
-}
+const HO = ['Nguyễn','Trần','Lê','Phạm','Hoàng','Vũ','Đặng','Bùi','Đỗ','Ngô','Trịnh','Đinh','Lý','Phan','Mai','Tô','Trương','Hồ','Lâm','Võ','Cao','Tạ','Lưu','Vương','Dương','Hà','Từ','Thái','Quách','Bạch','Đoàn','Liêu','Tăng','Châu','Dư','Khuất','Mạc','Nghiêm','Ông','Sầm']
+const TEN_NAM = ['Minh','Nam','Hùng','Đức','Tuấn','Khoa','Long','Bình','Thắng','Tài','Phúc','Dũng','Quân','Hải','Sơn','Toàn','Việt','Trung','Hiếu','Lâm','Tùng','Đạt','Kiên','Cường','Nhân','Phong','Quang','Khải','Duy','Hưng','Khánh','Lộc','Nghĩa','Thịnh','Tiến','Tú','Uy','Vũ','Xuân','Yên']
+const TEN_NU = ['Lan','Hoa','Mai','Thu','Linh','Yến','Ngọc','Cúc','Hằng','Phương','Hạnh','Loan','Thảo','Dung','Trang','Nhung','Ly','My','Nhi','Xuân','Ánh','Bích','Chi','Diệp','Giang','Hương','Khanh','Liễu','Nga','Oanh','Quỳnh','Như','Thúy','Tuyết','Uyên','Vân','Xuyên','Ý','Châu','Đào']
+const DEM_NAM = ['Văn','Anh','Đức','Hữu','Quốc','Công','Bá','Trọng','Mạnh','Gia','Chí','Hoàng','Minh','Ngọc','Phú','Quang','Thành','Thiện','Tiến','Xuân']
+const DEM_NU = ['Thị','Ngọc','Thanh','Thúy','Thu','Hồng','Bích','Ánh','Kim','Mỹ','Diễm','Hồng','Lan','Lệ','Minh','Ngân','Phương','Quỳnh','Tú','Ý']
 
-function randomName(seed: number) {
-  return NAMES[Math.floor(seeded(seed) * NAMES.length)]
-}
-
-function randomRating(seed: number): number {
-  const r = seeded(seed)
-  if (r < 0.70) return 5   // 70% — 5 sao
-  if (r < 0.90) return 4   // 20% — 4 sao
-  return 5                  // 10% — 5 sao (tổng 80% là 5 sao, 20% là 4 sao)
-}
-
-// Rating hiển thị: đôi khi dùng 4 thay 5 để tự nhiên hơn
-// Tỉ lệ thực: ~80% 5 sao, ~20% 4 sao → avg ~4.8
-
-function randomDate(seed: number): Date {
-  const days = Math.floor(seeded(seed) * 90) + 1
-  const d = new Date()
-  d.setDate(d.getDate() - days)
-  return d
-}
-
-async function generateWithGroq(productName: string, count: number): Promise<{ name: string; rating: number; comment: string }[]> {
-  const apiKey = process.env.GROQ_API_KEY
-  if (!apiKey) throw new Error('No GROQ_API_KEY')
-
-  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'llama3-8b-8192',
-      max_tokens: 3000,
-      messages: [{
-        role: 'user',
-        content: `Tạo đúng ${count} đánh giá sản phẩm thật tự nhiên bằng tiếng Việt cho sản phẩm: "${productName}".
-
-Yêu cầu:
-- Rating: khoảng 75% là 5 sao, 25% là 4 sao — KHÔNG có 1,2,3 sao
-- Comment 1-3 câu ngắn, tự nhiên như người thật nhắn tin, đề cập tên hoặc công dụng sản phẩm
-- Tên người Việt Nam thật (họ tên đầy đủ, đa dạng)
-- Không dùng từ quá văn vẻ, viết như chat zalo thường ngày
-- Đa dạng nội dung: ship nhanh, chất lượng ok, giá ổn, dùng thấy tốt, mua lần 2, tặng người thân...
-- Người 4 sao: comment kiểu "ổn nhưng ship hơi lâu", "tốt, chỉ tiếc hộp hơi móp"
-
-Trả về JSON array hợp lệ, KHÔNG có markdown, KHÔNG có text nào khác ngoài JSON:
-[{"name":"Nguyễn Thị Lan","rating":5,"comment":"..."},{"name":"Trần Văn Minh","rating":4,"comment":"..."},...]`
-      }],
-      temperature: 0.85,
-    })
-  })
-
-  const data = await res.json()
-  const text = data.choices?.[0]?.message?.content || ''
-  const clean = text.replace(/```json|```/g, '').trim()
-  const parsed = JSON.parse(clean)
-  if (!Array.isArray(parsed)) throw new Error('Not array')
-  return parsed
-}
-
-function fallbackReviews(productName: string, count: number): { name: string; rating: number; comment: string }[] {
-  const templates5 = [
-    `Mình mua ${productName} dùng được mấy tuần rồi, chất lượng ổn lắm. Giao hàng nhanh, đóng gói cẩn thận.`,
-    `Sản phẩm y như mô tả, dùng thấy tốt. Giá hợp lý so với chất lượng, sẽ mua lại lần sau.`,
-    `${productName} dùng ổn, ship nhanh hơn dự kiến. Cảm ơn shop nhé!`,
-    `Mua về dùng thử thấy ok, gia đình mình ai cũng thích. Sẽ giới thiệu cho bạn bè.`,
-    `Hàng đúng như hình, chất lượng tốt. Đây là lần thứ 2 mình mua rồi, vẫn ưng.`,
-    `Giao hàng siêu nhanh, hàng chất lượng. ${productName} dùng rất hài lòng ạ.`,
-    `Sản phẩm tốt, giá ok. Shop tư vấn nhiệt tình, sẽ ủng hộ dài dài.`,
-    `Dùng thử mấy ngày thấy ổn, không thất vọng. Đáng tiền lắm ạ.`,
-    `Mua tặng mẹ, mẹ dùng thích lắm. Hàng chính hãng, yên tâm sử dụng.`,
-    `Lần đầu mua thử, thấy ổn quá nên sẽ mua thêm. Ship nhanh, hàng nguyên vẹn.`,
-    `${productName} dùng tốt hơn mình nghĩ. Giá này mà chất lượng vậy thì ok rồi.`,
-    `Đặt hàng tối, sáng hôm sau đã có hàng. Shop uy tín, sản phẩm đúng như mô tả.`,
-    `Mình hay mua đồ online nhưng lần này thấy ưng nhất. ${productName} dùng ok lắm.`,
-    `Hàng về nhanh, đóng gói chắc chắn. Dùng thử thấy chất lượng tốt hơn kỳ vọng.`,
-    `Shop giao hàng đúng hẹn, sản phẩm đẹp y hình. Rất hài lòng, 5 sao!`,
-  ]
-  const templates4 = [
-    `Sản phẩm ổn, chỉ tiếc ship hơi lâu hơn dự kiến. Nhưng chất lượng thì ok.`,
-    `Dùng được, giá hợp lý. Hộp hơi móp nhưng hàng bên trong vẫn nguyên vẹn.`,
-    `${productName} dùng tạm ổn, chưa thấy điểm gì nổi bật lắm nhưng đáng tiền.`,
-    `Mua về dùng thấy ok, không có gì phàn nàn nhiều. Sẽ xem thêm thời gian rồi đánh giá tiếp.`,
-    `Chất lượng tốt, chỉ tiếc màu hơi khác hình 1 chút. Nhìn chung vẫn ổn.`,
-  ]
-
-  return Array.from({ length: count }, (_, i) => {
-    const is4star = seeded(i * 5 + 3) > 0.75
-    const pool = is4star ? templates4 : templates5
-    return {
-      name: randomName(i * 7 + 13),
-      rating: is4star ? 4 : 5,
-      comment: pool[i % pool.length],
-    }
-  })
-}
-
-export async function POST(req: NextRequest) {
-  const { productId, productName } = await req.json()
-
-  if (!productId || !productName) {
-    return NextResponse.json({ error: 'Thiếu productId hoặc productName' }, { status: 400 })
+function generateUniqueName(usedNames: Set<string>, index: number): string {
+  const isNam = (index % 3 !== 0)
+  let attempts = 0
+  while (attempts < 100) {
+    const ho = HO[Math.floor(Math.random() * HO.length)]
+    const dem = isNam ? DEM_NAM[Math.floor(Math.random() * DEM_NAM.length)] : DEM_NU[Math.floor(Math.random() * DEM_NU.length)]
+    const ten = isNam ? TEN_NAM[Math.floor(Math.random() * TEN_NAM.length)] : TEN_NU[Math.floor(Math.random() * TEN_NU.length)]
+    const name = `${ho} ${dem} ${ten}`
+    if (!usedNames.has(name)) { usedNames.add(name); return name }
+    attempts++
   }
+  return `${HO[index % HO.length]} ${isNam ? DEM_NAM[index % DEM_NAM.length] : DEM_NU[index % DEM_NU.length]} ${index}`
+}
 
-  // Random số lượng 10-20
-  const count = Math.floor(Math.random() * 11) + 10
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const productId = Number(id)
 
-  let reviews: { name: string; rating: number; comment: string }[]
+  const product = await prisma.product.findUnique({ where: { id: productId } })
+  if (!product) return NextResponse.json({ error: 'Product not found' }, { status: 404 })
+
+  const { count = 5 } = await req.json().catch(() => ({}))
 
   try {
-    reviews = await generateWithGroq(productName, count)
-  } catch {
-    reviews = fallbackReviews(productName, count)
-  }
+    const prompt = `Tạo ${count} đánh giá sản phẩm thực tế cho sản phẩm: "${product.name}"
 
-  // Lưu vào DB với ngày trải đều 3 tháng qua
-  const created = await Promise.all(
-    reviews.map((r, i) =>
-      prisma.review.create({
+Yêu cầu:
+- Rating từ 4 đến 5 sao (random, đa dạng, đa số 5 sao)
+- Bình luận ngắn tự nhiên như người Việt Nam thật viết (1-3 câu)
+- Đề cập cụ thể đến sản phẩm, không chung chung
+- Đa dạng: có người khen chất lượng, có người khen giao hàng, có người khen giá, có người so sánh với kỳ vọng
+- Viết bằng tiếng Việt tự nhiên, có thể có lỗi chính tả nhỏ, emoji, viết tắt như người thật
+- KHÔNG dùng từ "sản phẩm" nhiều lần, thay bằng "món đồ", "hàng", "cái này"...
+
+Trả về JSON array, KHÔNG markdown:
+[
+  { "rating": 5, "comment": "..." },
+  { "rating": 4, "comment": "..." }
+]`
+
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_API_KEY}` },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        temperature: 0.9,
+        max_tokens: 1000,
+        messages: [
+          { role: 'system', content: 'Bạn tạo review sản phẩm fake nhưng thực tế cho website thương mại điện tử Việt Nam. Chỉ trả về JSON array thuần túy.' },
+          { role: 'user', content: prompt },
+        ],
+      }),
+    })
+
+    const data = await res.json()
+    const text = data?.choices?.[0]?.message?.content ?? ''
+    const clean = text.replace(/```json|```/g, '').trim()
+    const match = clean.match(/\[[\s\S]*\]/)
+    if (!match) throw new Error('Không parse được JSON')
+
+    const reviews: { rating: number; comment: string }[] = JSON.parse(match[0])
+
+    // Lưu vào DB với tên ngẫu nhiên và ngày trải rộng trong 3 tháng qua
+    const usedNames = new Set<string>()
+    const created = await Promise.all(reviews.map((r, i) => {
+      const name = generateUniqueName(usedNames, i)
+      const daysAgo = Math.floor(Math.random() * 90) + 1
+      const createdAt = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000)
+      return prisma.review.create({
         data: {
-          productId: Number(productId),
-          name: r.name || randomName(i + productId),
-          rating: Math.min(5, Math.max(4, Number(r.rating) || 5)),
-          comment: r.comment || '',
-          isHidden: false,
-          createdAt: randomDate(i * productId + 7),
+          productId,
+          name,
+          rating: Math.min(5, Math.max(4, r.rating)),
+          comment: r.comment,
+          createdAt,
         },
       })
-    )
-  )
+    }))
 
-  return NextResponse.json({ ok: true, count: created.length })
+    return NextResponse.json({ ok: true, count: created.length })
+  } catch (e) {
+    return NextResponse.json({ error: `Lỗi generate: ${e}` }, { status: 500 })
+  }
 }
