@@ -1,61 +1,52 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import ThemeProvider from '@/components/ThemeProvider'
+import Header from '@/components/Header'
 import { prisma } from '@/lib/prisma'
 
 export const revalidate = 60
 
-async function getSiteSettings() {
+async function getSiteData() {
   try {
-    const rows = await prisma.setting.findMany({
-      where: { key: { in: ['site_name', 'seo_title', 'seo_description', 'seo_keywords', 'og_title', 'og_description', 'og_image', 'site_tagline'] } }
-    })
-    const s: Record<string, string> = {}
-    for (const r of rows) s[r.key] = r.value
-    return s
-  } catch {
-    return {}
+    const [settingsRows, categories] = await Promise.all([
+      prisma.setting.findMany(),
+      prisma.category.findMany({
+        orderBy: [{ order: 'asc' }, { name: 'asc' }],
+      })
+    ])
+    
+    const settings: Record<string, string> = {}
+    for (const r of settingsRows) settings[r.key] = r.value
+    return { settings, categories }
+  } catch (error) {
+    console.error("Layout data error:", error)
+    return { settings: {}, categories: [] }
   }
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const s = await getSiteSettings()
+  const { settings: s } = await getSiteData()
   const siteName = s.site_name || 'Shopee Deals'
   const title = s.seo_title || siteName
-  const description = s.seo_description || 'San pham giam gia tot nhat tu Shopee'
-  const ogTitle = s.og_title || title
-  const ogDescription = s.og_description || description
-
-  const ogImage = s.og_image || undefined
-
   return {
     title,
-    description,
-    keywords: s.seo_keywords || 'shopee, deal, giam gia',
-    openGraph: {
-      title: ogTitle,
-      description: ogDescription,
-      siteName,
-      type: 'website',
-      ...(ogImage ? { images: [{ url: ogImage, width: 1200, height: 630 }] } : {}),
-    },
-    twitter: {
-      card: ogImage ? 'summary_large_image' : 'summary',
-      title: ogTitle,
-      description: ogDescription,
-      ...(ogImage ? { images: [ogImage] } : {}),
-    },
+    description: s.seo_description || 'Sản phẩm tốt nhất',
   }
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const { settings, categories } = await getSiteData()
+
   return (
     <html lang="vi">
       <head>
         <meta charSet="utf-8" />
         <ThemeProvider />
       </head>
-      <body>{children}</body>
+      <body style={{ margin: 0, background: '#f5f5f5' }}>
+        <Header settings={settings} categories={categories} />
+        {children}
+      </body>
     </html>
   )
 }

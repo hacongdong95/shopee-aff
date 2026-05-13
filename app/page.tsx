@@ -5,8 +5,6 @@ import ScrollReveal from '@/components/ScrollReveal'
 import SortFilter from '@/components/SortFilter'
 import FlashSaleCountdown from '@/components/FlashSaleCountdown'
 import PopupAd from '@/components/PopupAd'
-import CategoryNav from '@/components/CategoryNav'
-import SearchBox from '@/components/SearchBox'
 import BackToTop from '@/components/BackToTop'
 
 export const revalidate = 60

@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
@@ -662,7 +662,7 @@ export default function ProductDetail({ product, related, settings={}, categorie
 
       {/* ── Header + Marquee trust bar ── */}
       <header style={{ position:'sticky', top:0, zIndex:100 }}>
-        <MarqueeBanner primary={primary} items={[shippingText, guaranteeText, returnText, shopeeBadge]} />
+        
         <div style={{ background:`linear-gradient(135deg,${primary} 0%,${primary}cc 100%)`, boxShadow:`0 2px 16px ${primary}44` }}>
         <div style={{ maxWidth:1100, margin:'0 auto', padding:'0 16px', height:56, display:'flex', alignItems:'center', gap:12 }}>
           <Link href="/" style={{ color:'white', fontWeight:800, fontSize:18, textDecoration:'none', display:'flex', alignItems:'center', gap:8, flexShrink:0, minWidth:0 }}>
