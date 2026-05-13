@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import BuyButton from '@/components/BuyButton'
 import CategoryNav from '@/components/CategoryNav'
+import CategoryNav from '@/components/CategoryNav'
 
 type Category = { id: number; name: string; slug: string }
 type Product = {
@@ -624,6 +625,7 @@ export default function ProductDetail({ product, related, settings={}, categorie
   const footerCopy    = settings.footer_copyright|| 'Â© 2025 Â· Affiliate Website'
   const footerColor   = settings.footer_color    || '#1a1a1a'
   const showReviews   = settings.show_reviews    !== 'false'
+  const voucherText   = settings.voucher_text    || '15.5 VOUCHER Giam them 30%'
   const voucherText   = settings.voucher_text    || '15.5 VOUCHER Giáº£m thÃªim 30%'
 
   const discount = product.oldPrice && product.oldPrice > product.price
