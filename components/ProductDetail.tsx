@@ -324,8 +324,7 @@ function ReviewsSection({ productId, primary }: { productId:number; primary:stri
   }
 
   return (
-    <div>
-      <div style={{ padding:20 }}>
+    <div style={{ padding:20 }}>
 
         {/* Tổng quan rating */}
         {reviews.length > 0 && (
@@ -431,8 +430,8 @@ function ReviewsSection({ productId, primary }: { productId:number; primary:stri
               </button>
             </div>
           )}
+          </div>
         </div>
-      </div>
   )
 }
 
