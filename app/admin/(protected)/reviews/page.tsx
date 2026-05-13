@@ -224,7 +224,7 @@ export default function ReviewsAdminPage() {
             <div style={{ fontSize: 12, fontWeight: 600, color: '#555', marginBottom: 4 }}>Số review/SP</div>
             <select value={genCount} onChange={e => setGenCount(e.target.value)}
               style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #e5e7eb', borderRadius: 8, fontSize: 14, outline: 'none' }}>
-              {[3, 5, 7, 10, 15].map(n => <option key={n} value={n}>{n} review</option>)}
+              {[3, 5, 10, 20, 30, 50].map(n => <option key={n} value={n}>{n} review</option>)}
             </select>
           </div>
 
