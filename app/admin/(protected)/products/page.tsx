@@ -1,25 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 
-type Category = { id: number; name: string; parentId: number | null }
-
-function flatTreeOptions(cats: Category[]): { id: number; label: string }[] {
-  const map: Record<number, Category & { children: Category[] }> = {}
-  cats.forEach(c => { map[c.id] = { ...c, children: [] } })
-  const roots: (Category & { children: Category[] })[] = []
-  cats.forEach(c => {
-    if (c.parentId && map[c.parentId]) map[c.parentId].children.push(map[c.id])
-    else roots.push(map[c.id])
-  })
-  const result: { id: number; label: string }[] = []
-  const walk = (node: Category & { children: Category[] }) => {
-    result.push({ id: node.id, label: node.parentId ? `  └─ ${node.name}` : `📁 ${node.name}` })
-    node.children.forEach(walk)
-  }
-  roots.forEach(walk)
-  return result
-}
+type Category = { id: number; name: string }
 type Product = {
   id: number; name: string; price: number; oldPrice: number | null
   imageUrl: string | null; affLink: string; isActive: boolean
@@ -94,6 +77,8 @@ export default function ProductsPage() {
   const [scraping, setScraping]             = useState(false)
   const [scrapeMsg, setScrapeMsg]           = useState('')
   const [fetchingImages, setFetchingImages] = useState(false)
+  const [uploading, setUploading]           = useState(false)
+  const fileInputRef                        = useRef<HTMLInputElement>(null)
 
   const load = async () => {
     const [p, c] = await Promise.all([
@@ -227,25 +212,30 @@ export default function ProductsPage() {
     finally { setFetchingImages(false) }
   }
 
+  // ── Upload ảnh từ máy/điện thoại ─────────────────────────────────────────
+  const handleUploadFiles = async (files: FileList | null) => {
+    if (!files || files.length === 0) return
+    setUploading(true); setScrapeMsg('⏳ Đang tải ảnh lên...')
+    try {
+      const formData = new FormData()
+      Array.from(files).forEach(f => formData.append('files', f))
+      const res  = await fetch('/api/upload', { method: 'POST', body: formData })
+      const data = await res.json()
+      if (!res.ok || data.error) { setScrapeMsg(`❌ ${data.error}`); return }
+      // Thêm URL mới vào textarea (không xóa URL cũ)
+      setForm(f => ({
+        ...f,
+        imageUrl: [f.imageUrl, ...data.urls].filter(Boolean).join('\n'),
+      }))
+      setScrapeMsg(`✅ Đã tải lên ${data.urls.length} ảnh!`)
+    } catch (e) { setScrapeMsg(`❌ ${e}`) }
+    finally { setUploading(false) }
+  }
+
   const save = async () => {
     if (!form.name || !form.price || !form.affLink || !form.categoryId) { alert('Điền đầy đủ các trường bắt buộc!'); return }
     setLoading(true)
-    const res = await fetch(form.id ? `/api/products/${form.id}` : '/api/products', {
-      method: form.id ? 'PUT' : 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    })
-    // Nếu thêm mới → tự động generate reviews
-    if (!form.id && res.ok) {
-      const newProduct = await res.json()
-      if (newProduct?.id) {
-        fetch('/api/reviews/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ productId: newProduct.id, productName: form.name, count: 7 }),
-        }).catch(() => {}) // fire & forget, không block UI
-      }
-    }
+    await fetch(form.id ? `/api/products/${form.id}` : '/api/products', { method: form.id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
     setLoading(false); setShowForm(false); load()
   }
 
@@ -279,7 +269,7 @@ export default function ProductsPage() {
       </div>
 
       {/* ── Search + toolbar ── */}
-      <div style={{ background: 'white', borderRadius: someSelected ? '10px 10px 0 0' : 10, padding: '10px 16px', boxShadow: '0 1px 4px rgba(0,0,0,0.07)', marginBottom: someSelected ? 0 : 16, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+      <div style={{ background: 'white', borderRadius: 10, padding: '10px 16px', boxShadow: '0 1px 4px rgba(0,0,0,0.07)', marginBottom: someSelected ? 0 : 16, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', borderRadius: someSelected ? '10px 10px 0 0' : 10 }}>
         <input type="checkbox"
           checked={allFilteredSelected || selectAll}
           ref={el => { if (el) el.indeterminate = selected.size > 0 && !allFilteredSelected && !selectAll }}
@@ -402,7 +392,7 @@ export default function ProductsPage() {
               <Field label="Danh mục" required>
                 <select value={importCat} onChange={e => setImportCat(e.target.value)} style={inputStyle}>
                   <option value="">-- Chọn danh mục --</option>
-                  {flatTreeOptions(categories).map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
+                  {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </Field>
               <Field label="Danh sách link Shopee (mỗi link 1 dòng)">
@@ -443,7 +433,8 @@ export default function ProductsPage() {
 
       {/* ── Modal Thêm/Sửa ── */}
       {showForm && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+          onClick={e => { if (e.target === e.currentTarget) setShowForm(false) }}>
           <div style={{ background: 'white', borderRadius: 16, width: '100%', maxWidth: 680, maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
 
             <div style={{ padding: '20px 28px', borderBottom: '1px solid #f3f4f6', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, background: 'white', zIndex: 1, borderRadius: '16px 16px 0 0' }}>
@@ -484,7 +475,7 @@ export default function ProductsPage() {
                   <Field label="Danh mục" required>
                     <select value={form.categoryId} onChange={e => setForm(f => ({ ...f, categoryId: e.target.value }))} style={inputStyle}>
                       <option value="">-- Chọn danh mục --</option>
-                      {flatTreeOptions(categories).map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
+                      {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </select>
                   </Field>
                 </div>
@@ -518,16 +509,47 @@ export default function ProductsPage() {
                 <div style={{ fontSize: 12, fontWeight: 700, color: '#6b7280', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Hình ảnh & Liên kết</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   <Field label="Link ảnh (mỗi link 1 dòng)">
+                    {/* Nút upload + lấy ảnh */}
+                    <div style={{ display: 'flex', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploading}
+                        style={{ background: uploading ? '#ddd' : '#059669', color: 'white', border: 'none', borderRadius: 8, padding: '8px 14px', fontWeight: 700, fontSize: 12, cursor: uploading ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 6 }}>
+                        📷 {uploading ? 'Đang tải...' : 'Chọn ảnh từ máy'}
+                      </button>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        style={{ display: 'none' }}
+                        onChange={e => handleUploadFiles(e.target.files)}
+                      />
+                    </div>
+                    {/* Drop zone */}
+                    <div
+                      onDragOver={e => { e.preventDefault(); (e.currentTarget as HTMLDivElement).style.borderColor = '#059669' }}
+                      onDragLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = '#e5e7eb' }}
+                      onDrop={e => { e.preventDefault(); (e.currentTarget as HTMLDivElement).style.borderColor = '#e5e7eb'; handleUploadFiles(e.dataTransfer.files) }}
+                      style={{ border: '2px dashed #e5e7eb', borderRadius: 8, padding: '12px', textAlign: 'center', fontSize: 12, color: '#9ca3af', marginBottom: 8, cursor: 'pointer', transition: 'border-color 0.2s' }}
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      📂 Kéo thả ảnh vào đây hoặc click để chọn
+                    </div>
                     <textarea value={form.imageUrl} onChange={e => setForm(f => ({ ...f, imageUrl: e.target.value }))}
                       placeholder={"https://down-vn.img.susercontent.com/file/abc123\nhttps://down-vn.img.susercontent.com/file/def456"}
-                      rows={5} style={{ ...inputStyle, resize: 'vertical', fontFamily: 'monospace', fontSize: 11, lineHeight: 1.6 }} />
+                      rows={4} style={{ ...inputStyle, resize: 'vertical', fontFamily: 'monospace', fontSize: 11, lineHeight: 1.6 }} />
                     <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 3 }}>Mỗi URL 1 dòng — ảnh đầu tiên là ảnh đại diện</div>
                     {form.imageUrl && (
                       <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
                         {form.imageUrl.split('\n').map(u => u.trim()).filter(Boolean).map((url, i) => (
-                          <img key={i} src={url} alt={`preview ${i+1}`}
-                            style={{ width: 56, height: 56, objectFit: 'contain', borderRadius: 6, border: i === 0 ? '2px solid #ee4d2d' : '1px solid #e5e7eb', background: '#fafafa', padding: 2 }}
-                            onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                          <div key={i} style={{ position: 'relative' }}>
+                            <img src={url} alt={`preview ${i+1}`}
+                              style={{ width: 64, height: 64, objectFit: 'contain', borderRadius: 6, border: i === 0 ? '2px solid #ee4d2d' : '1px solid #e5e7eb', background: '#fafafa', padding: 2 }}
+                              onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                            {i === 0 && <div style={{ position: 'absolute', bottom: 2, left: 2, background: '#ee4d2d', color: 'white', fontSize: 8, fontWeight: 700, padding: '1px 4px', borderRadius: 4 }}>Chính</div>}
+                          </div>
                         ))}
                       </div>
                     )}
