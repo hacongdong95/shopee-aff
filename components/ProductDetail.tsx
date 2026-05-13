@@ -824,31 +824,91 @@ export default function ProductDetail({ product, related, settings={} }: { produ
           </div>
         )}
 
-        {/* ── Sản phẩm liên quan ── */}
+        {/* ── Sản phẩm liên quan — grid kiểu Shopee ── */}
         {related.length>0 && (
           <div style={{ background:'white', borderRadius:12, boxShadow:'0 2px 8px rgba(0,0,0,0.06)', overflow:'hidden' }}>
             <div style={{ background:'#fafafa', padding:'14px 20px', borderBottom:'1px solid #f0f0f0', display:'flex', alignItems:'center', gap:10 }}>
               <div style={{ width:4, height:20, background:primary, borderRadius:2 }} />
               <h2 style={{ margin:0, fontSize:15, fontWeight:700, color:'#333' }}>CÓ THỂ BẠN THÍCH</h2>
+              <span style={{ fontSize:12, color:'#aaa' }}>Top {related.length}</span>
             </div>
-            <div style={{ padding:16 }}>
-              <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(140px,1fr))', gap:10 }}>
-                {related.map(p => {
+            <div style={{ padding:'12px 12px 16px' }}>
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(160px,1fr))', gap:1, border:'1px solid #f0f0f0', borderRadius:8, overflow:'hidden' }}>
+                {related.map((p, idx) => {
                   const disc = p.oldPrice && p.oldPrice > p.price ? Math.round((1-p.price/p.oldPrice)*100) : null
                   const thumb = parseImages(p.imageUrl)[0]
+                  const fakeSold = Math.floor(seededRandom(p.id*3)*9+1)
+                  const fakeSoldUnit = fakeSold >= 10 ? `${fakeSold}k+` : `${fakeSold}k+`
+                  const fakeRating = (seededRandom(p.id*13)*0.6+4.3).toFixed(1)
+                  const isYeuThich = seededRandom(p.id*7) > 0.4
+                  const isMall = seededRandom(p.id*11) > 0.6
                   return (
-                    <Link key={p.id} href={`/san-pham/${p.slug}`} style={{ textDecoration:'none' }}>
-                      <div style={{ border:'1px solid #f0f0f0', borderRadius:8, overflow:'hidden', cursor:'pointer', transition:'box-shadow 0.18s, transform 0.18s', background:'white' }}
-                        onMouseEnter={e=>{(e.currentTarget as HTMLDivElement).style.boxShadow='0 6px 20px rgba(0,0,0,0.1)';(e.currentTarget as HTMLDivElement).style.transform='translateY(-2px)'}}
-                        onMouseLeave={e=>{(e.currentTarget as HTMLDivElement).style.boxShadow='none';(e.currentTarget as HTMLDivElement).style.transform=''}}>
-                        <div style={{ position:'relative', paddingTop:'100%', background:'#fafafa' }}>
-                          {thumb?<img src={thumb} alt={p.name} style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'contain', padding:4 }} />
-                            :<div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', fontSize:36 }}>🛍️</div>}
-                          {disc && <div style={{ position:'absolute', top:0, left:0, background:primary, color:'white', fontSize:10, fontWeight:700, padding:'2px 7px', borderRadius:'0 0 6px 0' }}>-{disc}%</div>}
+                    <Link key={p.id} href={`/san-pham/${p.slug}`} style={{ textDecoration:'none', display:'block' }}>
+                      <div
+                        style={{ background:'white', cursor:'pointer', transition:'box-shadow 0.18s', borderRight:'1px solid #f5f5f5', borderBottom:'1px solid #f5f5f5' }}
+                        onMouseEnter={e=>(e.currentTarget as HTMLDivElement).style.boxShadow='0 4px 16px rgba(0,0,0,0.1)'}
+                        onMouseLeave={e=>(e.currentTarget as HTMLDivElement).style.boxShadow='none'}
+                      >
+                        {/* Image */}
+                        <div style={{ position:'relative', paddingTop:'100%', background:'#fafafa', overflow:'hidden' }}>
+                          {thumb
+                            ? <img src={thumb} alt={p.name} style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'contain', padding:6, transition:'transform 0.3s' }} />
+                            : <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', fontSize:40 }}>🛍️</div>}
+
+                          {/* Discount badge — góc trên trái */}
+                          {disc && (
+                            <div style={{ position:'absolute', top:0, left:0, background:primary, color:'white', fontSize:11, fontWeight:800, padding:'3px 8px', borderRadius:'0 0 8px 0' }}>
+                              -{disc}%
+                            </div>
+                          )}
+
+                          {/* Voucher bar — đáy ảnh như Shopee */}
+                          <div style={{ position:'absolute', bottom:0, left:0, right:0, background:'rgba(0,0,0,0.55)', padding:'3px 6px', display:'flex', alignItems:'center', gap:4 }}>
+                            <span style={{ background:'#ee4d2d', color:'white', fontSize:8, fontWeight:800, padding:'1px 4px', borderRadius:2, flexShrink:0 }}>15.5</span>
+                            <span style={{ color:'white', fontSize:9, fontWeight:600, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>VOUCHER Giảm thêm 30%</span>
+                          </div>
                         </div>
-                        <div style={{ padding:'8px 10px' }}>
-                          <div style={{ fontSize:12, color:'#333', lineHeight:1.4, display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical', overflow:'hidden', minHeight:32 }}>{p.name}</div>
-                          <div style={{ marginTop:5, color:primary, fontWeight:700, fontSize:14 }}>{p.price.toLocaleString('vi-VN')}₫</div>
+
+                        {/* Info */}
+                        <div style={{ padding:'8px 10px 10px' }}>
+                          {/* Mall / Yêu thích badge */}
+                          {(isYeuThich || isMall) && (
+                            <div style={{ marginBottom:4 }}>
+                              {isMall
+                                ? <span style={{ background:'#d0011b', color:'white', fontSize:9, fontWeight:700, padding:'1px 5px', borderRadius:2 }}>Mall</span>
+                                : <span style={{ background:`${primary}15`, color:primary, fontSize:9, fontWeight:700, padding:'1px 6px', borderRadius:2, border:`1px solid ${primary}44` }}>Yêu thích</span>
+                              }
+                            </div>
+                          )}
+
+                          {/* Name */}
+                          <div style={{ fontSize:12, color:'#333', lineHeight:1.4, display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical', overflow:'hidden', minHeight:34, marginBottom:5 }}>
+                            {p.name}
+                          </div>
+
+                          {/* Price row */}
+                          <div style={{ display:'flex', alignItems:'baseline', gap:5, flexWrap:'wrap', marginBottom:4 }}>
+                            <span style={{ color:primary, fontWeight:700, fontSize:15 }}>{p.price.toLocaleString('vi-VN')}₫</span>
+                            {p.oldPrice && p.oldPrice > p.price && (
+                              <span style={{ color:'#bbb', fontSize:11, textDecoration:'line-through' }}>{p.oldPrice.toLocaleString('vi-VN')}₫</span>
+                            )}
+                          </div>
+
+                          {/* Rating + Sold */}
+                          <div style={{ display:'flex', alignItems:'center', gap:6, fontSize:11, color:'#888', flexWrap:'wrap' }}>
+                            <div style={{ display:'flex', alignItems:'center', gap:2 }}>
+                              <span style={{ color:'#f5a623' }}>★</span>
+                              <span style={{ color:'#555', fontWeight:600 }}>{fakeRating}</span>
+                            </div>
+                            <span style={{ color:'#e0e0e0' }}>|</span>
+                            <span>Đã bán {fakeSoldUnit}</span>
+                          </div>
+
+                          {/* Location + Freeship */}
+                          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginTop:5 }}>
+                            <span style={{ fontSize:10, color:'#aaa' }}>📍 Hà Nội</span>
+                            <span style={{ background:'#26aa99', color:'white', fontSize:9, fontWeight:700, padding:'2px 5px', borderRadius:2 }}>FREESHIP</span>
+                          </div>
                         </div>
                       </div>
                     </Link>

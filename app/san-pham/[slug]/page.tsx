@@ -37,16 +37,12 @@ export async function generateMetadata({
     title,
     description,
     openGraph: {
-      title,
-      description,
-      siteName,
-      type: 'website',
+      title, description, siteName, type: 'website',
       ...(thumb ? { images: [{ url: thumb, width: 800, height: 800, alt: product.name }] } : {}),
     },
     twitter: {
       card: thumb ? 'summary_large_image' : 'summary',
-      title,
-      description,
+      title, description,
       ...(thumb ? { images: [thumb] } : {}),
     },
   }
@@ -59,17 +55,17 @@ export default async function ProductPage({
 }) {
   const { slug } = await params
 
-  const [product, settings] = await Promise.all([
+  const [product, settings, categories] = await Promise.all([
     prisma.product.findUnique({
       where: { slug },
       include: { category: true },
     }),
     getSettings(),
+    prisma.category.findMany({ orderBy: { name: 'asc' } }), // ← thêm để hiện category tabs
   ])
 
   if (!product || !product.isActive) notFound()
 
-  // Lấy sản phẩm cùng danh mục con (ưu tiên)
   const relatedSame = await prisma.product.findMany({
     where: { categoryId: product.categoryId, isActive: true, NOT: { id: product.id } },
     include: { category: true },
@@ -77,7 +73,6 @@ export default async function ProductPage({
     take: 8,
   })
 
-  // Nếu chưa đủ 8, bổ sung từ các danh mục con khác cùng cha
   let related = relatedSame
   if (relatedSame.length < 8 && product.category.parentId) {
     const siblingCats = await prisma.category.findMany({
@@ -99,5 +94,5 @@ export default async function ProductPage({
     }
   }
 
-  return <ProductDetail product={product} related={related} settings={settings} />
+  return <ProductDetail product={product} related={related} settings={settings} categories={categories} />
 }
