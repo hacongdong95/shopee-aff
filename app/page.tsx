@@ -97,6 +97,7 @@ export default async function HomePage({
   const popupSubtitle = settings.popup_subtitle || ''
   const popupBtnText  = settings.popup_btn_text || 'Mua Ngay'
   const popupDelay    = Number(settings.popup_delay || '2')
+  const voucherText   = settings.voucher_text || ''
 
   return (
     <div style={{ minHeight: '100vh', background: '#f5f5f5', fontFamily: "'Be Vietnam Pro', sans-serif" }}>
@@ -158,7 +159,7 @@ export default async function HomePage({
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 14 }}>
               {hotProducts.map((p, i) => (
                 <ScrollReveal key={p.id} delay={i * 50}>
-                  <ProductCard product={p} />
+                  <ProductCard product={p} voucherText={voucherText} />
                 </ScrollReveal>
               ))}
             </div>
@@ -204,7 +205,7 @@ export default async function HomePage({
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 14 }}>
             {products.map((p, i) => (
               <ScrollReveal key={p.id} delay={Math.min(i % 6 * 60, 300)}>
-                <ProductCard product={p} />
+                <ProductCard product={p} voucherText={voucherText} />
               </ScrollReveal>
             ))}
           </div>

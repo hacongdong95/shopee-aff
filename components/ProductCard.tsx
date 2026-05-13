@@ -32,7 +32,7 @@ function getIsNew(product: Product): boolean {
   return (Date.now() - new Date(product.createdAt as string | Date).getTime()) / 86400000 < 7
 }
 
-export default function ProductCard({ product }: { product: Product }) {
+export default function ProductCard({ product, voucherText }: { product: Product; voucherText?: string }) {
   const [liked, setLiked] = useState(false)
   const [imgErr, setImgErr] = useState(false)
 
@@ -140,7 +140,7 @@ export default function ProductCard({ product }: { product: Product }) {
           </div>
 
           {/* Voucher strip dưới ảnh — giống Shopee */}
-          {discount && discount >= 10 && (
+          {voucherText && (
             <div style={{
               position: 'absolute', bottom: 0, left: 0, right: 0,
               background: 'linear-gradient(90deg, #ff6633, #ee4d2d)',
@@ -148,8 +148,8 @@ export default function ProductCard({ product }: { product: Product }) {
               padding: '3px 8px',
               display: 'flex', alignItems: 'center', gap: 4,
             }}>
-              <span style={{ background: 'rgba(255,255,255,0.25)', borderRadius: 3, padding: '1px 5px', fontSize: 9, fontWeight: 800 }}>VOUCHER</span>
-              <span>Giảm thêm tới {Math.min(discount, 30)}%</span>
+              <span style={{ background: 'rgba(255,255,255,0.25)', borderRadius: 3, padding: '1px 5px', fontSize: 9, fontWeight: 800 }}>{voucherText.split(' ')[0]}</span>
+              <span>{voucherText.split(' ').slice(1).join(' ')}</span>
             </div>
           )}
         </div>

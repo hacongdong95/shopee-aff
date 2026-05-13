@@ -638,7 +638,7 @@ export default function ProductDetail({ product, related, settings={}, categorie
   const socialLinks = buildSocialLinks(settings)
 
   return (
-    <div style={{ minHeight:'100vh', background:'#f5f5f5', fontFamily:"'Be Vietnam Pro', Arial, sans-serif", paddingBottom:80, overflowX:'hidden' }}>
+    <div style={{ minHeight:'100vh', background:'#f5f5f5', fontFamily:"'Be Vietnam Pro', Arial, sans-serif", paddingBottom:80 }}>
       <style>{`
         *,*::before,*::after{box-sizing:border-box}
         @media(max-width:768px){
