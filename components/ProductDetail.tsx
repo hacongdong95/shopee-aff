@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import BuyButton from '@/components/BuyButton'
 import CategoryNav from '@/components/CategoryNav'
-import CategoryNav from '@/components/CategoryNav'
 
 type Category = { id: number; name: string; slug: string }
 type Product = {
