@@ -606,7 +606,7 @@ function SocialProofPopup({ primary }: { primary: string }) {
 }
 
 // â”€â”€ Main â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-export default function ProductDetail({ product, related, settings={}, categories=[] }: { product:Product; related:Product[]; settings?:Settings; categories?:any[] }) {
+export default function ProductDetail({ product, related, settings={} }: { product:Product; related:Product[]; settings?:Settings }) {
   const [copied, setCopied] = useState(false)
   const [openReviews, setOpenReviews] = useState(false)
 
