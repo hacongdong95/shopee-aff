@@ -24,6 +24,9 @@ export default async function NotFound() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#f5f5f5', fontFamily: "'Be Vietnam Pro', sans-serif", display: 'flex', flexDirection: 'column' }}>
+      <style>{`
+        .not-found-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important; }
+      `}</style>
 
       {/* Header nhỏ */}
       <header style={{ background: `linear-gradient(135deg, ${primary} 0%, ${primary}bb 100%)`, padding: '0 20px', height: 60, display: 'flex', alignItems: 'center', boxShadow: `0 2px 20px ${primary}44` }}>
@@ -76,11 +79,8 @@ export default async function NotFound() {
                 const thumb  = images[0] || null
                 const disc   = p.oldPrice && p.oldPrice > p.price ? Math.round((1 - p.price / p.oldPrice) * 100) : null
                 return (
-                  <Link key={p.id} href={`/san-pham/${p.slug}`} style={{ textDecoration: 'none' }}>
-                    <div style={{ background: 'white', borderRadius: 12, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.07)', border: '1px solid rgba(0,0,0,0.05)', transition: 'transform 0.15s, box-shadow 0.15s' }}
-                      onMouseEnter={e => { const el = e.currentTarget as HTMLDivElement; el.style.transform = 'translateY(-3px)'; el.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)' }}
-                      onMouseLeave={e => { const el = e.currentTarget as HTMLDivElement; el.style.transform = ''; el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.07)' }}
-                    >
+                  <Link key={p.id} href={`/san-pham/${p.slug}`} style={{ textDecoration: 'none' }} className="not-found-card-link">
+                    <div className="not-found-card" style={{ background: 'white', borderRadius: 12, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.07)', border: '1px solid rgba(0,0,0,0.05)', transition: 'transform 0.15s, box-shadow 0.15s' }}>
                       <div style={{ position: 'relative', paddingTop: '100%', background: '#f8f8f8' }}>
                         {thumb
                           ? <img src={thumb} alt={p.name} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
