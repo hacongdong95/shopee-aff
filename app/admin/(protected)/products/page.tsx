@@ -212,24 +212,41 @@ export default function ProductsPage() {
     finally { setFetchingImages(false) }
   }
 
-  // ── Upload ảnh từ máy/điện thoại ─────────────────────────────────────────
+  // ── Upload ảnh lên Cloudinary (không cần backend) ────────────────────────
   const handleUploadFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return
-    setUploading(true); setScrapeMsg('⏳ Đang tải ảnh lên...')
+    setUploading(true); setScrapeMsg('⏳ Đang tải ảnh lên Cloudinary...')
     try {
-      const formData = new FormData()
-      Array.from(files).forEach(f => formData.append('files', f))
-      const res  = await fetch('/api/upload', { method: 'POST', body: formData })
-      const data = await res.json()
-      if (!res.ok || data.error) { setScrapeMsg(`❌ ${data.error}`); return }
-      // Thêm URL mới vào textarea (không xóa URL cũ)
+      const cloudName  = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!
+      const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!
+      const urls: string[] = []
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+        setScrapeMsg(`⏳ Đang tải ảnh ${i + 1}/${files.length}...`)
+        const fd = new FormData()
+        fd.append('file', file)
+        fd.append('upload_preset', uploadPreset)
+        fd.append('folder', 'shopee-aff/products')
+
+        const res  = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, { method: 'POST', body: fd })
+        const data = await res.json()
+        if (data.secure_url) urls.push(data.secure_url)
+        else throw new Error(data.error?.message || 'Upload thất bại')
+      }
+
+      // Thêm URL mới vào textarea
       setForm(f => ({
         ...f,
-        imageUrl: [f.imageUrl, ...data.urls].filter(Boolean).join('\n'),
+        imageUrl: [...(f.imageUrl ? f.imageUrl.split('\n') : []), ...urls].filter(Boolean).join('\n'),
       }))
-      setScrapeMsg(`✅ Đã tải lên ${data.urls.length} ảnh!`)
-    } catch (e) { setScrapeMsg(`❌ ${e}`) }
-    finally { setUploading(false) }
+      setScrapeMsg(`✅ Đã tải lên ${urls.length} ảnh thành công!`)
+    } catch (e) {
+      setScrapeMsg(`❌ Lỗi upload: ${e}`)
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
   }
 
   const save = async () => {
@@ -434,7 +451,7 @@ export default function ProductsPage() {
       {/* ── Modal Thêm/Sửa ── */}
       {showForm && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
-          onClick={e => { e.stopPropagation() }}>
+          onClick={e => { if (e.target === e.currentTarget) setShowForm(false) }}>
           <div style={{ background: 'white', borderRadius: 16, width: '100%', maxWidth: 680, maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
 
             <div style={{ padding: '20px 28px', borderBottom: '1px solid #f3f4f6', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, background: 'white', zIndex: 1, borderRadius: '16px 16px 0 0' }}>
