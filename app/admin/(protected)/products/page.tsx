@@ -269,7 +269,7 @@ export default function ProductsPage() {
       </div>
 
       {/* ── Search + toolbar ── */}
-      <div style={{ background: 'white', borderRadius: 10, padding: '10px 16px', boxShadow: '0 1px 4px rgba(0,0,0,0.07)', marginBottom: someSelected ? 0 : 16, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', borderRadius: someSelected ? '10px 10px 0 0' : 10 }}>
+      <div style={{ background: 'white', borderRadius: someSelected ? '10px 10px 0 0' : 10, padding: '10px 16px', boxShadow: '0 1px 4px rgba(0,0,0,0.07)', marginBottom: someSelected ? 0 : 16, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
         <input type="checkbox"
           checked={allFilteredSelected || selectAll}
           ref={el => { if (el) el.indeterminate = selected.size > 0 && !allFilteredSelected && !selectAll }}
