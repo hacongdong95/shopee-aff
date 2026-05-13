@@ -657,11 +657,10 @@ export default function ProductDetail({ product, related, settings={}, categorie
         @keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-33.33%)}}
       `}</style>
 
-      {/* ── Marquee trust bar ── */}
-      <MarqueeBanner primary={primary} items={[shippingText, guaranteeText, returnText, shopeeBadge]} />
-
-      {/* ── Header ── */}
-      <header style={{ background:`linear-gradient(135deg,${primary} 0%,${primary}cc 100%)`, position:'sticky', top:0, zIndex:100, boxShadow:`0 2px 16px ${primary}44` }}>
+      {/* ── Header + Marquee trust bar ── */}
+      <header style={{ position:'sticky', top:0, zIndex:100 }}>
+        <MarqueeBanner primary={primary} items={[shippingText, guaranteeText, returnText, shopeeBadge]} />
+        <div style={{ background:`linear-gradient(135deg,${primary} 0%,${primary}cc 100%)`, boxShadow:`0 2px 16px ${primary}44` }}>
         <div style={{ maxWidth:1100, margin:'0 auto', padding:'0 16px', height:56, display:'flex', alignItems:'center', gap:12 }}>
           <Link href="/" style={{ color:'white', fontWeight:800, fontSize:18, textDecoration:'none', display:'flex', alignItems:'center', gap:8, flexShrink:0, minWidth:0 }}>
             <span style={{ background:'rgba(255,255,255,0.2)', borderRadius:8, width:34, height:34, display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0 }}>{siteEmoji}</span>
@@ -678,6 +677,7 @@ export default function ProductDetail({ product, related, settings={}, categorie
           )}
         </div>
         <CategoryNav categories={categories} activeCat={product.category.slug} primary={primary} />
+        </div>
       </header>
 
       {/* ── Breadcrumb ── */}
@@ -866,11 +866,10 @@ export default function ProductDetail({ product, related, settings={}, categorie
                           )}
 
                           {/* Voucher bar — đáy ảnh như Shopee */}
-                          {voucherText && (
-                            <div style={{ position:'absolute', bottom:0, left:0, right:0, background:'rgba(0,0,0,0.55)', padding:'3px 6px', display:'flex', alignItems:'center', gap:4 }}>
-                              <span style={{ color:'white', fontSize:9, fontWeight:600, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{voucherText}</span>
-                            </div>
-                          )}
+                          <div style={{ position:'absolute', bottom:0, left:0, right:0, background:'rgba(0,0,0,0.55)', padding:'3px 6px', display:'flex', alignItems:'center', gap:4 }}>
+                            <span style={{ background:'#ee4d2d', color:'white', fontSize:8, fontWeight:800, padding:'1px 4px', borderRadius:2, flexShrink:0 }}>15.5</span>
+                            <span style={{ color:'white', fontSize:9, fontWeight:600, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>VOUCHER Giảm thêm 30%</span>
+                          </div>
                         </div>
 
                         {/* Info */}
