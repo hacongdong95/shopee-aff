@@ -4,12 +4,37 @@ import { prisma } from '@/lib/prisma'
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY!
 
-const VIETNAMESE_NAMES = [
-  'Nguyễn Thị Lan', 'Trần Văn Minh', 'Lê Thị Hoa', 'Phạm Văn Nam', 'Hoàng Thị Mai',
-  'Vũ Văn Hùng', 'Đặng Thị Thu', 'Bùi Văn Đức', 'Đỗ Thị Linh', 'Ngô Văn Tuấn',
-  'Trịnh Thị Nga', 'Đinh Văn Khoa', 'Lý Thị Phương', 'Phan Văn Tài', 'Mai Thị Hạnh',
-  'Tô Văn Long', 'Trương Thị Yến', 'Hồ Văn Bình', 'Lâm Thị Cúc', 'Võ Văn Thắng',
-]
+// Ho va ten rieng de ghep ngau nhien -> it bi trung hon
+const HO = ['Nguyễn', 'Trần', 'Lê', 'Phạm', 'Hoàng', 'Huỳnh', 'Phan', 'Vũ', 'Võ', 'Đặng',
+  'Bùi', 'Đỗ', 'Hồ', 'Ngô', 'Dương', 'Lý', 'Đinh', 'Mai', 'Trịnh', 'Tô',
+  'Trương', 'Lâm', 'Hà', 'Cao', 'Đào', 'Tạ', 'Đoàn', 'Vương', 'Châu', 'Thái']
+
+const TEN_NAM = ['Minh', 'Hùng', 'Đức', 'Tuấn', 'Nam', 'Khoa', 'Tài', 'Long', 'Bình', 'Thắng',
+  'Dũng', 'Quân', 'Huy', 'Phong', 'Hiếu', 'Đạt', 'Thịnh', 'Kiên', 'Mạnh', 'Sơn',
+  'Tùng', 'Đông', 'Quang', 'Nhật', 'Trung', 'Khôi', 'Lâm', 'Phúc', 'Bảo', 'Gia Huy']
+
+const TEN_NU = ['Lan', 'Hoa', 'Mai', 'Thu', 'Linh', 'Nga', 'Phương', 'Hạnh', 'Yến', 'Cúc',
+  'Trang', 'Thảo', 'Hương', 'Ngọc', 'Nhung', 'Diễm', 'Thanh', 'Hiền', 'Vân', 'Loan',
+  'Hằng', 'Trúc', 'Quỳnh', 'Ly', 'Nhi', 'Thy', 'Vy', 'Bích', 'Châu', 'Kim Anh']
+
+const DEM_NAM = ['Văn', 'Quốc', 'Anh', 'Đình', 'Công', 'Hữu', 'Gia', 'Tiến', 'Trọng', 'Ngọc']
+const DEM_NU = ['Thị', 'Ngọc', 'Thúy', 'Kim', 'Thanh', 'Mỹ', 'Bích', 'Như', 'Phương', 'Thùy']
+
+function randomItem<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)]
+}
+
+function generateVietnameseName(usedNames: Set<string>, attempt = 0): string {
+  const isFemale = Math.random() > 0.45
+  const ho = randomItem(HO)
+  const dem = isFemale ? randomItem(DEM_NU) : randomItem(DEM_NAM)
+  const ten = isFemale ? randomItem(TEN_NU) : randomItem(TEN_NAM)
+  // Doi khi bo dem de tu nhien hon
+  const name = Math.random() > 0.3 ? `${ho} ${dem} ${ten}` : `${ho} ${ten}`
+  if (usedNames.has(name) && attempt < 10) return generateVietnameseName(usedNames, attempt + 1)
+  usedNames.add(name)
+  return name
+}
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -60,10 +85,20 @@ Trả về JSON array, KHÔNG markdown:
     const reviews: { rating: number; comment: string }[] = JSON.parse(match[0])
 
     // Lưu vào DB với tên ngẫu nhiên và ngày trải rộng trong 3 tháng qua
+    // Lay ten da dung de tranh trung
+    const existingNames = await prisma.review.findMany({
+      where: { productId },
+      select: { name: true },
+    })
+    const usedNames = new Set(existingNames.map(r => r.name))
+
     const created = await Promise.all(reviews.map((r, i) => {
-      const name = VIETNAMESE_NAMES[Math.floor(Math.random() * VIETNAMESE_NAMES.length)]
-      const daysAgo = Math.floor(Math.random() * 90) + 1
+      const name = generateVietnameseName(usedNames)
+      // Ngay trai deu trong 3 thang, khong de ngay lien tiep
+      const daysAgo = Math.floor(Math.random() * 85) + 2
+      const hoursOffset = Math.floor(Math.random() * 18) + 6 // 6am-12am
       const createdAt = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000)
+      createdAt.setHours(hoursOffset, Math.floor(Math.random() * 60), 0)
       return prisma.review.create({
         data: {
           productId,

@@ -336,19 +336,8 @@ function ReviewsSection({ productId, primary }: { productId:number; primary:stri
   }
 
   return (
-    <div style={{ background:'white', borderRadius:12, boxShadow:'0 2px 8px rgba(0,0,0,0.06)', marginBottom:16, overflow:'hidden' }}>
-      {/* Header */}
-      <div style={{ background:`${primary}0e`, padding:'14px 20px', borderBottom:`2px solid ${primary}33`, display:'flex', alignItems:'center', gap:10 }}>
-        <span style={{ fontSize:20 }}>💬</span>
-        <h2 style={{ margin:0, fontSize:16, fontWeight:700, color:primary }}>ĐÁNH GIÁ SẢN PHẨM</h2>
-        {reviews.length > 0 && (
-          <span style={{ fontSize:12, background:`${primary}18`, color:primary, padding:'2px 10px', borderRadius:20, fontWeight:600 }}>
-            {reviews.length} đánh giá
-          </span>
-        )}
-      </div>
-
-      <div style={{ padding:20 }}>
+    <div style={{ background:'white', overflow:'hidden' }}>
+      <div style={{ padding:'16px 20px' }}>
 
         {/* Tổng quan rating */}
         {reviews.length > 0 && (
@@ -359,18 +348,25 @@ function ReviewsSection({ productId, primary }: { productId:number; primary:stri
               <StarRow value={Math.round(Number(avgRating))} size={16} />
               <div style={{ fontSize:11, color:'#999', marginTop:4 }}>{reviews.length} đánh giá</div>
             </div>
-            {/* Phân phối sao */}
+            {/* Phân phối sao - có thể click để lọc */}
             <div style={{ flex:1, minWidth:160, display:'flex', flexDirection:'column', gap:5, justifyContent:'center' }}>
               {ratingDist.map(({ star, count, pct }) => (
-                <div key={star} style={{ display:'flex', alignItems:'center', gap:8, fontSize:12 }}>
-                  <span style={{ width:12, textAlign:'right', color:'#555', fontWeight:600 }}>{star}</span>
+                <div key={star} onClick={() => setFilterStar(filterStar === star ? null : star)}
+                  style={{ display:'flex', alignItems:'center', gap:8, fontSize:12, cursor:'pointer', padding:'3px 6px', borderRadius:6, background: filterStar === star ? `${primary}12` : 'transparent', border: filterStar === star ? `1px solid ${primary}44` : '1px solid transparent', transition:'all 0.15s' }}>
+                  <span style={{ width:12, textAlign:'right', color: filterStar === star ? primary : '#555', fontWeight:700 }}>{star}</span>
                   <span style={{ fontSize:13 }}>⭐</span>
                   <div style={{ flex:1, height:6, background:'#f0f0f0', borderRadius:4, overflow:'hidden' }}>
                     <div style={{ height:'100%', width:`${pct}%`, background: star >= 4 ? primary : star === 3 ? '#f39c12' : '#e74c3c', borderRadius:4, transition:'width 0.5s ease' }} />
                   </div>
-                  <span style={{ width:28, color:'#999' }}>{count}</span>
+                  <span style={{ width:28, color: filterStar === star ? primary : '#999', fontWeight: filterStar === star ? 700 : 400 }}>{count}</span>
                 </div>
               ))}
+              {filterStar && (
+                <div onClick={() => setFilterStar(null)}
+                  style={{ fontSize:11, color:primary, cursor:'pointer', textAlign:'center', marginTop:4, fontWeight:600 }}>
+                  ✕ Bỏ lọc
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -385,7 +381,13 @@ function ReviewsSection({ productId, primary }: { productId:number; primary:stri
           </div>
         ) : (
           <div style={{ display:'flex', flexDirection:'column', gap:12, marginBottom:24 }}>
-            {reviews.map(r => (
+            {(filterStar ? reviews.filter(r => r.rating === filterStar) : reviews).length === 0 ? (
+              <div style={{ textAlign:'center', padding:'16px 0', color:'#aaa', fontSize:13 }}>
+                Không có đánh giá {filterStar} sao nào.
+                <span onClick={() => setFilterStar(null)} style={{ color:primary, cursor:'pointer', marginLeft:6, fontWeight:600 }}>Xem tất cả</span>
+              </div>
+            ) : null}
+            {(filterStar ? reviews.filter(r => r.rating === filterStar) : reviews).map(r => (
               <div key={r.id} style={{ padding:'12px 14px', background:'#fafafa', borderRadius:8, border:'1px solid #f0f0f0' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:6, flexWrap:'wrap' }}>
                   <div style={{ width:32, height:32, borderRadius:'50%', background:`${primary}20`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:15, fontWeight:700, color:primary, flexShrink:0 }}>
