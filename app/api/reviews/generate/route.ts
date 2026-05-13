@@ -1,4 +1,4 @@
-// app/api/products/[id]/generate-reviews/route.ts
+// app/api/reviews/generate/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
@@ -14,7 +14,7 @@ function generateUniqueName(usedNames: Set<string>, index: number): string {
   const isNam = (index % 3 !== 0)
   let attempts = 0
   while (attempts < 100) {
-    const ho = HO[Math.floor(Math.random() * HO.length)]
+    const ho  = HO[Math.floor(Math.random() * HO.length)]
     const dem = isNam ? DEM_NAM[Math.floor(Math.random() * DEM_NAM.length)] : DEM_NU[Math.floor(Math.random() * DEM_NU.length)]
     const ten = isNam ? TEN_NAM[Math.floor(Math.random() * TEN_NAM.length)] : TEN_NU[Math.floor(Math.random() * TEN_NU.length)]
     const name = `${ho} ${dem} ${ten}`
@@ -24,17 +24,28 @@ function generateUniqueName(usedNames: Set<string>, index: number): string {
   return `${HO[index % HO.length]} ${isNam ? DEM_NAM[index % DEM_NAM.length] : DEM_NU[index % DEM_NU.length]} ${index}`
 }
 
-export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
-  const productId = Number(id)
-
-  const product = await prisma.product.findUnique({ where: { id: productId } })
-  if (!product) return NextResponse.json({ error: 'Product not found' }, { status: 404 })
-
-  const { count = 5 } = await req.json().catch(() => ({}))
-
+export async function POST(req: NextRequest) {
   try {
-    const prompt = `Tạo ${count} đánh giá sản phẩm thực tế cho sản phẩm: "${product.name}"
+    const body = await req.json()
+    const { productId, productName, count = 5 } = body
+
+    if (!productId) {
+      return NextResponse.json({ error: 'Thiếu productId' }, { status: 400 })
+    }
+
+    // Lấy tên sản phẩm từ DB nếu không truyền lên
+    let name = productName
+    if (!name) {
+      const product = await prisma.product.findUnique({ where: { id: Number(productId) } })
+      if (!product) return NextResponse.json({ error: 'Product not found' }, { status: 404 })
+      name = product.name
+    }
+
+    if (!GROQ_API_KEY) {
+      return NextResponse.json({ error: 'GROQ_API_KEY chưa được cấu hình' }, { status: 500 })
+    }
+
+    const prompt = `Tạo ${count} đánh giá sản phẩm thực tế cho sản phẩm: "${name}"
 
 Yêu cầu:
 - Rating từ 4 đến 5 sao (random, đa dạng, đa số 5 sao)
@@ -44,53 +55,72 @@ Yêu cầu:
 - Viết bằng tiếng Việt tự nhiên, có thể có lỗi chính tả nhỏ, emoji, viết tắt như người thật
 - KHÔNG dùng từ "sản phẩm" nhiều lần, thay bằng "món đồ", "hàng", "cái này"...
 
-Trả về JSON array, KHÔNG markdown:
-[
-  { "rating": 5, "comment": "..." },
-  { "rating": 4, "comment": "..." }
-]`
+Trả về JSON array thuần túy, KHÔNG có markdown, KHÔNG có text thừa:
+[{"rating":5,"comment":"..."},{"rating":4,"comment":"..."}]`
 
-    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_API_KEY}` },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${GROQ_API_KEY}`,
+      },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         temperature: 0.9,
-        max_tokens: 1000,
+        max_tokens: 1500,
         messages: [
-          { role: 'system', content: 'Bạn tạo review sản phẩm fake nhưng thực tế cho website thương mại điện tử Việt Nam. Chỉ trả về JSON array thuần túy.' },
+          { role: 'system', content: 'Bạn tạo review sản phẩm fake nhưng thực tế cho website thương mại điện tử Việt Nam. Chỉ trả về JSON array thuần túy, không có text hay markdown bao quanh.' },
           { role: 'user', content: prompt },
         ],
       }),
     })
 
-    const data = await res.json()
-    const text = data?.choices?.[0]?.message?.content ?? ''
+    if (!groqRes.ok) {
+      const errText = await groqRes.text()
+      return NextResponse.json({ error: `Groq API lỗi: ${groqRes.status} - ${errText.slice(0, 200)}` }, { status: 500 })
+    }
+
+    const groqData = await groqRes.json()
+    const text = groqData?.choices?.[0]?.message?.content ?? ''
+
+    // Parse JSON linh hoạt
     const clean = text.replace(/```json|```/g, '').trim()
     const match = clean.match(/\[[\s\S]*\]/)
-    if (!match) throw new Error('Không parse được JSON')
+    if (!match) {
+      return NextResponse.json({ error: `Không parse được JSON. Raw: ${clean.slice(0, 300)}` }, { status: 500 })
+    }
 
-    const reviews: { rating: number; comment: string }[] = JSON.parse(match[0])
+    let reviews: { rating: number; comment: string }[]
+    try {
+      reviews = JSON.parse(match[0])
+    } catch (parseErr) {
+      return NextResponse.json({ error: `JSON parse lỗi: ${parseErr}. Raw: ${match[0].slice(0, 200)}` }, { status: 500 })
+    }
 
-    // Lưu vào DB với tên ngẫu nhiên và ngày trải rộng trong 3 tháng qua
+    if (!Array.isArray(reviews) || reviews.length === 0) {
+      return NextResponse.json({ error: 'AI trả về mảng rỗng' }, { status: 500 })
+    }
+
+    // Lưu vào DB
     const usedNames = new Set<string>()
     const created = await Promise.all(reviews.map((r, i) => {
-      const name = generateUniqueName(usedNames, i)
-      const daysAgo = Math.floor(Math.random() * 90) + 1
+      const reviewName = generateUniqueName(usedNames, i)
+      const daysAgo   = Math.floor(Math.random() * 90) + 1
       const createdAt = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000)
       return prisma.review.create({
         data: {
-          productId,
-          name,
-          rating: Math.min(5, Math.max(4, r.rating)),
-          comment: r.comment,
+          productId: Number(productId),
+          name: reviewName,
+          rating: Math.min(5, Math.max(1, Number(r.rating) || 5)),
+          comment: String(r.comment || '').trim() || 'Sản phẩm tốt!',
           createdAt,
         },
       })
     }))
 
     return NextResponse.json({ ok: true, count: created.length })
+
   } catch (e) {
-    return NextResponse.json({ error: `Lỗi generate: ${e}` }, { status: 500 })
+    return NextResponse.json({ error: `Lỗi server: ${String(e)}` }, { status: 500 })
   }
 }
