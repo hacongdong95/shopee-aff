@@ -638,7 +638,7 @@ export default function ProductDetail({ product, related, settings={}, categorie
   const socialLinks = buildSocialLinks(settings)
 
   return (
-    <div style={{ minHeight:'100vh', background:'#f5f5f5', fontFamily:"'Be Vietnam Pro', Arial, sans-serif", paddingBottom:80 }}>
+    <div style={{ minHeight:'100vh', background:'#f5f5f5', fontFamily:"'Be Vietnam Pro', Arial, sans-serif", paddingBottom:80, overflowX:'clip' }}>
       <style>{`
         *,*::before,*::after{box-sizing:border-box}
         @media(max-width:768px){
@@ -866,10 +866,12 @@ export default function ProductDetail({ product, related, settings={}, categorie
                           )}
 
                           {/* Voucher bar — đáy ảnh như Shopee */}
-                          <div style={{ position:'absolute', bottom:0, left:0, right:0, background:'rgba(0,0,0,0.55)', padding:'3px 6px', display:'flex', alignItems:'center', gap:4 }}>
-                            <span style={{ background:'#ee4d2d', color:'white', fontSize:8, fontWeight:800, padding:'1px 4px', borderRadius:2, flexShrink:0 }}>15.5</span>
-                            <span style={{ color:'white', fontSize:9, fontWeight:600, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>VOUCHER Giảm thêm 30%</span>
-                          </div>
+                          {voucherText && (
+                            <div style={{ position:'absolute', bottom:0, left:0, right:0, background:'linear-gradient(90deg,#ff6633,#ee4d2d)', padding:'3px 8px', display:'flex', alignItems:'center', gap:4 }}>
+                              <span style={{ background:'rgba(255,255,255,0.25)', borderRadius:3, padding:'1px 5px', fontSize:9, fontWeight:800, color:'white' }}>{voucherText.split(' ')[0]}</span>
+                              <span style={{ color:'white', fontSize:9, fontWeight:700, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{voucherText.split(' ').slice(1).join(' ')}</span>
+                            </div>
+                          )}
                         </div>
 
                         {/* Info */}
