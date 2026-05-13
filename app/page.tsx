@@ -7,6 +7,7 @@ import FlashSaleCountdown from '@/components/FlashSaleCountdown'
 import PopupAd from '@/components/PopupAd'
 import CategoryNav from '@/components/CategoryNav'
 import SearchBox from '@/components/SearchBox'
+import BackToTop from '@/components/BackToTop'
 
 export const revalidate = 60
 
@@ -214,6 +215,9 @@ export default async function HomePage({
       {popupShow && popupImage && popupAffLink && (
         <PopupAd imageUrl={popupImage} affLink={popupAffLink} title={popupTitle} subtitle={popupSubtitle} btnText={popupBtnText} primary={primary} delaySeconds={popupDelay} />
       )}
+
+      {/* BACK TO TOP */}
+      <BackToTop primary={primary} />
 
       {/* FOOTER */}
       <footer style={{ background: footerColor, color: '#aaa', padding: '48px 20px 28px', marginTop: 48 }}>

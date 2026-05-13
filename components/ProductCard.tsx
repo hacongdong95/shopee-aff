@@ -15,6 +15,16 @@ function seededRandom(seed: number) {
   const x = Math.sin(seed + 1) * 10000; return x - Math.floor(x)
 }
 
+// Rút gọn tên sản phẩm — bỏ prefix thừa, ký tự lạ
+function cleanName(name: string): string {
+  return name
+    .replace(/\[.*?\]/g, '')           // bỏ [Hỏa tốc], [Chính hãng]...
+    .replace(/\(.*?\)/g, '')           // bỏ (8GB/128GB)...
+    .replace(/^[✅✔☑🔥⭐💯🏆]+\s*/u, '') // bỏ emoji đầu tên
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
 function getBadge(product: Product): { label: string; color: string; bg: string } | null {
   const discount = product.oldPrice && product.oldPrice > product.price
     ? Math.round((1 - product.price / product.oldPrice) * 100) : 0
@@ -95,7 +105,7 @@ export default function ProductCard({ product }: { product: Product }) {
             {product.category.name}
           </div>
           <div style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.5, color: '#1a1a1a', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: 39 }}>
-            {product.name}
+            {cleanName(product.name)}
           </div>
 
           {/* ── Giá ngang hàng ── */}
