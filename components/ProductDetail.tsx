@@ -626,7 +626,6 @@ export default function ProductDetail({ product, related, settings={}, categorie
   const footerColor   = settings.footer_color    || '#1a1a1a'
   const showReviews   = settings.show_reviews    !== 'false'
   const voucherText   = settings.voucher_text    || '15.5 VOUCHER Giam them 30%'
-  const voucherText   = settings.voucher_text    || '15.5 VOUCHER Giáº£m thÃªim 30%'
 
   const discount = product.oldPrice && product.oldPrice > product.price
     ? Math.round((1-product.price/product.oldPrice)*100) : null
