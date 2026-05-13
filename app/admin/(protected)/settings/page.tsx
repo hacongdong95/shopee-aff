@@ -40,7 +40,7 @@ const TAB_FIELDS: Record<string, { key: string; label: string; type: string; pla
   ],
   banner: [
     { key: 'banner_show',       label: 'Hiện banner trang chủ',  type: 'toggle',   placeholder: 'true' },
-    { key: 'banner_image',      label: 'Ảnh banner (để trống = dùng màu gradient)', type: 'text', placeholder: 'https://i.ibb.co/...jpg', hint: 'GIF động cũng được! Kích thước lý tưởng: 1200x280px' },
+    { key: 'banner_image',      label: 'Ảnh banner (để trống = dùng màu gradient)', type: 'image_upload', placeholder: 'https://i.ibb.co/...jpg', hint: 'GIF động cũng được! Kích thước lý tưởng: 1200x280px' },
     { key: 'banner_link',       label: 'Link khi bấm vào ảnh banner', type: 'text', placeholder: '/?sort=popular', hint: 'Để trống nếu không muốn click được' },
     { key: 'banner_title',      label: 'Tiêu đề banner (khi không có ảnh)', type: 'text', placeholder: '🔥 Deal Hot Mỗi Ngày' },
     { key: 'banner_subtitle',   label: 'Mô tả banner',           type: 'textarea', placeholder: 'Hàng ngàn sản phẩm giảm giá sâu...' },
@@ -74,7 +74,7 @@ const TAB_FIELDS: Record<string, { key: string; label: string; type: string; pla
   ],
   popup: [
     { key: 'popup_show',     label: 'Bật popup quảng cáo', type: 'toggle',   placeholder: 'false', hint: 'Popup xuất hiện sau vài giây khi khách vào trang' },
-    { key: 'popup_image',    label: 'Link ảnh popup',       type: 'text',     placeholder: 'https://...jpg', hint: 'Ảnh sản phẩm muốn quảng cáo' },
+    { key: 'popup_image',    label: 'Link ảnh popup',       type: 'image_upload', placeholder: 'https://...jpg', hint: 'Ảnh sản phẩm muốn quảng cáo' },
     { key: 'popup_aff_link', label: 'Link affiliate',        type: 'text',     placeholder: 'https://shope.ee/...', hint: 'Bấm vào popup sẽ nhảy sang link này' },
     { key: 'popup_title',    label: 'Tiêu đề popup',         type: 'text',     placeholder: '🔥 Deal Hôm Nay – Giảm 50%!' },
     { key: 'popup_subtitle', label: 'Mô tả ngắn',            type: 'text',     placeholder: 'Ưu đãi có hạn – mua ngay kẻo hết!' },
@@ -87,7 +87,7 @@ const TAB_FIELDS: Record<string, { key: string; label: string; type: string; pla
     { key: 'seo_keywords',    label: 'Keywords',                   type: 'text',     placeholder: 'shopee, deal, giảm giá, affiliate', hint: 'Ngăn cách bằng dấu phẩy' },
     { key: 'og_title',        label: 'Tiêu đề khi chia sẻ link (OG Title)',  type: 'text', placeholder: 'Shopee Deals – Deal Ngon Mỗi Ngày', hint: 'Hiện khi chia sẻ lên Zalo, Facebook, Messenger...' },
     { key: 'og_description',  label: 'Mô tả khi chia sẻ link (OG Description)', type: 'textarea', placeholder: 'Sản phẩm giảm giá tốt nhất từ Shopee, giao hàng toàn quốc.', hint: 'Nên từ 60–120 ký tự' },
-    { key: 'og_image',        label: 'Ảnh khi chia sẻ link (OG Image URL)', type: 'text', placeholder: 'https://...jpg', hint: 'Ảnh hiện ra khi share link lên mạng XH (1200x630px)' },
+    { key: 'og_image',        label: 'Ảnh khi chia sẻ link (OG Image URL)', type: 'image_upload', placeholder: 'https://...jpg', hint: 'Ảnh hiện ra khi share link lên mạng XH (1200x630px)' },
     { key: 'ga_id',           label: 'Google Analytics ID',        type: 'text',     placeholder: 'G-XXXXXXXXXX' },
     { key: 'fb_pixel',        label: 'Facebook Pixel ID',          type: 'text',     placeholder: '123456789' },
   ],
@@ -128,6 +128,7 @@ export default function SettingsPage() {
   const [saved, setSaved]       = useState(false)
   const [activeTab, setActiveTab] = useState('giaodien')
   const [previewOpen, setPreviewOpen] = useState(false)
+  const [uploadingKey, setUploadingKey] = useState<string | null>(null)
   const previewRef = useRef<HTMLIFrameElement>(null)
 
   useEffect(() => {
@@ -165,6 +166,26 @@ export default function SettingsPage() {
     setSaving(false)
     setSaved(true)
     setTimeout(() => setSaved(false), 3000)
+  }
+
+  const uploadImage = async (key: string, file: File) => {
+    setUploadingKey(key)
+    try {
+      const cloudName    = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!
+      const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!
+      const fd = new FormData()
+      fd.append('file', file)
+      fd.append('upload_preset', uploadPreset)
+      fd.append('folder', 'shopee-aff/settings')
+      const res  = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, { method: 'POST', body: fd })
+      const data = await res.json()
+      if (data.secure_url) set(key, data.secure_url)
+      else alert('Upload thất bại: ' + (data.error?.message || 'Lỗi không xác định'))
+    } catch (e) {
+      alert('Lỗi upload: ' + e)
+    } finally {
+      setUploadingKey(null)
+    }
   }
 
   const primary = settings.primary_color || '#ee4d2d'
@@ -300,6 +321,8 @@ export default function SettingsPage() {
                   primary={primary}
                   rgb={rgb}
                   onChange={v => set(field.key, v)}
+                  uploading={uploadingKey === field.key}
+                  onUpload={(file) => uploadImage(field.key, file)}
                 />
               ))
             )}
@@ -407,13 +430,16 @@ export default function SettingsPage() {
 }
 
 // ─── Field Row component ──────────────────────────────────────────────────
-function FieldRow({ field, value, primary, rgb, onChange }: {
+function FieldRow({ field, value, primary, rgb, onChange, uploading, onUpload }: {
   field: { key: string; label: string; type: string; placeholder: string; hint?: string }
   value: string
   primary: string
   rgb: string
   onChange: (v: string) => void
+  uploading?: boolean
+  onUpload?: (file: File) => void
 }) {
+  const fileRef = useRef<HTMLInputElement>(null)
   const base: React.CSSProperties = {
     width:'100%', padding:'10px 14px',
     border:'1.5px solid #e5e7eb', borderRadius:8,
@@ -474,6 +500,29 @@ function FieldRow({ field, value, primary, rgb, onChange }: {
           <option value="220">Lớn — ảnh to hơn</option>
           <option value="280">Rất lớn — 3-4 sản phẩm/hàng</option>
         </select>
+      ) : field.type === 'image_upload' ? (
+        <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+          {/* Nút chọn file + input URL */}
+          <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
+            <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}
+              style={{ background: uploading ? '#9ca3af' : '#059669', color:'white', border:'none', padding:'9px 16px', borderRadius:8, fontWeight:700, fontSize:12, cursor: uploading ? 'not-allowed' : 'pointer', whiteSpace:'nowrap', display:'flex', alignItems:'center', gap:6 }}>
+              {uploading ? '⏳ Đang tải...' : '📷 Tải ảnh lên'}
+            </button>
+            <input ref={fileRef} type="file" accept="image/*" style={{ display:'none' }}
+              onChange={e => { const f = e.target.files?.[0]; if (f && onUpload) onUpload(f); e.target.value = '' }} />
+            <span style={{ fontSize:12, color:'#9ca3af', alignSelf:'center' }}>hoặc paste URL:</span>
+          </div>
+          <input type="text" value={value} onChange={e => onChange(e.target.value)} placeholder={field.placeholder} style={base} />
+          {/* Preview ảnh */}
+          {value && (
+            <div style={{ position:'relative', display:'inline-block' }}>
+              <img src={value} alt="preview" style={{ maxHeight:120, maxWidth:'100%', borderRadius:8, border:'1px solid #e5e7eb', objectFit:'cover' }}
+                onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+              <button onClick={() => onChange('')} style={{ position:'absolute', top:4, right:4, background:'rgba(0,0,0,0.6)', color:'white', border:'none', borderRadius:'50%', width:22, height:22, cursor:'pointer', fontSize:13, display:'flex', alignItems:'center', justifyContent:'center' }}>×</button>
+            </div>
+          )}
+        </div>
+
       ) : (
         <input type="text" value={value} onChange={e => onChange(e.target.value)} placeholder={field.placeholder} style={base} />
       )}
