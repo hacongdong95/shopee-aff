@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 
 function getNextFlashSaleEnd() {
-  // Flash sale kết thúc lúc 23:59 mỗi ngày
   const now = new Date()
   const end = new Date()
   end.setHours(23, 59, 59, 0)
@@ -13,7 +12,7 @@ function getNextFlashSaleEnd() {
 
 export default function FlashSaleCountdown({ primary }: { primary: string }) {
   const [timeLeft, setTimeLeft] = useState({ h: 0, m: 0, s: 0 })
-  const [mounted, setMounted] = useState(false)
+  const [mounted, setMounted]   = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -36,34 +35,77 @@ export default function FlashSaleCountdown({ primary }: { primary: string }) {
   const pad = (n: number) => String(n).padStart(2, '0')
 
   return (
-    <div style={{
-      background: `linear-gradient(90deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)`,
-      padding: '10px 20px',
-    }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 18 }}>⚡</span>
-          <span style={{ color: '#FFD700', fontWeight: 800, fontSize: 14, letterSpacing: '0.5px', textTransform: 'uppercase' }}>Flash Sale</span>
-          <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12 }}>kết thúc sau:</span>
+    <div style={{ background: primary, borderBottom: `2px solid rgba(0,0,0,0.08)` }}>
+      <div style={{
+        maxWidth: 1200, margin: '0 auto',
+        padding: '0 20px',
+        height: 44,
+        display: 'flex', alignItems: 'center', gap: 14,
+      }}>
+        {/* Icon + FLASH SALE */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+          <span style={{ fontSize: 16 }}>⚡</span>
+          <span style={{
+            color: '#FFD700',
+            fontWeight: 900,
+            fontSize: 15,
+            letterSpacing: '1px',
+            fontFamily: 'Nunito, sans-serif',
+            textTransform: 'uppercase',
+            textShadow: '0 1px 2px rgba(0,0,0,0.15)',
+          }}>
+            FLASH SALE
+          </span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+
+        {/* Divider */}
+        <div style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
+
+        {/* "kết thúc sau:" */}
+        <span style={{ color: 'rgba(255,255,255,0.9)', fontSize: 12, flexShrink: 0 }}>
+          kết thúc sau:
+        </span>
+
+        {/* Countdown blocks — kiểu Shopee */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
           {[pad(timeLeft.h), pad(timeLeft.m), pad(timeLeft.s)].map((val, i) => (
-            <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
               <span style={{
-                background: primary, color: 'white', fontWeight: 800, fontSize: 16,
-                padding: '4px 10px', borderRadius: 8, fontFamily: 'monospace',
-                minWidth: 36, textAlign: 'center',
-                boxShadow: `0 2px 8px ${primary}66`,
-              }}>{val}</span>
-              {i < 2 && <span style={{ color: '#FFD700', fontWeight: 800, fontSize: 18 }}>:</span>}
+                background: '#1a1a1a',
+                color: 'white',
+                fontWeight: 800,
+                fontSize: 15,
+                fontFamily: 'monospace',
+                padding: '3px 8px',
+                borderRadius: 4,
+                minWidth: 30,
+                textAlign: 'center',
+                letterSpacing: '1px',
+                lineHeight: 1.4,
+              }}>
+                {val}
+              </span>
+              {i < 2 && (
+                <span style={{ color: 'white', fontWeight: 900, fontSize: 16, lineHeight: 1 }}>:</span>
+              )}
             </span>
           ))}
         </div>
-        <span style={{
-          background: '#FFD700', color: '#1a1a1a', fontSize: 11, fontWeight: 800,
-          padding: '3px 10px', borderRadius: 20, letterSpacing: '0.5px',
-          animation: 'pulse 1.5s infinite',
-        }}>ĐANG DIỄN RA</span>
+
+        {/* ĐANG DIỄN RA badge */}
+        <div style={{
+          background: '#FFD700',
+          color: '#c0392b',
+          fontSize: 11,
+          fontWeight: 800,
+          padding: '3px 10px',
+          borderRadius: 3,
+          letterSpacing: '0.5px',
+          flexShrink: 0,
+          boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
+        }}>
+          ĐANG DIỄN RA
+        </div>
       </div>
     </div>
   )

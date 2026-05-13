@@ -719,25 +719,60 @@ export default function ProductDetail({ product, related, settings={} }: { produ
 
               <h1 className='pd-title' style={{ margin:'0 0 10px', fontSize:18, fontWeight:500, lineHeight:1.5, color:'#222' }}>{product.name}</h1>
 
-              {/* Stats */}
-              <div className='pd-stats' style={{ display:'flex', alignItems:'center', gap:10, marginBottom:14, paddingBottom:14, borderBottom:'1px solid #f5f5f5', fontSize:12, color:'#666', flexWrap:'wrap' }}>
-                <span style={{ color:'#f5a623', fontWeight:600 }}>⭐ {rating} <span style={{ color:'#aaa', fontWeight:400 }}>({reviews.toLocaleString('vi-VN')})</span></span>
-                <span style={{ color:'#ddd' }}>|</span>
-                <span>🛒 <b style={{ color:primary }}>{sold.toLocaleString('vi-VN')}</b> đã bán</span>
-                <span style={{ color:'#ddd' }}>|</span>
-                <span style={{ color:'#26aa99', fontWeight:600 }}>✅ Còn Hàng</span>
+              {/* Stats — kiểu Shopee */}
+              <div className='pd-stats' style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12, paddingBottom:12, borderBottom:'1px solid #f5f5f5', fontSize:12, color:'#666', flexWrap:'wrap' }}>
+                <div style={{ display:'flex', alignItems:'center', gap:3 }}>
+                  <span style={{ color:'#ee4d2d', fontWeight:700, fontSize:13, borderBottom:'1px solid #ee4d2d' }}>{rating}</span>
+                  <div style={{ display:'flex', gap:1 }}>
+                    {[1,2,3,4,5].map(i => (
+                      <span key={i} style={{ color: i <= Math.round(Number(rating)) ? '#f5a623' : '#e0e0e0', fontSize:13, lineHeight:1 }}>★</span>
+                    ))}
+                  </div>
+                </div>
+                <span style={{ color:'#e0e0e0' }}>|</span>
+                <span style={{ borderBottom:'1px solid #999', color:'#555' }}>{reviews.toLocaleString('vi-VN')} Đánh Giá</span>
+                <span style={{ color:'#e0e0e0' }}>|</span>
+                <span>Đã Bán <b style={{ color:'#555' }}>{sold >= 1000 ? `${Math.floor(sold/100)/10}k` : sold.toLocaleString('vi-VN')}</b></span>
+                <span style={{ color:'#e0e0e0' }}>|</span>
+                <span style={{ color:'#26aa99', fontWeight:600, display:'flex', alignItems:'center', gap:3 }}>
+                  <span>✅</span> Còn Hàng
+                </span>
               </div>
 
-              {/* Price */}
-              <div style={{ background:'#fafafa', padding:'14px 16px', marginBottom:14, borderRadius:8 }}>
-                <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
-                  <span className='pd-price' style={{ fontSize:30, fontWeight:800, color:primary }}>{product.price.toLocaleString('vi-VN')}₫</span>
-                  {product.oldPrice && product.oldPrice > product.price && <>
-                    <span style={{ fontSize:15, color:'#bbb', textDecoration:'line-through' }}>{product.oldPrice.toLocaleString('vi-VN')}₫</span>
-                    {discount && <span style={{ background:primary, color:'white', fontSize:12, fontWeight:700, padding:'2px 8px', borderRadius:4 }}>-{discount}%</span>}
-                  </>}
+              {/* Price — kiểu Shopee với Flash Sale */}
+              <div style={{ background:'#fff6f6', border:'1px solid #ffe0dc', borderRadius:8, padding:'14px 16px', marginBottom:14 }}>
+                {discount && discount >= 5 && (
+                  <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:10, paddingBottom:10, borderBottom:'1px dashed #ffd0cc', flexWrap:'wrap' }}>
+                    <div style={{ background:'linear-gradient(90deg,#d0011b,#ee4d2d)', borderRadius:3, padding:'3px 10px', display:'flex', alignItems:'center', gap:5, flexShrink:0 }}>
+                      <span style={{ fontSize:12 }}>⚡</span>
+                      <span style={{ color:'white', fontWeight:800, fontSize:12, letterSpacing:'0.5px' }}>FLASH SALE</span>
+                    </div>
+                    <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+                      <span style={{ fontSize:11, color:'#999' }}>KẾT THÚC TRONG</span>
+                      <FlashCountdown productId={product.id} />
+                    </div>
+                  </div>
+                )}
+                <div style={{ display:'flex', alignItems:'baseline', gap:10, flexWrap:'wrap' }}>
+                  <span className='pd-price' style={{ fontSize:28, fontWeight:700, color:'#ee4d2d', lineHeight:1 }}>
+                    {product.price.toLocaleString('vi-VN')}<span style={{ fontSize:15 }}>₫</span>
+                  </span>
+                  {product.oldPrice && product.oldPrice > product.price && (
+                    <span style={{ fontSize:14, color:'#aaa', textDecoration:'line-through' }}>
+                      {product.oldPrice.toLocaleString('vi-VN')}₫
+                    </span>
+                  )}
+                  {discount && (
+                    <span style={{ background:'#ee4d2d', color:'white', fontSize:12, fontWeight:700, padding:'2px 8px', borderRadius:3 }}>
+                      -{discount}%
+                    </span>
+                  )}
                 </div>
-                {saved && <div style={{ marginTop:4, fontSize:13, color:'#26aa99' }}>🎉 Tiết kiệm {saved.toLocaleString('vi-VN')}₫</div>}
+                {saved && (
+                  <div style={{ marginTop:6, fontSize:12, color:'#ee4d2d', display:'flex', alignItems:'center', gap:4 }}>
+                    🎉 Tiết kiệm <b>{saved.toLocaleString('vi-VN')}₫</b> so với giá gốc
+                  </div>
+                )}
               </div>
 
               {/* Policies */}
