@@ -258,7 +258,7 @@ export default function ReviewsAdminPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {filtered.map(r => (
             <div key={r.id} style={{
-              background: 'white', borderRadius: 10, padding: '14px 16px',
+              borderRadius: 10, padding: '14px 16px',
               boxShadow: '0 1px 4px rgba(0,0,0,0.07)',
               opacity: r.isHidden ? 0.55 : 1,
               border: selected.has(r.id) ? `1.5px solid ${PRIMARY}` : r.isHidden ? '1.5px dashed #e5e7eb' : '1.5px solid transparent',
