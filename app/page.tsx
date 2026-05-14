@@ -1,3 +1,21 @@
+import { prisma } from '@/lib/prisma'
+import Link from 'next/link'
+import ProductCard from '@/components/ProductCard'
+import ScrollReveal from '@/components/ScrollReveal'
+import SortFilter from '@/components/SortFilter'
+import FlashSaleCountdown from '@/components/FlashSaleCountdown'
+import PopupAd from '@/components/PopupAd'
+import CategoryNav from '@/components/CategoryNav'
+import SearchBox from '@/components/SearchBox'
+import BackToTop from '@/components/BackToTop'
+
+export const revalidate = 60
+
+async function getSettings() {
+  const rows = await prisma.setting.findMany()
+  const s: Record<string, string> = {}
+  for (const row of rows) s[row.key] = row.value
+  return s
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
@@ -10,6 +28,10 @@ type Product = {
   description: string | null
 }
 
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ cat?: string; q?: string; sort?: string; minPrice?: string; maxPrice?: string }>
 const empty = {
   name: '', description: '', price: '', oldPrice: '',
   imageUrl: '', affLink: '', categoryId: '', isActive: true,
@@ -25,6 +47,83 @@ const inputStyle: React.CSSProperties = {
 function Field({ label, required, children }: {
   label: string; required?: boolean; children: React.ReactNode
 }) {
+  const params    = await searchParams
+  const catSlug   = params.cat
+  const query     = params.q
+  const sort      = params.sort || 'newest'
+  const minPrice  = params.minPrice ? Number(params.minPrice) : undefined
+  const maxPrice  = params.maxPrice ? Number(params.maxPrice) : undefined
+
+  const [categories, allProducts, settings] = await Promise.all([
+    prisma.category.findMany({
+      orderBy: [{ order: 'asc' }, { name: 'asc' }],
+      include: { _count: { select: { products: true } } },
+    }),
+    prisma.product.findMany({
+      where: {
+        isActive: true,
+        ...(catSlug ? {
+          category: {
+            OR: [
+              { slug: catSlug },
+              { parent: { slug: catSlug } },
+            ]
+          }
+        } : {}),
+        ...(query ? { name: { contains: query, mode: 'insensitive' } } : {}),
+        ...(minPrice !== undefined || maxPrice !== undefined ? {
+          price: {
+            ...(minPrice !== undefined ? { gte: minPrice } : {}),
+            ...(maxPrice !== undefined ? { lte: maxPrice } : {}),
+          }
+        } : {}),
+      },
+      include: { category: true },
+      orderBy:
+        sort === 'price_asc'  ? { price: 'asc' }  :
+        sort === 'price_desc' ? { price: 'desc' } :
+        sort === 'popular'    ? { clicks: 'desc' } :
+        { createdAt: 'desc' },
+    }),
+    getSettings(),
+  ])
+
+  const hotProducts = !catSlug && !query
+    ? [...allProducts].sort((a, b) => b.clicks - a.clicks).slice(0, 6)
+    : []
+
+  const products = sort === 'discount'
+    ? [...allProducts].sort((a, b) => {
+        const da = a.oldPrice ? (a.oldPrice - a.price) / a.oldPrice : 0
+        const db = b.oldPrice ? (b.oldPrice - b.price) / b.oldPrice : 0
+        return db - da
+      })
+    : allProducts
+
+  const primary         = settings.primary_color    || '#ee4d2d'
+  const siteName        = settings.site_name        || 'Shopee Deals'
+  const siteEmoji       = settings.site_logo_emoji  || '\u{1F6CD}\uFE0F'
+  const siteTagline     = settings.site_tagline     || ''
+  const bannerShow      = settings.banner_show      !== 'false'
+  const bannerImage     = settings.banner_image     || ''
+  const bannerLink      = settings.banner_link      || ''
+  const bannerTitle     = settings.banner_title     || '\uD83D\uDD25 Deal Hot M\u1ED7i Ng\u00E0y'
+  const bannerSubtitle  = settings.banner_subtitle  || 'H\u00E0ng ng\u00E0n s\u1EA3n ph\u1EA9m gi\u1EA3m gi\u00E1 s\u00E2u'
+  const footerText      = settings.footer_text      || 'T\u1ED5ng h\u1EE3p s\u1EA3n ph\u1EA9m gi\u1EA3m gi\u00E1 t\u1ED1t nh\u1EA5t'
+  const footerCopyright = settings.footer_copyright || '\u00A9 2025 \u00B7 Affiliate Website'
+  const footerColor     = settings.footer_color     || '#1a1a1a'
+  const shippingText    = settings.shipping_text    || '\uD83D\uDE9A Mi\u1EC5n ph\u00ED v\u1EADn chuy\u1EC3n'
+  const guaranteeText   = settings.guarantee_text   || '\u2705 Ho\u00E0n ti\u1EC1n n\u1EBFu kh\u00F4ng \u0111\u00FAng'
+  const returnText      = settings.return_text      || '\u21A9\uFE0F \u0110\u1ED5i tr\u1EA3 15 ng\u00E0y'
+  const activeCatName   = catSlug ? categories.find(c => c.slug === catSlug)?.name : null
+  const popupShow       = settings.popup_show     === 'true'
+  const popupImage      = settings.popup_image    || ''
+  const popupAffLink    = settings.popup_aff_link || ''
+  const popupTitle      = settings.popup_title    || ''
+  const popupSubtitle   = settings.popup_subtitle || ''
+  const popupBtnText    = settings.popup_btn_text || 'Mua Ngay'
+  const popupDelay      = Number(settings.popup_delay || '2')
+  const voucherText     = settings.voucher_text   || ''
   return (
     <div>
       <label style={{ fontSize: 13, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 6 }}>
@@ -267,14 +366,36 @@ export default function ProductsPage() {
   const allFilteredSelected = !selectAll && selected.size === filtered.length && filtered.length > 0
   const disc = (price: number, old: number | null) => old && old > price ? Math.round((1 - price / old) * 100) : null
 
-  return (
+return (
+    <div style={{ minHeight: '100vh', background: '#f5f5f5', fontFamily: "'Be Vietnam Pro', sans-serif" }}>
+
+      {/* HEADER */}
+      <header style={{ background: `linear-gradient(135deg, ${primary} 0%, ${primary}bb 100%)`, position: 'sticky', top: 0, zIndex: 100, boxShadow: `0 2px 20px ${primary}44` }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 20px', height: 64, display: 'flex', alignItems: 'center', gap: 20 }}>
+          <Link href="/" style={{ color: 'white', fontWeight: 800, fontSize: 20, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10, whiteSpace: 'nowrap', flexShrink: 0 }}>
+            <span style={{ background: 'rgba(255,255,255,0.22)', backdropFilter: 'blur(4px)', borderRadius: 10, width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0, border: '1px solid rgba(255,255,255,0.3)' }}>{siteEmoji}</span>
+            <div>
+              <div style={{ fontFamily: 'Nunito, sans-serif', letterSpacing: '-0.5px', lineHeight: 1.1 }}>{siteName}</div>
+              {siteTagline && <div style={{ fontSize: 11, fontWeight: 400, opacity: 0.75, lineHeight: 1 }}>{siteTagline}</div>}
+            </div>
+          </Link>
+          <SearchBox defaultValue={query} primary={primary} catSlug={catSlug} />
     <div>
       {/* ── Header ── */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
         <div>
           <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>Quản lý sản phẩm</h2>
           <p style={{ margin: '2px 0 0', color: '#6b7280', fontSize: 13 }}>{products.length} sản phẩm tổng cộng</p>
-        </div>
+</div>
+        <CategoryNav categories={categories as any} activeCat={catSlug} primary={primary} />
+      </header>
+
+      {/* TRUST BAR */}
+      <div className="trust-bar" style={{ background: 'white', borderBottom: '1px solid #eee', padding: '9px 20px' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', justifyContent: 'center', gap: 28, flexWrap: 'wrap' }}>
+          {[shippingText, guaranteeText, returnText].map((t, i) => (
+            <span key={i} style={{ fontSize: 12, color: '#555', fontWeight: 500 }}>{t}</span>
+          ))}
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={() => { setShowImport(true); setImportLog([]) }} style={{ background: '#7c3aed', color: 'white', border: 'none', padding: '10px 16px', borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
             📥 Import hàng loạt
@@ -282,9 +403,37 @@ export default function ProductsPage() {
           <button onClick={openNew} style={{ background: '#ee4d2d', color: 'white', border: 'none', padding: '10px 20px', borderRadius: 8, fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
             + Thêm sản phẩm
           </button>
-        </div>
-      </div>
+</div>
+</div>
 
+      {/* FLASH SALE */}
+      {!catSlug && !query && <FlashSaleCountdown primary={primary} />}
+
+      {/* BANNER */}
+      {bannerShow && !catSlug && !query && (
+        bannerImage ? (
+          bannerLink ? (
+            <a href={bannerLink} style={{ display: 'block', width: '100%', lineHeight: 0 }}>
+              <img src={bannerImage} alt={bannerTitle} style={{ width: '100%', maxHeight: 320, objectFit: 'cover', display: 'block' }} />
+            </a>
+          ) : (
+            <div style={{ width: '100%', lineHeight: 0 }}>
+              <img src={bannerImage} alt={bannerTitle} style={{ width: '100%', maxHeight: 320, objectFit: 'cover', display: 'block' }} />
+            </div>
+          )
+        ) : (
+          <div style={{ background: `linear-gradient(135deg, ${primary}ee 0%, ${primary} 50%, ${primary}cc 100%)`, padding: '40px 20px', textAlign: 'center', color: 'white', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: -40, right: -40, width: 160, height: 160, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', bottom: -30, left: 40, width: 100, height: 100, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', pointerEvents: 'none' }} />
+            <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative' }}>
+              <div className="banner-title" style={{ fontSize: 32, fontWeight: 800, fontFamily: 'Nunito, sans-serif', marginBottom: 10, textShadow: '0 2px 12px rgba(0,0,0,0.15)', letterSpacing: '-0.5px' }}>{bannerTitle}</div>
+              <div className="banner-sub" style={{ fontSize: 15, opacity: 0.9, maxWidth: 480, margin: '0 auto 20px' }}>{bannerSubtitle}</div>
+              <Link href="#products" style={{ display: 'inline-block', background: 'white', color: primary, padding: '11px 28px', borderRadius: 24, fontWeight: 800, fontSize: 14, textDecoration: 'none', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}>
+                Xem ưu đãi ngay ↓
+              </Link>
+            </div>
+          </div>
+        )
       {/* ── Search + toolbar ── */}
       <div style={{ background: 'white', borderRadius: someSelected ? '10px 10px 0 0' : 10, padding: '10px 16px', boxShadow: '0 1px 4px rgba(0,0,0,0.07)', marginBottom: someSelected ? 0 : 16, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
         <input type="checkbox"
@@ -322,8 +471,9 @@ export default function ProductsPage() {
             Bỏ chọn
           </button>
         </div>
-      )}
+)}
 
+      <div id="products" style={{ maxWidth: 1200, margin: '0 auto', padding: '28px 16px' }}>
       {/* ── Grid ── */}
       {filtered.length === 0 ? (
         <div style={{ background: 'white', borderRadius: 12, padding: 60, textAlign: 'center', color: '#9ca3af' }}>
@@ -362,6 +512,13 @@ export default function ProductsPage() {
                   <div style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{p.name}</div>
                   <div style={{ fontSize: 11, color: '#ee4d2d', fontWeight: 600 }}>{p.category.name}</div>
 
+        {/* HOT PRODUCTS */}
+        {hotProducts.length > 0 && (
+          <div style={{ marginBottom: 36 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+              <div style={{ width: 4, height: 24, background: primary, borderRadius: 2 }} />
+              <span style={{ fontSize: 18, fontWeight: 800, color: '#1a1a1a' }}>🔥 Bán Chạy Nhất</span>
+              <span style={{ fontSize: 12, color: '#888', background: '#f0f0f0', padding: '2px 10px', borderRadius: 20 }}>Top {hotProducts.length}</span>
                   {isQuickEdit ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 4 }}>
                       <input type="number" value={quickEdit.price} onChange={e => setQuickEdit(q => q ? { ...q, price: e.target.value } : q)} placeholder="Giá hiện tại" style={{ ...inputStyle, padding: '6px 10px', fontSize: 12 }} />
@@ -404,7 +561,13 @@ export default function ProductsPage() {
                 <p style={{ margin: '4px 0 0', fontSize: 13, color: '#6b7280' }}>Tạo nhanh nhiều sản phẩm từ link Shopee — ẩn mặc định, vào sửa từng cái để thêm ảnh & chỉnh giá</p>
               </div>
               {!importing && <button onClick={() => setShowImport(false)} style={{ background: '#f3f4f6', border: 'none', borderRadius: 8, width: 36, height: 36, cursor: 'pointer', fontSize: 20 }}>×</button>}
-            </div>
+</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 14 }}>
+              {hotProducts.map((p, i) => (
+                <ScrollReveal key={p.id} delay={i * 50}>
+                  <ProductCard product={p} />
+                </ScrollReveal>
+              ))}
             <div style={{ padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 16 }}>
               <Field label="Danh mục" required>
                 <select value={importCat} onChange={e => setImportCat(e.target.value)} style={inputStyle}>
@@ -437,14 +600,46 @@ export default function ProductsPage() {
                   ))}
                 </div>
               )}
-            </div>
+</div>
+            <div style={{ height: 1, background: 'linear-gradient(90deg, transparent, #e0e0e0, transparent)', margin: '32px 0 0' }} />
+          </div>
+        )}
+
+        <SortFilter currentSort={sort} currentMin={minPrice} currentMax={maxPrice} catSlug={catSlug} query={query} primary={primary} />
+
+        <ScrollReveal>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ width: 4, height: 20, background: primary, borderRadius: 2, display: 'inline-block' }} />
+              <span style={{ fontSize: 15, fontWeight: 700, color: '#1a1a1a' }}>
+                {query ? `Kết quả "${query}"` : activeCatName ? activeCatName : 'Tất cả sản phẩm'}
+              </span>
+              <span style={{ fontSize: 13, color: '#888', background: '#f0f0f0', padding: '2px 10px', borderRadius: 20, fontWeight: 600 }}>
+                {products.length} sản phẩm
+              </span>
             <div style={{ padding: '16px 28px', borderTop: '1px solid #f3f4f6', display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
               {!importing && <button onClick={() => setShowImport(false)} style={{ padding: '10px 24px', border: '1.5px solid #e5e7eb', borderRadius: 8, cursor: 'pointer', background: 'white', fontWeight: 600, fontSize: 14, color: '#374151' }}>Đóng</button>}
               <button onClick={handleImport} disabled={importing} style={{ padding: '10px 32px', background: importing ? '#9ca3af' : '#7c3aed', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: 14, cursor: importing ? 'not-allowed' : 'pointer', minWidth: 140 }}>
                 {importing ? '⏳ Đang import...' : '🚀 Bắt đầu import'}
               </button>
-            </div>
-          </div>
+</div>
+            {(query || catSlug || minPrice || maxPrice) && (
+              <Link href="/" style={{ fontSize: 13, color: primary, textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4, padding: '6px 14px', border: `1.5px solid ${primary}`, borderRadius: 20 }}>
+                ✕ Xoá bộ lọc
+              </Link>
+            )}
+</div>
+        </ScrollReveal>
+
+        {products.length === 0 ? (
+          <ScrollReveal>
+            <div style={{ textAlign: 'center', padding: '80px 20px', color: '#999' }}>
+              <div style={{ fontSize: 64, marginBottom: 16 }}>🔍</div>
+              <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 8, color: '#444' }}>Không tìm thấy sản phẩm</div>
+              <div style={{ fontSize: 14, color: '#aaa', marginBottom: 24 }}>Thử từ khoá khác hoặc xem tất cả sản phẩm</div>
+              <Link href="/" style={{ background: primary, color: 'white', padding: '12px 28px', borderRadius: 24, textDecoration: 'none', fontWeight: 700, fontSize: 14, boxShadow: `0 4px 16px ${primary}44` }}>
+                Xem tất cả sản phẩm
+              </Link>
         </div>
       )}
 
@@ -460,8 +655,22 @@ export default function ProductsPage() {
                 <p style={{ margin: '2px 0 0', fontSize: 13, color: '#6b7280' }}>Điền đầy đủ thông tin sản phẩm bên dưới</p>
               </div>
               <button onClick={() => setShowForm(false)} style={{ background: '#f3f4f6', border: 'none', borderRadius: 8, width: 36, height: 36, cursor: 'pointer', fontSize: 20, color: '#374151' }}>×</button>
-            </div>
+</div>
+          </ScrollReveal>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 14 }}>
+            {products.map((p, i) => (
+              <ScrollReveal key={p.id} delay={Math.min(i % 6 * 60, 300)}>
+                <ProductCard product={p} />
+              </ScrollReveal>
+            ))}
+          </div>
+        )}
+      </div>
 
+      {popupShow && popupImage && popupAffLink && (
+        <PopupAd imageUrl={popupImage} affLink={popupAffLink} title={popupTitle} subtitle={popupSubtitle} btnText={popupBtnText} primary={primary} delaySeconds={popupDelay} />
+      )}
             <div style={{ padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 16 }}>
               {/* SCRAPE BOX */}
               <div style={{ background: '#fff8f0', borderRadius: 10, padding: '18px 20px', border: '1.5px solid #fcd9c4' }}>
@@ -479,6 +688,7 @@ export default function ProductsPage() {
                 <div style={{ marginTop: 6, fontSize: 11, color: '#9ca3af' }}>1. Paste link → 🔍 Lấy info | 2. 🖼️ Lấy ảnh → tự điền URLs</div>
               </div>
 
+      <BackToTop primary={primary} />
               {/* Thông tin cơ bản */}
               <div style={{ background: '#fafafa', borderRadius: 10, padding: '18px 20px', border: '1px solid #f0f0f0' }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: '#6b7280', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Thông tin cơ bản</div>
@@ -498,6 +708,16 @@ export default function ProductsPage() {
                 </div>
               </div>
 
+      <footer style={{ background: footerColor, color: '#aaa', padding: '48px 20px 28px', marginTop: 48 }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', textAlign: 'center' }}>
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ color: 'white', fontWeight: 800, fontSize: 20, fontFamily: 'Nunito, sans-serif', marginBottom: 6 }}>{siteEmoji} {siteName}</div>
+            <div style={{ fontSize: 13, maxWidth: 400, margin: '0 auto', lineHeight: 1.7, color: 'rgba(255,255,255,0.45)' }}>{footerText}</div>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 28 }}>
+            {[shippingText, guaranteeText, returnText].map((t, i) => (
+              <span key={i} style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.06)', padding: '6px 14px', borderRadius: 20, border: '1px solid rgba(255,255,255,0.08)' }}>{t}</span>
+            ))}
               {/* Giá */}
               <div style={{ background: '#fafafa', borderRadius: 10, padding: '18px 20px', border: '1px solid #f0f0f0' }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: '#6b7280', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Giá bán</div>
@@ -597,9 +817,12 @@ export default function ProductsPage() {
                 {loading ? 'Đang lưu...' : form.id ? 'Cập nhật' : 'Thêm sản phẩm'}
               </button>
             </div>
-          </div>
-        </div>
+</div>
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: 20, fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>{footerCopyright}</div>
+</div>
+      </footer>
       )}
-    </div>
-  )
+</div>
+)
+}
 }
