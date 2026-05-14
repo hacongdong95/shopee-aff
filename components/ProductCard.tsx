@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 
 type Category = { id: number; name: string; slug: string }
 type Product = {
@@ -47,6 +48,11 @@ export default function ProductCard({ product }: { product: Product }) {
   const stockPct = getStockPercent(product.id)
   const images = product.imageUrl ? product.imageUrl.split('\n').map(u => u.trim()).filter(Boolean) : []
   const thumb = images[0] || null
+  const [voucherText, setVoucherText] = useState('')
+
+  useEffect(() => {
+    setVoucherText(document.documentElement.getAttribute('data-voucher') || '')
+  }, [])
 
   return (
     <Link href={`/san-pham/${product.slug}`} style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
@@ -105,6 +111,13 @@ export default function ProductCard({ product }: { product: Product }) {
             Shopee
           </div>
         </div>
+
+        {/* Voucher bar */}
+        {voucherText && (
+          <div style={{ background: 'var(--primary)', color: 'white', fontSize: 10, fontWeight: 700, padding: '5px 10px', textAlign: 'center', letterSpacing: '0.3px', borderTop: '1px solid rgba(255,255,255,0.15)' }}>
+            🏷️ {voucherText}
+          </div>
+        )}
 
         {/* Info */}
         <div style={{ padding: '12px 13px 14px', flex: 1, display: 'flex', flexDirection: 'column', gap: 7 }}>

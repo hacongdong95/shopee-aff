@@ -6,10 +6,16 @@ import { prisma } from '@/lib/prisma'
 
 export default async function ThemeProvider() {
   let primary = '#ee4d2d'
+  let voucherText = ''
 
   try {
-    const row = await prisma.setting.findUnique({ where: { key: 'primary_color' } })
-    if (row?.value) primary = row.value
+    const rows = await prisma.setting.findMany({
+      where: { key: { in: ['primary_color', 'voucher_text'] } }
+    })
+    for (const r of rows) {
+      if (r.key === 'primary_color') primary = r.value
+      if (r.key === 'voucher_text') voucherText = r.value
+    }
   } catch {
     // DB chưa có key → dùng màu mặc định
   }
@@ -25,8 +31,14 @@ export default async function ThemeProvider() {
     `  --primary-light: rgba(${r},${g},${b},0.12);`,
     `  --primary-mid:   rgba(${r},${g},${b},0.25);`,
     `  --shopee:        ${primary};`,
+    `  --voucher-text:  "${voucherText.replace(/"/g, '\\"')}";`,
     '}',
   ].join('\n')
 
-  return <style dangerouslySetInnerHTML={{ __html: css }} />
+  return (
+    <>
+      <style dangerouslySetInnerHTML={{ __html: css }} />
+      <script dangerouslySetInnerHTML={{ __html: `document.documentElement.setAttribute('data-voucher','${voucherText.replace(/'/g, "\\'")}')` }} />
+    </>
+  )
 }
