@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 
-type Category = { id: number; name: string }
+type Category = { id: number; name: string; parentId: number | null; children?: Category[] }
 type Product = {
   id: number; name: string; price: number; oldPrice: number | null
   imageUrl: string | null; affLink: string; isActive: boolean
@@ -450,8 +450,7 @@ export default function ProductsPage() {
 
       {/* ── Modal Thêm/Sửa ── */}
       {showForm && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
-          onClick={e => { if (e.target === e.currentTarget) setShowForm(false) }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
           <div style={{ background: 'white', borderRadius: 16, width: '100%', maxWidth: 680, maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
 
             <div style={{ padding: '20px 28px', borderBottom: '1px solid #f3f4f6', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, background: 'white', zIndex: 1, borderRadius: '16px 16px 0 0' }}>
@@ -492,7 +491,20 @@ export default function ProductsPage() {
                   <Field label="Danh mục" required>
                     <select value={form.categoryId} onChange={e => setForm(f => ({ ...f, categoryId: e.target.value }))} style={inputStyle}>
                       <option value="">-- Chọn danh mục --</option>
-                      {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                      {categories.filter(c => !c.parentId).map(parent => {
+                        const children = categories.filter(c => c.parentId === parent.id)
+                        if (children.length > 0) {
+                          return (
+                            <optgroup key={parent.id} label={parent.name}>
+                              <option value={parent.id}>{parent.name} (tất cả)</option>
+                              {children.map(child => (
+                                <option key={child.id} value={child.id}>↳ {child.name}</option>
+                              ))}
+                            </optgroup>
+                          )
+                        }
+                        return <option key={parent.id} value={parent.id}>{parent.name}</option>
+                      })}
                     </select>
                   </Field>
                 </div>
