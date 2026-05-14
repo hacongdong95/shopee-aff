@@ -287,16 +287,21 @@ function ReviewsSection({ productId, primary, onRatingUpdate }: { productId:numb
 
   const load = useCallback(async () => {
     setLoading(true)
-    const res = await fetch(`/api/reviews?productId=${productId}`)
-    const data = await res.json()
-    const list = Array.isArray(data) ? data : []
-    setReviews(list)
-    setLoading(false)
-    // Truyền rating thật lên component cha
-    if (onRatingUpdate && list.length > 0) {
-      const avg = (list.reduce((s: number, r: Review) => s + r.rating, 0) / list.length).toFixed(1)
-      onRatingUpdate(avg, list.length)
+    try {
+      const res = await fetch(`/api/reviews?productId=${productId}`)
+      if (!res.ok) throw new Error('API lỗi')
+      const data = await res.json()
+      const list = Array.isArray(data) ? data : []
+      setReviews(list)
+      if (onRatingUpdate && list.length > 0) {
+        const avg = (list.reduce((s: number, r: Review) => s + r.rating, 0) / list.length).toFixed(1)
+        onRatingUpdate(avg, list.length)
+      }
+    } catch (e) {
+      console.error('Load reviews lỗi:', e)
+      setReviews([])
     }
+    setLoading(false)
   }, [productId, onRatingUpdate])
 
   useEffect(() => { load() }, [load])
@@ -617,7 +622,7 @@ function SocialProofPopup({ primary }: { primary: string }) {
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function ProductDetail({ product, related, settings={}, categories=[] }: { product:Product; related:Product[]; settings?:Settings; categories?:any[] }) {
   const [copied, setCopied] = useState(false)
-  const [openReviews, setOpenReviews] = useState(true)
+  const [openReviews, setOpenReviews] = useState(false)
   const [liveRating, setLiveRating] = useState<string | null>(null)
   const [liveReviewCount, setLiveReviewCount] = useState<number | null>(null)
 

@@ -75,12 +75,16 @@ export default function CategoriesPage() {
   const [dragOver, setDragOver]   = useState<number | null>(null)
 
   const load = async () => {
-    const res = await fetch('/api/categories?tree=1')
-    const data: Category[] = await res.json()
-    setCategories(data)
-    setTree(buildTree(data))
-    // Mở hết cấp 1 mặc định
-    setExpanded(new Set(data.filter(c => !c.parentId).map(c => c.id)))
+    try {
+      const res = await fetch('/api/categories?tree=1')
+      if (!res.ok) throw new Error('API lỗi')
+      const data: Category[] = await res.json()
+      setCategories(data)
+      setTree(buildTree(data))
+      setExpanded(new Set(data.filter(c => !c.parentId).map(c => c.id)))
+    } catch (e) {
+      console.error('Load categories lỗi:', e)
+    }
   }
 
   useEffect(() => { load() }, [])
@@ -102,22 +106,33 @@ export default function CategoriesPage() {
   const save = async () => {
     if (!formName.trim()) return
     setLoading(true)
-    if (editCat) {
-      await fetch(`/api/categories/${editCat.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: formName, parentId: formParent ? Number(formParent) : null }),
-      })
-    } else {
-      await fetch('/api/categories', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: formName, parentId: formParent ? Number(formParent) : null }),
-      })
+    try {
+      let res
+      if (editCat) {
+        res = await fetch(`/api/categories/${editCat.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: formName, parentId: formParent ? Number(formParent) : null }),
+        })
+      } else {
+        res = await fetch('/api/categories', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: formName, parentId: formParent ? Number(formParent) : null }),
+        })
+      }
+      if (!res.ok) {
+        const err = await res.json()
+        alert(`Lỗi: ${err.error || 'Không thể lưu. Tên danh mục có thể đã tồn tại.'}`)
+        setLoading(false)
+        return
+      }
+      setShowForm(false)
+      await load()
+    } catch (e) {
+      alert(`Lỗi kết nối: ${e}`)
     }
     setLoading(false)
-    setShowForm(false)
-    load()
   }
 
   const del = async (cat: Category) => {
@@ -128,7 +143,7 @@ export default function CategoriesPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: cat.id }),
     })
-    load()
+    await load()
   }
 
   const toggleExpand = (id: number) => {
@@ -157,7 +172,7 @@ export default function CategoriesPage() {
       body: JSON.stringify({ parentId: targetId }),
     })
     setDragging(null); setDragOver(null)
-    load()
+    await load()
   }
 
   const flatList = flattenTree(tree).filter(({ cat }) => {

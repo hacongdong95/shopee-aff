@@ -4,13 +4,10 @@ import { getSession } from '@/lib/auth'
 import slugify from 'slugify'
 
 export async function GET(req: NextRequest) {
-  const withTree = req.nextUrl.searchParams.get('tree')
-
   const cats = await prisma.category.findMany({
     orderBy: [{ order: 'asc' }, { name: 'asc' }],
     include: { _count: { select: { products: true } } },
   })
-
   return NextResponse.json(cats)
 }
 
@@ -18,40 +15,53 @@ export async function POST(req: NextRequest) {
   const session = await getSession()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { name, parentId } = await req.json()
-  const slug = slugify(name, { lower: true, locale: 'vi' })
+  try {
+    const { name, parentId } = await req.json()
+    if (!name?.trim()) return NextResponse.json({ error: 'Tên không được trống' }, { status: 400 })
 
-  // Lấy order lớn nhất trong cùng cấp
-  const maxOrder = await prisma.category.aggregate({
-    where: { parentId: parentId ? Number(parentId) : null },
-    _max: { order: true },
-  })
+    // Slug unique — nếu trùng thêm -2, -3...
+    const baseSlug = slugify(name.trim(), { lower: true, locale: 'vi', strict: true })
+    let slug = baseSlug
+    let suffix = 2
+    while (await prisma.category.findUnique({ where: { slug } })) {
+      slug = `${baseSlug}-${suffix++}`
+    }
 
-  const cat = await prisma.category.create({
-    data: {
-      name,
-      slug,
-      parentId: parentId ? Number(parentId) : null,
-      order: (maxOrder._max.order ?? 0) + 1,
-    },
-  })
-  return NextResponse.json(cat)
+    const maxOrder = await prisma.category.aggregate({
+      where: { parentId: parentId ? Number(parentId) : null },
+      _max: { order: true },
+    })
+
+    const cat = await prisma.category.create({
+      data: {
+        name: name.trim(),
+        slug,
+        parentId: parentId ? Number(parentId) : null,
+        order: (maxOrder._max.order ?? 0) + 1,
+      },
+    })
+    return NextResponse.json(cat)
+  } catch (e: any) {
+    console.error('POST /api/categories:', e)
+    return NextResponse.json({ error: e?.message || 'Lỗi server' }, { status: 500 })
+  }
 }
 
 export async function DELETE(req: NextRequest) {
   const session = await getSession()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { id } = await req.json()
-
-  // Đệ quy xóa con trước
-  const deleteChildren = async (parentId: number) => {
-    const children = await prisma.category.findMany({ where: { parentId } })
-    for (const child of children) await deleteChildren(child.id)
-    await prisma.category.deleteMany({ where: { parentId } })
+  try {
+    const { id } = await req.json()
+    const deleteChildren = async (parentId: number) => {
+      const children = await prisma.category.findMany({ where: { parentId } })
+      for (const child of children) await deleteChildren(child.id)
+      await prisma.category.deleteMany({ where: { parentId } })
+    }
+    await deleteChildren(Number(id))
+    await prisma.category.delete({ where: { id: Number(id) } })
+    return NextResponse.json({ ok: true })
+  } catch (e: any) {
+    return NextResponse.json({ error: e?.message || 'Lỗi server' }, { status: 500 })
   }
-
-  await deleteChildren(Number(id))
-  await prisma.category.delete({ where: { id: Number(id) } })
-  return NextResponse.json({ ok: true })
 }
