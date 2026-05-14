@@ -5,7 +5,6 @@ import ScrollReveal from '@/components/ScrollReveal'
 import SortFilter from '@/components/SortFilter'
 import FlashSaleCountdown from '@/components/FlashSaleCountdown'
 import PopupAd from '@/components/PopupAd'
-import NavMenu from '@/components/NavMenu'
 
 export const revalidate = 60
 
@@ -98,26 +97,6 @@ export default async function HomePage({
 
   return (
     <div style={{ minHeight: '100vh', background: '#f5f5f5', fontFamily: "'Be Vietnam Pro', sans-serif" }}>
-
-      {/* HEADER */}
-      <header style={{ background: `linear-gradient(135deg, ${primary} 0%, ${primary}bb 100%)`, position: 'sticky', top: 0, zIndex: 100, boxShadow: `0 2px 20px ${primary}44` }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 20px', height: 64, display: 'flex', alignItems: 'center', gap: 20 }}>
-          <Link href="/" style={{ color: 'white', fontWeight: 800, fontSize: 20, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10, whiteSpace: 'nowrap', flexShrink: 0 }}>
-            <span style={{ background: 'rgba(255,255,255,0.22)', backdropFilter: 'blur(4px)', borderRadius: 10, width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0, border: '1px solid rgba(255,255,255,0.3)' }}>{siteEmoji}</span>
-            <div>
-              <div style={{ fontFamily: 'Nunito, sans-serif', letterSpacing: '-0.5px', lineHeight: 1.1 }}>{siteName}</div>
-              {siteTagline && <div style={{ fontSize: 11, fontWeight: 400, opacity: 0.75, lineHeight: 1 }}>{siteTagline}</div>}
-            </div>
-          </Link>
-          <form method="GET" action="/" style={{ flex: 1, maxWidth: 560, position: 'relative' }}>
-            <input name="q" defaultValue={query} placeholder="Tìm kiếm sản phẩm giảm giá..." className="search-input"
-              style={{ width: '100%', padding: '11px 50px 11px 20px', borderRadius: 24, border: 'none', fontSize: 14, outline: 'none', boxShadow: '0 2px 12px rgba(0,0,0,0.12)', boxSizing: 'border-box', background: 'rgba(255,255,255,0.95)', transition: 'box-shadow 0.2s' }}
-            />
-            <button type="submit" style={{ position: 'absolute', right: 5, top: '50%', transform: 'translateY(-50%)', background: primary, border: 'none', borderRadius: 20, width: 36, height: 36, cursor: 'pointer', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 2px 8px ${primary}66` }}>🔍</button>
-          </form>
-        </div>
-        <NavMenu categories={categories} catSlug={catSlug} primary={primary} />
-      </header>
 
       {/* TRUST BAR */}
       <div className="trust-bar" style={{ background: 'white', borderBottom: '1px solid #eee', padding: '9px 20px' }}>
