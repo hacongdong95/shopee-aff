@@ -14,7 +14,7 @@ type Product = {
 }
 type Settings = Record<string, string>
 type Review = {
-  id: number; name: string; rating: number; comment: string; createdAt: string; likes: number
+  id: number; name: string; rating: number; comment: string; createdAt: string; likes?: number
 }
 
 function parseImages(imageUrl: string | null): string[] {
@@ -272,7 +272,7 @@ function maskName(name: string): string {
   }).join(' ')
 }
 
-function ReviewsSection({ productId, primary }: { productId:number; primary:string }) {
+function ReviewsSection({ productId, primary, onRatingUpdate }: { productId:number; primary:string; onRatingUpdate?: (rating: string, count: number) => void }) {
   const [reviews, setReviews]   = useState<Review[]>([])
   const [loading, setLoading]   = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -289,9 +289,15 @@ function ReviewsSection({ productId, primary }: { productId:number; primary:stri
     setLoading(true)
     const res = await fetch(`/api/reviews?productId=${productId}`)
     const data = await res.json()
-    setReviews(Array.isArray(data) ? data : [])
+    const list = Array.isArray(data) ? data : []
+    setReviews(list)
     setLoading(false)
-  }, [productId])
+    // Truyền rating thật lên component cha
+    if (onRatingUpdate && list.length > 0) {
+      const avg = (list.reduce((s: number, r: Review) => s + r.rating, 0) / list.length).toFixed(1)
+      onRatingUpdate(avg, list.length)
+    }
+  }, [productId, onRatingUpdate])
 
   useEffect(() => { load() }, [load])
 
@@ -611,7 +617,9 @@ function SocialProofPopup({ primary }: { primary: string }) {
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function ProductDetail({ product, related, settings={}, categories=[] }: { product:Product; related:Product[]; settings?:Settings; categories?:any[] }) {
   const [copied, setCopied] = useState(false)
-  const [openReviews, setOpenReviews] = useState(false)
+  const [openReviews, setOpenReviews] = useState(true)
+  const [liveRating, setLiveRating] = useState<string | null>(null)
+  const [liveReviewCount, setLiveReviewCount] = useState<number | null>(null)
 
   const primary       = settings.primary_color   || '#ee4d2d'
   const siteName      = settings.site_name       || 'Shopee Deals'
@@ -632,7 +640,9 @@ export default function ProductDetail({ product, related, settings={}, categorie
     ? Math.round((1-product.price/product.oldPrice)*100) : null
   const saved = product.oldPrice && product.oldPrice > product.price
     ? product.oldPrice - product.price : null
-  const { sold, views, reviews, rating } = getFakeStats(product.id)
+  const { sold, views, reviews, rating: fakeRating } = getFakeStats(product.id)
+  const rating  = liveRating ?? fakeRating
+  const reviews2 = liveReviewCount ?? reviews
   const images = parseImages(product.imageUrl)
 
   const copyLink = async () => { const url = window.location.href; if (navigator.share) { try { await navigator.share({ title: product.name, url }) } catch {} } else { navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 2000) } }
@@ -721,7 +731,7 @@ export default function ProductDetail({ product, related, settings={}, categorie
                   </div>
                 </div>
                 <span style={{ color:'#e0e0e0' }}>|</span>
-                <span style={{ borderBottom:'1px solid #999', color:'#555' }}>{reviews.toLocaleString('vi-VN')} Đánh Giá</span>
+                <span style={{ borderBottom:'1px solid #999', color:'#555' }}>{reviews2.toLocaleString('vi-VN')} Đánh Giá</span>
                 <span style={{ color:'#e0e0e0' }}>|</span>
                 <span>Đã Bán <b style={{ color:'#555' }}>{sold >= 1000 ? `${Math.floor(sold/100)/10}k` : sold.toLocaleString('vi-VN')}</b></span>
                 <span style={{ color:'#e0e0e0' }}>|</span>
@@ -811,7 +821,7 @@ export default function ProductDetail({ product, related, settings={}, categorie
               </div>
               <span style={{ fontSize:20, color:primary, transition:'transform 0.2s', display:'inline-block', transform: openReviews ? 'rotate(180deg)' : 'rotate(0deg)' }}>▾</span>
             </div>
-            {openReviews && <ReviewsSection productId={product.id} primary={primary} />}
+            {openReviews && <ReviewsSection productId={product.id} primary={primary} onRatingUpdate={(r, c) => { setLiveRating(r); setLiveReviewCount(c) }} />}
           </div>
         )}
 

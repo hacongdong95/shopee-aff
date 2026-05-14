@@ -1,6 +1,18 @@
-// app/api/reviews/[id]/like/route.ts
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
 
-export async function POST() {
-  return NextResponse.json({ error: 'Not implemented' }, { status: 404 })
+export async function POST(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params
+  try {
+    const review = await prisma.review.update({
+      where: { id: Number(id) },
+      data: { likes: { increment: 1 } },
+    })
+    return NextResponse.json({ likes: review.likes })
+  } catch {
+    return NextResponse.json({ likes: 0 })
+  }
 }
