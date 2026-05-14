@@ -36,24 +36,16 @@ export default function CategoryNav({
 }) {
   const tree = buildTree(categories)
   const [openSlug, setOpenSlug] = useState<string | null>(null)
-  const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number } | null>(null)
   const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const handleMouseEnter = (slug: string, el: HTMLDivElement) => {
+  const handleMouseEnter = (slug: string) => {
     if (leaveTimer.current) clearTimeout(leaveTimer.current)
-    const rect = el.getBoundingClientRect()
-    setDropdownPos({ top: rect.bottom, left: rect.left })
     setOpenSlug(slug)
   }
 
   const handleMouseLeave = () => {
-    leaveTimer.current = setTimeout(() => {
-      setOpenSlug(null)
-      setDropdownPos(null)
-    }, 150)
+    leaveTimer.current = setTimeout(() => setOpenSlug(null), 150)
   }
-
-  const openCat = openSlug ? tree.find(c => c.slug === openSlug) : null
 
   return (
     <div style={{ background: 'rgba(0,0,0,0.14)', borderTop: '1px solid rgba(255,255,255,0.12)', position: 'relative', zIndex: 100 }}>
@@ -83,7 +75,7 @@ export default function CategoryNav({
             <div
               key={cat.id}
               style={{ position: 'relative' }}
-              onMouseEnter={e => hasChildren && handleMouseEnter(cat.slug, e.currentTarget as HTMLDivElement)}
+              onMouseEnter={() => hasChildren && handleMouseEnter(cat.slug)}
               onMouseLeave={handleMouseLeave}
             >
               <Link
@@ -103,63 +95,43 @@ export default function CategoryNav({
                   <span style={{ fontSize: 9, opacity: 0.7, marginTop: 1 }}>▼</span>
                 )}
               </Link>
+
+              {/* Dropdown cho danh muc nay */}
+              {hasChildren && openSlug === cat.slug && (
+                <div
+                  onMouseEnter={() => { if (leaveTimer.current) clearTimeout(leaveTimer.current) }}
+                  onMouseLeave={handleMouseLeave}
+                  style={{
+                    position: 'absolute', top: '100%', left: 0,
+                    zIndex: 9999, background: 'white',
+                    borderRadius: '0 8px 8px 8px',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+                    minWidth: 180, overflow: 'hidden',
+                    border: '1px solid #f0f0f0',
+                  }}
+                >
+                  <Link href={`/?cat=${cat.slug}`}
+                    style={{ display: 'block', padding: '10px 16px', fontSize: 13, color: primary, fontWeight: 700, textDecoration: 'none', borderBottom: '1px solid #f5f5f5', background: '#fff5f3' }}
+                  >
+                    Tất cả {cat.name} →
+                  </Link>
+                  {cat.children!.map(child => (
+                    <Link key={child.id} href={`/?cat=${child.slug}`}
+                      style={{ display: 'block', padding: '9px 16px', fontSize: 13, color: activeCat === child.slug ? primary : '#333', fontWeight: activeCat === child.slug ? 700 : 400, textDecoration: 'none', background: activeCat === child.slug ? '#fff5f3' : 'white', borderBottom: '1px solid #f9f9f9', transition: 'background 0.1s' }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#fff5f3' }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = activeCat === child.slug ? '#fff5f3' : 'white' }}
+                    >
+                      {child.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
           )
         })}
       </div>
 
-      {/* Dropdown dùng position fixed — thoát khỏi mọi overflow container */}
-      {openCat && dropdownPos && (
-        <div
-          onMouseEnter={() => {
-            if (leaveTimer.current) clearTimeout(leaveTimer.current)
-          }}
-          onMouseLeave={handleMouseLeave}
-          style={{
-            position: 'fixed',
-            top: dropdownPos.top,
-            left: dropdownPos.left,
-            zIndex: 9999,
-            background: 'white',
-            borderRadius: '0 8px 8px 8px',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
-            minWidth: 180,
-            overflow: 'hidden',
-            border: '1px solid #f0f0f0',
-          }}
-        >
-          <Link
-            href={`/?cat=${openCat.slug}`}
-            style={{
-              display: 'block', padding: '10px 16px', fontSize: 13,
-              color: primary, fontWeight: 700, textDecoration: 'none',
-              borderBottom: '1px solid #f5f5f5',
-              background: '#fff5f3',
-            }}
-          >
-            Tất cả {openCat.name} →
-          </Link>
-          {openCat.children!.map(child => (
-            <Link
-              key={child.id}
-              href={`/?cat=${child.slug}`}
-              style={{
-                display: 'block', padding: '9px 16px', fontSize: 13,
-                color: activeCat === child.slug ? primary : '#333',
-                fontWeight: activeCat === child.slug ? 700 : 400,
-                textDecoration: 'none',
-                background: activeCat === child.slug ? '#fff5f3' : 'white',
-                borderBottom: '1px solid #f9f9f9',
-                transition: 'background 0.1s',
-              }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#fff5f3' }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = activeCat === child.slug ? '#fff5f3' : 'white' }}
-            >
-              {child.name}
-            </Link>
-          ))}
-        </div>
-      )}
+      {/* Dropdown absolute - gan vao div cha co position relative */}
 
       {/* Breadcrumb: hiện khi đang ở danh mục con */}
       {(() => {
