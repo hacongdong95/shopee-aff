@@ -114,7 +114,7 @@ export default function ProductCard({ product }: { product: Product }) {
 
         {/* Voucher bar */}
         {voucherText && (
-          <div style={{ background: 'var(--primary)', color: 'white', fontSize: 10, fontWeight: 700, padding: '5px 10px', textAlign: 'center', letterSpacing: '0.3px', borderTop: '1px solid rgba(255,255,255,0.15)' }}>
+          <div style={{ background: 'var(--primary)', color: 'white', fontSize: 11, fontWeight: 700, padding: '5px 10px', textAlign: 'center', letterSpacing: '0.3px' }}>
             🏷️ {voucherText}
           </div>
         )}
