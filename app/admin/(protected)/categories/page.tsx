@@ -185,15 +185,17 @@ export default function CategoriesPage() {
     return true
   })
 
-  // Tất cả danh mục cha có thể chọn (loại trừ chính nó và con cháu)
+  // Tất cả danh mục cha có thể chọn — theo đúng thứ tự cây
   const validParents = (excludeId?: number) => {
-    if (!excludeId) return categories
     const getDescendants = (id: number): number[] => {
       const children = categories.filter(c => c.parentId === id)
       return [id, ...children.flatMap(c => getDescendants(c.id))]
     }
-    const excluded = new Set(getDescendants(excludeId))
-    return categories.filter(c => !excluded.has(c.id))
+    const excluded = excludeId ? new Set(getDescendants(excludeId)) : new Set<number>()
+    // Dùng flattenTree để giữ đúng thứ tự cha → con
+    return flattenTree(tree)
+      .filter(({ cat }) => !excluded.has(cat.id))
+      .map(({ cat, depth }) => ({ ...cat, depth }))
   }
 
   const PRIMARY = '#ee4d2d'
@@ -337,7 +339,7 @@ export default function CategoriesPage() {
                   <option value="">📁 Danh mục gốc (cấp 1)</option>
                   {validParents(editCat?.id).map(c => (
                     <option key={c.id} value={c.id}>
-                      {c.parentId ? `  └─ ${c.name}` : c.name}
+                      {c.depth === 0 ? c.name : `${'  '.repeat(c.depth)}└─ ${c.name}`}
                     </option>
                   ))}
                 </select>

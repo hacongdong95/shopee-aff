@@ -60,7 +60,7 @@ export default function NavMenu({
         display: 'flex', gap: 2, overflowX: 'auto', scrollbarWidth: 'none',
         position: 'relative',
       }}>
-        {/* Tab Tất cả */}
+        {/* Tab Tất cả sản phẩm */}
         <Link
           href="/"
           style={{
@@ -77,7 +77,7 @@ export default function NavMenu({
             flexShrink: 0,
           }}
         >
-          Tất cả
+          Tất cả SP
         </Link>
 
         {/* Các danh mục cha */}
