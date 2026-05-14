@@ -115,7 +115,7 @@ export default function ProductCard({ product }: { product: Product }) {
         {/* Voucher bar */}
         {voucherText && (
           <div style={{ background: 'var(--primary)', color: 'white', fontSize: 10, fontWeight: 700, padding: '4px 8px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            🏷️ {voucherText}
+            {voucherText}
           </div>
         )}
 

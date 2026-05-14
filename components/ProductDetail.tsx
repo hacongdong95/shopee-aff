@@ -3,8 +3,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import BuyButton from '@/components/BuyButton'
-import CategoryNav from '@/components/CategoryNav'
-import SearchBox from '@/components/SearchBox'
 
 type Category = { id: number; name: string; slug: string }
 type Product = {
@@ -660,26 +658,6 @@ export default function ProductDetail({ product, related, settings={}, categorie
         @keyframes fadeIn{from{opacity:0}to{opacity:1}}
         @keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-33.33%)}}
       `}</style>
-
-      {/* ── Header giống trang chủ ── */}
-      <header style={{ background:`linear-gradient(135deg, ${primary} 0%, ${primary}bb 100%)`, position:'sticky', top:0, zIndex:100, boxShadow:`0 2px 20px ${primary}44` }}>
-        <div style={{ maxWidth:1200, margin:'0 auto', padding:'0 20px', height:64, display:'flex', alignItems:'center', gap:20 }}>
-          <Link href="/" style={{ color:'white', fontWeight:800, fontSize:20, textDecoration:'none', display:'flex', alignItems:'center', gap:10, whiteSpace:'nowrap', flexShrink:0 }}>
-            <span style={{ background:'rgba(255,255,255,0.22)', backdropFilter:'blur(4px)', borderRadius:10, width:40, height:40, display:'flex', alignItems:'center', justifyContent:'center', fontSize:22, flexShrink:0, border:'1px solid rgba(255,255,255,0.3)' }}>{siteEmoji}</span>
-            <div>
-              <div style={{ fontFamily:'Nunito, sans-serif', letterSpacing:'-0.5px', lineHeight:1.1 }}>{siteName}</div>
-              {siteTagline && <div style={{ fontSize:11, fontWeight:400, opacity:0.75, lineHeight:1 }}>{siteTagline}</div>}
-            </div>
-          </Link>
-          <SearchBox primary={primary} catSlug={product.category.slug} />
-          {discount && discount>=10 && (
-            <div style={{ background:'rgba(0,0,0,0.2)', borderRadius:8, padding:'5px 10px', flexShrink:0 }}>
-              <FlashCountdown productId={product.id} />
-            </div>
-          )}
-        </div>
-        <CategoryNav categories={categories} activeCat={product.category.slug} primary={primary} />
-      </header>
 
       {/* Trust bar */}
       <div style={{ background:'white', borderBottom:'1px solid #eee', padding:'9px 20px' }}>
