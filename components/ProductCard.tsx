@@ -56,14 +56,21 @@ export default function ProductCard({ product }: { product: Product }) {
     <Link href={`/san-pham/${product.slug}`} style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
       <div
         style={{
-          background: 'white', borderRadius: 4, overflow: 'hidden',
-          display: 'flex', flexDirection: 'column', height: '100%',
-          border: '1px solid #f0f0f0', transition: 'box-shadow 0.18s',
-          cursor: 'pointer', position: 'relative',
+          background: 'white',
+          borderRadius: 4,
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          border: '1px solid #f0f0f0',
+          transition: 'box-shadow 0.18s',
+          cursor: 'pointer',
+          position: 'relative',
         }}
         onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 20px rgba(0,0,0,0.12)' }}
         onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = 'none' }}
       >
+        {/* ── Ảnh ── */}
         <div style={{ position: 'relative', paddingTop: '100%', background: '#f5f5f5', overflow: 'hidden', flexShrink: 0 }}>
           {thumb ? (
             <img
@@ -71,38 +78,48 @@ export default function ProductCard({ product }: { product: Product }) {
               alt={product.name}
               onError={() => setImgErr(true)}
               style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.35s ease' }}
+              onMouseEnter={e => (e.currentTarget as HTMLImageElement).style.transform = 'scale(1.05)'}
+              onMouseLeave={e => (e.currentTarget as HTMLImageElement).style.transform = 'scale(1)'}
             />
           ) : (
             <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 52, color: '#ddd' }}>🛍️</div>
           )}
 
+          {/* Badge Yêu thích / Mall góc trái trên */}
           {topBadge && (
             <div style={{
-              position: 'absolute', top: 0, left: 0, background: topBadge.bg, color: 'white',
-              fontSize: 10, fontWeight: 700, padding: '3px 8px 3px 6px', borderRadius: '0 0 8px 0',
+              position: 'absolute', top: 0, left: 0,
+              background: topBadge.bg, color: 'white',
+              fontSize: 10, fontWeight: 700,
+              padding: '3px 8px 3px 6px',
+              borderRadius: '0 0 8px 0',
               display: 'flex', alignItems: 'center', gap: 3,
+              boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
+              zIndex: 2
             }}>
               {topBadge.icon && <span style={{ fontSize: 11 }}>{topBadge.icon}</span>}
               {topBadge.text}
             </div>
           )}
 
-          {/* NHÃN VOUCHER 35% ĐỒNG BỘ */}
+          {/* NHÃN 35% ĐỒNG BỘ - GÓC PHẢI TRÊN */}
           <div style={{
             position: 'absolute', top: 0, right: 0,
-            background: 'rgba(255, 212, 36, 0.9)', // Màu vàng Shopee
-            padding: '2px 5px', display: 'flex', flexDirection: 'column', alignItems: 'center',
-            borderBottomLeftRadius: '2px', zIndex: 5
+            background: 'rgba(255, 212, 36, 0.9)',
+            padding: '2px 6px', display: 'flex', flexDirection: 'column', alignItems: 'center',
+            borderBottomLeftRadius: '2px', zIndex: 10
           }}>
             <span style={{ color: '#ee4d2d', fontSize: 11, fontWeight: 700 }}>35%</span>
             <span style={{ color: 'white', fontSize: 9, fontWeight: 700, textTransform: 'uppercase' }}>GIẢM</span>
           </div>
 
+          {/* Voucher strip dưới ảnh — giống Shopee */}
           {discount && discount >= 10 && (
             <div style={{
               position: 'absolute', bottom: 0, left: 0, right: 0,
               background: 'linear-gradient(90deg, #ff6633, #ee4d2d)',
-              color: 'white', fontSize: 10, fontWeight: 700, padding: '3px 8px',
+              color: 'white', fontSize: 10, fontWeight: 700,
+              padding: '3px 8px',
               display: 'flex', alignItems: 'center', gap: 4,
             }}>
               <span style={{ background: 'rgba(255,255,255,0.25)', borderRadius: 3, padding: '1px 5px', fontSize: 9, fontWeight: 800 }}>VOUCHER</span>
@@ -111,21 +128,60 @@ export default function ProductCard({ product }: { product: Product }) {
           )}
         </div>
 
-        <div style={{ padding: '8px 10px 10px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ fontSize: 13, color: '#333', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: 38, marginBottom: 6 }}>
+        {/* ── Info ── */}
+        <div style={{ padding: '8px 10px 10px', flex: 1, display: 'flex', flexDirection: 'column', gap: 0 }}>
+          <div style={{
+            fontSize: 13, fontWeight: 400, lineHeight: 1.45, color: '#333',
+            display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+            overflow: 'hidden', minHeight: 38, marginBottom: 6,
+          }}>
             {product.name}
           </div>
+
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, flexWrap: 'wrap', marginBottom: 4 }}>
-            <span style={{ color: '#ee4d2d', fontWeight: 700, fontSize: 17 }}>{product.price.toLocaleString('vi-VN')}₫</span>
+            <span style={{ color: '#ee4d2d', fontWeight: 700, fontSize: 17, lineHeight: 1 }}>
+              {product.price.toLocaleString('vi-VN')}
+              <span style={{ fontSize: 11, fontWeight: 600 }}>₫</span>
+            </span>
             {product.oldPrice && product.oldPrice > product.price && (
-              <span style={{ color: '#999', fontSize: 12, textDecoration: 'line-through' }}>{product.oldPrice.toLocaleString('vi-VN')}₫</span>
+              <span style={{ color: '#999', fontSize: 12, textDecoration: 'line-through' }}>
+                {product.oldPrice.toLocaleString('vi-VN')}₫
+              </span>
             )}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <span style={{ fontSize: 11, color: '#f5a623' }}>★ {rating}</span>
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 2 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+              <div style={{ display: 'flex', gap: 1 }}>
+                {[1,2,3,4,5].map(i => {
+                  const r = Number(rating); const full = i <= Math.floor(r); const half = !full && i === Math.ceil(r)
+                  return (
+                    <span key={i} style={{ fontSize: 11, color: full || half ? '#f5a623' : '#e0e0e0', lineHeight: 1 }}>
+                      {full ? '★' : half ? '⯨' : '★'}
+                    </span>
+                  )
+                })}
+              </div>
+              <span style={{ fontSize: 11, color: '#767676' }}>{rating}</span>
             </div>
-            <span style={{ fontSize: 11, color: '#767676' }}>Đã bán {sold}</span>
+            <span style={{ fontSize: 11, color: '#767676' }}>
+              Đã bán <span style={{ fontWeight: 600, color: '#555' }}>{sold}</span>
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 }}>
+            <span style={{ fontSize: 10, color: '#999', display: 'flex', alignItems: 'center', gap: 3 }}>
+              📍 <span>Hà Nội</span>
+            </span>
+            {seededRandom(product.id * 5) > 0.4 && (
+              <span style={{
+                fontSize: 9, fontWeight: 700, color: '#26aa99',
+                border: '1px solid #26aa99', borderRadius: 2,
+                padding: '1px 4px', lineHeight: 1.4,
+              }}>
+                FREESHIP
+              </span>
+            )}
           </div>
         </div>
       </div>

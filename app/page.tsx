@@ -36,131 +36,121 @@ export default async function HomePage({
     prisma.product.findMany({
       where: {
         isActive: true,
-        ...(catSlug ? { category: { slug: catSlug } } : {}),
+        ...(catSlug ? {
+          category: {
+            OR: [
+              { slug: catSlug },
+              { parent: { slug: catSlug } },
+            ]
+          }
+        } : {}),
         ...(query ? { name: { contains: query, mode: 'insensitive' } } : {}),
-        ...(minPrice || maxPrice ? {
+        ...(minPrice !== undefined || maxPrice !== undefined ? {
           price: {
-            ...(minPrice ? { gte: minPrice } : {}),
-            ...(maxPrice ? { lte: maxPrice } : {}),
+            ...(minPrice !== undefined ? { gte: minPrice } : {}),
+            ...(maxPrice !== undefined ? { lte: maxPrice } : {}),
           }
         } : {}),
       },
       include: { category: true },
-      orderBy: 
-        sort === 'price_asc' ? { price: 'asc' } :
+      orderBy:
+        sort === 'price_asc'  ? { price: 'asc' }  :
         sort === 'price_desc' ? { price: 'desc' } :
-        { createdAt: 'desc' }
+        sort === 'popular'    ? { clicks: 'desc' } :
+        { createdAt: 'desc' },
     }),
-    getSettings()
+    getSettings(),
   ])
 
-  const primary = settings.primaryColor || '#ee4d2d'
-  const siteName = settings.siteName || 'Shopee'
-  const siteEmoji = settings.siteEmoji || '🛍️'
-  
-  const bannerImg = settings.bannerImage
-  const flashSaleEnd = settings.flashSaleEndTime
-  const flashSaleText = settings.flashSaleText || 'Giá cực hời, săn ngay!'
-  
-  const popupShow = settings.popupActive === 'true'
-  const popupImage = settings.popupImage
-  const popupAffLink = settings.popupAffLink
-  const popupTitle = settings.popupTitle
-  const popupSubtitle = settings.popupSubtitle
-  const popupBtnText = settings.popupBtnText
-  const popupDelay = Number(settings.popupDelay) || 2
+  const hotProducts = !catSlug && !query
+    ? [...allProducts].sort((a, b) => b.clicks - a.clicks).slice(0, 6)
+    : []
 
-  const footerColor = settings.footerBackground || '#1a1a1a'
-  const footerText = settings.footerText || 'Bản quyền thuộc về chúng tôi'
-  const shippingText = settings.shippingText || 'Vận chuyển nhanh'
-  const guaranteeText = settings.guaranteeText || 'Chính hãng 100%'
-  const returnText = settings.returnText || 'Trả hàng dễ dàng'
+  const products = sort === 'discount'
+    ? [...allProducts].sort((a, b) => {
+        const da = a.oldPrice ? (a.oldPrice - a.price) / a.oldPrice : 0
+        const db = b.oldPrice ? (b.oldPrice - b.price) / b.oldPrice : 0
+        return db - da
+      })
+    : allProducts
 
-  const hotProducts = [...allProducts]
-    .sort((a, b) => b.clicks - a.clicks)
-    .slice(0, 10)
+  const primary         = settings.primary_color    || '#ee4d2d'
+  const siteName        = settings.site_name        || 'Shopee Deals'
+  const siteEmoji       = settings.site_logo_emoji  || '\u{1F6CD}\uFE0F'
+  const bannerShow      = settings.banner_show      !== 'false'
+  const bannerImage     = settings.banner_image     || ''
+  const bannerLink      = settings.banner_link      || ''
+  const bannerTitle     = settings.banner_title     || '\uD83D\uDD25 Deal Hot M\u1ED7i Ng\u00E0y'
+  const bannerSubtitle  = settings.banner_subtitle  || 'Hàng ngàn sản phẩm giảm giá sâu'
+  const footerText      = settings.footer_text      || 'Tổng hợp sản phẩm giảm giá tốt nhất'
+  const footerCopyright = settings.footer_copyright || '\u00A9 2025 \u00B7 Affiliate Website'
+  const footerColor     = settings.footer_color     || '#1a1a1a'
+  const shippingText    = settings.shipping_text    || '\uD83D\uDE9A Miễn phí vận chuyển'
+  const guaranteeText   = settings.guarantee_text   || '\u2705 Hoàn tiền nếu không đúng'
+  const returnText      = settings.return_text      || '\u21A9\uFE0F Đổi trả 15 ngày'
+  const activeCatName   = catSlug ? categories.find(c => c.slug === catSlug)?.name : null
+  const popupShow       = settings.popup_show     === 'true'
+  const popupImage      = settings.popup_image    || ''
+  const popupAffLink    = settings.popup_aff_link || ''
+  const popupTitle      = settings.popup_title    || ''
+  const popupSubtitle   = settings.popup_subtitle || ''
+  const popupBtnText    = settings.popup_btn_text || 'Mua Ngay'
+  const popupDelay      = Number(settings.popup_delay || '2')
+  const flashSaleEnd    = settings.flash_sale_end_time || ''
+  const flashSaleText   = 'Giá cực hời, săn ngay!'
 
   return (
     <div style={{ minHeight: '100vh', background: '#f5f5f5', fontFamily: "'Be Vietnam Pro', sans-serif" }}>
-      
-      {/* HEADER ĐÃ GỠ BỎ ĐỂ DÙNG LAYOUT TỔNG */}
 
       <div className="trust-bar" style={{ background: 'white', borderBottom: '1px solid #eee', padding: '9px 20px' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', justifyContent: 'space-between', gap: 15, overflowX: 'auto' }} className="hide-scrollbar">
-          {[
-            { icon: '🚚', title: 'Hỏa Tốc', sub: 'Giao trong 2h' },
-            { icon: '🛡️', title: 'Chính Hãng', sub: 'Bảo hành 12th' },
-            { icon: '🎁', title: 'Voucher', sub: 'Giảm tới 50%' },
-            { icon: '⭐', title: 'Đánh Giá', sub: 'Từ khách hàng' }
-          ].map((item, idx) => (
-            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}>
-              <span style={{ fontSize: 20 }}>{item.icon}</span>
-              <div>
-                <div style={{ fontSize: 12, fontWeight: 700, color: '#333' }}>{item.title}</div>
-                <div style={{ fontSize: 10, color: '#999' }}>{item.sub}</div>
-              </div>
-            </div>
+        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', justifyContent: 'center', gap: 28, flexWrap: 'wrap' }}>
+          {[shippingText, guaranteeText, returnText].map((t, i) => (
+            <span key={i} style={{ fontSize: 12, color: '#555', fontWeight: 500 }}>{t}</span>
           ))}
         </div>
       </div>
 
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '20px 15px' }}>
-        {bannerImg && (
-          <div style={{ marginBottom: 24, borderRadius: 12, overflow: 'hidden', boxShadow: '0 4px 15px rgba(0,0,0,0.08)' }}>
-            <img src={bannerImg} alt="Banner" style={{ width: '100%', height: 'auto', display: 'block' }} />
-          </div>
-        )}
+      {!catSlug && !query && <FlashSaleCountdown primary={primary} />}
 
-        {flashSaleEnd && (
-          <div style={{ marginBottom: 24, background: 'white', borderRadius: 12, overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
-            <div style={{ background: `linear-gradient(90deg, ${primary}, #ff8a6c)`, padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <h2 style={{ color: 'white', margin: 0, fontSize: 20, fontWeight: 800, letterSpacing: 0.5 }}>⚡ FLASH SALE</h2>
-                <div style={{ background: 'rgba(255,255,255,0.2)', height: 20, width: 1 }}></div>
-                <span style={{ color: 'white', fontSize: 13, opacity: 0.9 }}>{flashSaleText}</span>
-              </div>
-              <FlashSaleCountdown endTime={flashSaleEnd} />
+      {bannerShow && !catSlug && !query && (
+        bannerImage && (
+          bannerLink ? (
+            <a href={bannerLink} style={{ display: 'block', width: '100%', lineHeight: 0 }}>
+              <img src={bannerImage} alt={bannerTitle} style={{ width: '100%', maxHeight: 320, objectFit: 'cover', display: 'block' }} />
+            </a>
+          ) : (
+            <div style={{ width: '100%', lineHeight: 0 }}>
+              <img src={bannerImage} alt={bannerTitle} style={{ width: '100%', maxHeight: 320, objectFit: 'cover', display: 'block' }} />
             </div>
-          </div>
-        )}
+          )
+        )
+      )}
 
-        {hotProducts.length > 0 && !catSlug && !query && (
-          <div style={{ marginBottom: 32 }}>
-            <h2 style={{ fontSize: 18, fontWeight: 700, color: '#333', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-              🔥 Sản phẩm bán chạy nhất
-            </h2>
-            <div style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 10 }} className="hide-scrollbar">
-              {hotProducts.map(p => (
-                <div key={p.id} style={{ width: 180, flexShrink: 0 }}>
-                  <ProductCard product={p as any} />
-                </div>
-              ))}
+      <div id="products" style={{ maxWidth: 1200, margin: '0 auto', padding: '28px 16px' }}>
+        {hotProducts.length > 0 && (
+          <div style={{ marginBottom: 36 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+              <div style={{ width: 4, height: 24, background: primary, borderRadius: 2 }} />
+              <span style={{ fontSize: 18, fontWeight: 800, color: '#1a1a1a' }}>🔥 Bán Chạy Nhất</span>
             </div>
-          </div>
-        )}
-
-        <div style={{ display: 'flex', flexDirection: 'column', mdDirection: 'row' as any, gap: 24 }}>
-          <aside style={{ width: '100%', mdWidth: '240px' as any, flexShrink: 0 }}>
-            <SortFilter categories={categories} activeCat={catSlug} primaryColor={primary} />
-          </aside>
-
-          <main style={{ flex: 1 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12 }}>
-              {allProducts.map((p) => (
-                <ScrollReveal key={p.id}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 14 }}>
+              {hotProducts.map((p, i) => (
+                <ScrollReveal key={p.id} delay={i * 50}>
                   <ProductCard product={p as any} />
                 </ScrollReveal>
               ))}
             </div>
+          </div>
+        )}
 
-            {allProducts.length === 0 && (
-              <div style={{ textAlign: 'center', padding: '80px 20px', background: 'white', borderRadius: 12, color: '#999' }}>
-                <div style={{ fontSize: 48, marginBottom: 16 }}>🔍</div>
-                <p>Không tìm thấy sản phẩm phù hợp yêu cầu của bạn.</p>
-                <Link href="/" style={{ color: primary, fontWeight: 600, textDecoration: 'none' }}>Quay lại trang chủ</Link>
-              </div>
-            )}
-          </main>
+        <SortFilter currentSort={sort} currentMin={minPrice} currentMax={maxPrice} catSlug={catSlug} query={query} primary={primary} />
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 14 }}>
+          {products.map((p, i) => (
+            <ScrollReveal key={p.id} delay={Math.min(i % 6 * 60, 300)}>
+              <ProductCard product={p as any} />
+            </ScrollReveal>
+          ))}
         </div>
       </div>
 
@@ -172,11 +162,8 @@ export default async function HomePage({
 
       <footer style={{ background: footerColor, color: '#aaa', padding: '48px 20px 28px', marginTop: 48 }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', textAlign: 'center' }}>
-          <div style={{ marginBottom: 16 }}>
-            <div style={{ color: 'white', fontWeight: 800, fontSize: 20, fontFamily: 'Nunito, sans-serif', marginBottom: 6 }}>{siteEmoji} {siteName}</div>
-            <div style={{ fontSize: 13, maxWidth: 400, margin: '0 auto', lineHeight: 1.7, color: 'rgba(255,255,255,0.45)' }}>{footerText}</div>
-          </div>
-          {/* ... Phần còn lại của Footer ... */}
+          <div style={{ color: 'white', fontWeight: 800, fontSize: 20, marginBottom: 6 }}>{siteEmoji} {siteName}</div>
+          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginTop: 20 }}>{footerCopyright}</div>
         </div>
       </footer>
     </div>
