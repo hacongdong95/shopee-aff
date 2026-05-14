@@ -55,16 +55,12 @@ export default async function ProductPage({
 }) {
   const { slug } = await params
 
-  const [product, settings, categories] = await Promise.all([
+  const [product, settings] = await Promise.all([
     prisma.product.findUnique({
       where: { slug },
       include: { category: true },
     }),
     getSettings(),
-    prisma.category.findMany({
-      orderBy: [{ order: 'asc' }, { name: 'asc' }],
-      include: { _count: { select: { products: true } } },
-    }),
   ])
 
   if (!product || !product.isActive) notFound()
@@ -97,5 +93,5 @@ export default async function ProductPage({
     }
   }
 
-  return <ProductDetail product={product} related={related} settings={settings} categories={categories} />
+  return <ProductDetail product={product} related={related} settings={settings} />
 }
