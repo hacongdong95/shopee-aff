@@ -8,7 +8,7 @@ import PopupAd from '@/components/PopupAd'
 import BannerCarousel from '@/components/BannerCarousel'
 import ProductGrid from '@/components/ProductGrid'
 
-export const revalidate = 60
+export const revalidate = 0
 
 async function getSettings() {
   const rows = await prisma.setting.findMany()
@@ -105,16 +105,26 @@ export default async function HomePage({
   return (
     <div style={{ minHeight: '100vh', background: '#f5f5f5', fontFamily: "'Be Vietnam Pro', sans-serif" }}>
 
-      {/* TRUST BAR */}
-      <div style={{ background: 'white', borderBottom: '1px solid #eee', padding: '7px 16px' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 6, flexWrap: 'nowrap', overflowX: 'auto', scrollbarWidth: 'none' }}>
-          {[shippingText, guaranteeText, returnText].map((t, i) => (
-            <span key={i} style={{ fontSize: 11, color: '#555', fontWeight: 500, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: i < 2 ? 6 : 0 }}>
-              {t}
-              {i < 2 && <span style={{ color: '#ddd', marginLeft: 6 }}>|</span>}
+      {/* ── TRUST BAR chạy chữ ── */}
+      <div style={{ background: `linear-gradient(90deg, ${primary}11, white, ${primary}11)`, borderBottom: '1px solid #eee', padding: '8px 0', overflow: 'hidden', whiteSpace: 'nowrap', position: 'relative' }}>
+        <div style={{ display: 'inline-flex', animation: 'marquee 25s linear infinite', gap: 0 }}>
+          {[...Array(4)].map((_, i) => (
+            <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 0 }}>
+              {[shippingText, guaranteeText, returnText].map((t, j) => (
+                <span key={j} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#444', fontWeight: 500, padding: '0 24px' }}>
+                  <span style={{ color: primary, fontSize: 10 }}>◆</span>
+                  {t}
+                </span>
+              ))}
             </span>
           ))}
         </div>
+        <style>{`
+          @keyframes marquee {
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(-25%); }
+          }
+        `}</style>
       </div>
 
       {/* FLASH SALE */}
