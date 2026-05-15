@@ -5,6 +5,7 @@ import ScrollReveal from '@/components/ScrollReveal'
 import SortFilter from '@/components/SortFilter'
 import FlashSaleCountdown from '@/components/FlashSaleCountdown'
 import PopupAd from '@/components/PopupAd'
+import ProductGrid from '@/components/ProductGrid'
 
 export const revalidate = 60
 
@@ -189,13 +190,7 @@ export default async function HomePage({
             </div>
           </ScrollReveal>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 14 }}>
-            {products.map((p, i) => (
-              <ScrollReveal key={p.id} delay={Math.min(i % 6 * 60, 300)}>
-                <ProductCard product={p} />
-              </ScrollReveal>
-            ))}
-          </div>
+          <ProductGrid products={products} primary={primary} />
         )}
       </div>
 
