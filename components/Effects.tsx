@@ -101,13 +101,14 @@ export default function Effects({
         @keyframes phone-ring{0%,100%{transform:rotate(0)}10%{transform:rotate(-15deg)}20%{transform:rotate(15deg)}30%{transform:rotate(-10deg)}40%{transform:rotate(10deg)}50%{transform:rotate(0)}}
 
         .back-to-top{
-          position:fixed;bottom:80px;right:20px;z-index:999;
+          position:fixed;top:50%;right:16px;z-index:999;
+          transform:translateY(-50%);
           width:42px;height:42px;border-radius:50%;
           background:${color};color:white;border:none;cursor:pointer;
           font-size:18px;display:flex;align-items:center;justify-content:center;
-          box-shadow:0 4px 16px ${color}66;transition:opacity 0.25s,transform 0.25s
+          box-shadow:0 4px 16px ${color}66;transition:opacity 0.25s,box-shadow 0.25s
         }
-        .back-to-top:hover{transform:translateY(-3px) scale(1.08)}
+        .back-to-top:hover{box-shadow:0 6px 20px ${color}99;opacity:0.9}
 
         /* Float buttons container */
         .float-contact{
