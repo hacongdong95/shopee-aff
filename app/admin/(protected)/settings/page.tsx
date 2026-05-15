@@ -22,6 +22,7 @@ const TABS = [
   { id: 'giaodien',    label: '🎨 Giao diện' },
   { id: 'banner',      label: '📢 Banner' },
   { id: 'noidung',     label: '📝 Nội dung' },
+  { id: 'footer',      label: '🦶 Footer' },
   { id: 'chinh_sach',  label: '📋 Chính sách' },
   { id: 'mang_xa_hoi', label: '📱 Mạng XH' },
   { id: 'float_contact', label: '📞 Nút liên hệ' },
@@ -59,6 +60,18 @@ const TAB_FIELDS: Record<string, { key: string; label: string; type: string; pla
     { key: 'footer_text',      label: 'Mô tả footer',       type: 'textarea', placeholder: 'Tổng hợp sản phẩm giảm giá...' },
     { key: 'footer_copyright', label: 'Copyright',          type: 'text',     placeholder: '© 2025 · Affiliate Website' },
   ],
+  // ── Tab Footer mới ──
+  footer: [
+    { key: 'footer_about',         label: 'Giới thiệu ngắn (footer)',    type: 'textarea', placeholder: 'Chúng tôi tổng hợp các deal tốt nhất từ Shopee mỗi ngày. Mua sắm thông minh — tiết kiệm thật sự.', hint: 'Hiển thị dưới logo trong footer' },
+    { key: 'footer_hotline',       label: 'Hotline / SĐT liên hệ',      type: 'text',     placeholder: '0912 345 678', hint: 'Bấm vào sẽ gọi điện trực tiếp' },
+    { key: 'footer_email',         label: 'Email liên hệ',               type: 'text',     placeholder: 'contact@yourdomain.com', hint: 'Hiển thị ở mục liên hệ footer' },
+    { key: 'footer_address',       label: 'Địa chỉ (tùy chọn)',         type: 'text',     placeholder: 'Hà Nội, Việt Nam', hint: 'Để trống nếu không muốn hiện' },
+    { key: 'footer_fanpage_url',   label: 'Link Facebook Fanpage',       type: 'text',     placeholder: 'https://facebook.com/yourpage', hint: 'Hiển thị nút "Theo dõi Fanpage" nổi bật trong footer' },
+    { key: 'footer_fanpage_label', label: 'Tên Fanpage',                 type: 'text',     placeholder: 'Gia Đình Su Đô', hint: 'Tên hiển thị trên nút theo dõi fanpage' },
+    { key: 'footer_shopee_url',    label: 'Link Shop Shopee',            type: 'text',     placeholder: 'https://shopee.vn/shop/...', hint: 'Hiển thị nút "Vào Shop Shopee" trong footer' },
+    { key: 'footer_copyright',     label: 'Copyright',                   type: 'text',     placeholder: '© 2025 · Affiliate Website' },
+    { key: 'footer_color',         label: 'Màu nền footer',              type: 'color',    placeholder: '#1a1a1a', hint: 'Nên dùng màu tối' },
+  ],
   chinh_sach: [
     { key: 'shipping_text',    label: 'Vận chuyển',   type: 'text',   placeholder: '🚚 Miễn phí vận chuyển · Giao trong 2-5 ngày' },
     { key: 'guarantee_text',   label: 'Đảm bảo',     type: 'text',   placeholder: '✅ Hoàn tiền nếu hàng không đúng mô tả' },
@@ -67,8 +80,8 @@ const TAB_FIELDS: Record<string, { key: string; label: string; type: string; pla
     { key: 'show_fake_stats',  label: 'Hiện lượt xem & đã bán giả', type: 'toggle', placeholder: 'true', hint: 'Tạo độ tin tưởng cho khách hàng' },
     { key: 'show_related',     label: 'Hiện sản phẩm liên quan', type: 'toggle', placeholder: 'true' },
   ],
-  mang_xa_hoi: [], // Render riêng bên dưới
-  float_contact: [], // Render riêng bên dưới
+  mang_xa_hoi: [],
+  float_contact: [],
   danh_gia: [
     { key: 'show_reviews', label: 'Hiện section đánh giá sản phẩm', type: 'toggle', placeholder: 'true', hint: 'Cho phép người dùng xem và gửi đánh giá trên trang sản phẩm' },
   ],
@@ -93,7 +106,6 @@ const TAB_FIELDS: Record<string, { key: string; label: string; type: string; pla
   ],
 }
 
-// Cấu hình từng mạng XH — thứ tự hiển thị
 const SOCIAL_CHANNELS = [
   { key: 'social_shopee',    label: 'Shopee',    icon: '🛒', color: '#ee4d2d', placeholder: 'https://shopee.vn/shop/...',       hint: 'Link shop Shopee của bạn' },
   { key: 'social_facebook',  label: 'Facebook',  icon: '📘', color: '#1877f2', placeholder: 'https://facebook.com/...',          hint: 'Link Facebook Page' },
@@ -104,7 +116,6 @@ const SOCIAL_CHANNELS = [
   { key: 'contact_email',    label: 'Email liên hệ', icon: '✉️', color: '#6b7280', placeholder: 'contact@example.com',          hint: 'Hiển thị ở footer' },
 ]
 
-// Cấu hình nút nổi liên hệ
 const FLOAT_BUTTONS = [
   {
     key: 'float_phone',
@@ -138,7 +149,6 @@ const FLOAT_BUTTONS = [
   },
 ]
 
-// ─── Helpers ─────────────────────────────────────────────────────────────
 function hexToRgb(hex: string) {
   const c = hex.replace('#', '')
   const r = parseInt(c.slice(0, 2), 16)
@@ -154,7 +164,6 @@ function darken(hex: string, pct = 0.15) {
   return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────
 export default function SettingsPage() {
   const [settings, setSettings] = useState<Settings>({})
   const [loading, setLoading]   = useState(true)
@@ -163,7 +172,6 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('giaodien')
   const [previewOpen, setPreviewOpen] = useState(false)
   const [uploadingKey, setUploadingKey] = useState<string | null>(null)
-  const previewRef = useRef<HTMLIFrameElement>(null)
 
   useEffect(() => {
     fetch('/api/settings').then(r => r.json()).then(data => {
@@ -226,7 +234,6 @@ export default function SettingsPage() {
 
   const primary = settings.primary_color || '#ee4d2d'
   const rgb     = hexToRgb(primary)
-  const dark    = darken(primary)
 
   if (loading) return (
     <div style={{ display:'flex', alignItems:'center', justifyContent:'center', padding:80, color:'#9ca3af' }}>
@@ -239,8 +246,7 @@ export default function SettingsPage() {
 
   return (
     <div style={{ fontFamily: "'Be Vietnam Pro', sans-serif" }}>
-
-      {/* ── Topbar ── */}
+      {/* Topbar */}
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:24, flexWrap:'wrap', gap:12 }}>
         <div>
           <h2 style={{ margin:0, fontSize:22, fontWeight:800, color:'#111' }}>⚙️ Cài đặt website</h2>
@@ -263,8 +269,6 @@ export default function SettingsPage() {
       </div>
 
       <div style={{ display:'flex', gap:20, alignItems:'flex-start', flexWrap:'wrap' }}>
-
-        {/* ── Left: Tabs + Fields ── */}
         <div style={{ flex:1, minWidth:320 }}>
           {/* Tab bar */}
           <div style={{ display:'flex', gap:4, marginBottom:20, flexWrap:'wrap' }}>
@@ -284,7 +288,6 @@ export default function SettingsPage() {
           {/* Fields */}
           <div style={{ background:'white', borderRadius:12, padding:24, boxShadow:'0 1px 4px rgba(0,0,0,0.08)', display:'flex', flexDirection:'column', gap:20 }}>
 
-            {/* ── Tab Mạng XH: render riêng ── */}
             {activeTab === 'mang_xa_hoi' ? (
               <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
                 <div style={{ fontSize:13, color:'#6b7280', background:'#f9fafb', border:'1px solid #e5e7eb', borderRadius:8, padding:'10px 14px' }}>
@@ -295,7 +298,6 @@ export default function SettingsPage() {
                   const showKey = `${ch.key}_show`
                   const isShown = settings[showKey] !== 'false'
                   const hasUrl  = !!urlVal.trim()
-
                   return (
                     <div key={ch.key} style={{ border:'1.5px solid #e5e7eb', borderRadius:10, overflow:'hidden', opacity: hasUrl ? 1 : 0.7 }}>
                       <div style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 14px', background:'#f9fafb', borderBottom:'1px solid #e5e7eb' }}>
@@ -313,11 +315,7 @@ export default function SettingsPage() {
                       </div>
                       <div style={{ padding:'10px 14px' }}>
                         {ch.hint && <div style={{ fontSize:11, color:'#9ca3af', marginBottom:6 }}>💡 {ch.hint}</div>}
-                        <input
-                          type="text"
-                          value={urlVal}
-                          onChange={e => set(ch.key, e.target.value)}
-                          placeholder={ch.placeholder}
+                        <input type="text" value={urlVal} onChange={e => set(ch.key, e.target.value)} placeholder={ch.placeholder}
                           style={{ width:'100%', padding:'9px 12px', border:'1.5px solid #e5e7eb', borderRadius:8, fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'inherit', transition:'border-color 0.15s' }}
                           onFocus={e => (e.target as HTMLInputElement).style.borderColor = ch.color}
                           onBlur={e  => (e.target as HTMLInputElement).style.borderColor = '#e5e7eb'}
@@ -337,18 +335,13 @@ export default function SettingsPage() {
               </div>
 
             ) : activeTab === 'float_contact' ? (
-              /* ── Tab Nút liên hệ nổi ── */
               <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
-                {/* Intro card */}
                 <div style={{ background:'linear-gradient(135deg,#f0f9ff,#e0f2fe)', border:'1px solid #bae6fd', borderRadius:10, padding:'14px 16px' }}>
                   <div style={{ fontWeight:700, color:'#0369a1', fontSize:14, marginBottom:6 }}>📞 Nút liên hệ nổi góc phải màn hình</div>
                   <div style={{ fontSize:12, color:'#0369a1', lineHeight:1.6 }}>
                     Các nút này hiển thị cố định ở góc phải màn hình, giúp khách hàng liên hệ nhanh chóng.
-                    Nhập thông tin và bật toggle để hiện nút tương ứng.
                   </div>
                 </div>
-
-                {/* Preview nút nổi */}
                 <div style={{ background:'#f9fafb', border:'1px solid #e5e7eb', borderRadius:10, padding:'14px 16px' }}>
                   <div style={{ fontSize:12, fontWeight:700, color:'#374151', marginBottom:10 }}>👁️ Preview các nút sẽ hiển thị:</div>
                   <div style={{ display:'flex', flexDirection:'column', gap:8, alignItems:'flex-start' }}>
@@ -363,58 +356,37 @@ export default function SettingsPage() {
                           </div>
                           <div>
                             <div style={{ fontSize:13, fontWeight:700, color: active ? '#111' : '#9ca3af' }}>{btn.label}</div>
-                            <div style={{ fontSize:11, color: active ? '#6b7280' : '#d1d5db' }}>
-                              {active ? val : 'Chưa cài đặt'}
-                            </div>
+                            <div style={{ fontSize:11, color: active ? '#6b7280' : '#d1d5db' }}>{active ? val : 'Chưa cài đặt'}</div>
                           </div>
-                          {active && (
-                            <div style={{ marginLeft:'auto', fontSize:11, background:'#dcfce7', color:'#16a34a', padding:'3px 8px', borderRadius:20, fontWeight:600 }}>
-                              ✅ Đang hiện
-                            </div>
-                          )}
+                          {active && <div style={{ marginLeft:'auto', fontSize:11, background:'#dcfce7', color:'#16a34a', padding:'3px 8px', borderRadius:20, fontWeight:600 }}>✅ Đang hiện</div>}
                         </div>
                       )
                     })}
                   </div>
                 </div>
-
-                {/* Từng nút config */}
                 {FLOAT_BUTTONS.map(btn => {
                   const val     = settings[btn.key] || ''
                   const isShown = settings[btn.showKey] !== 'false'
                   const hasVal  = !!val.trim()
-
                   return (
                     <div key={btn.key} style={{ border:`1.5px solid ${hasVal && isShown ? btn.color + '55' : '#e5e7eb'}`, borderRadius:10, overflow:'hidden', transition:'border-color 0.2s' }}>
-                      {/* Header */}
                       <div style={{ display:'flex', alignItems:'center', gap:10, padding:'12px 16px', background: hasVal && isShown ? `${btn.color}0d` : '#f9fafb', borderBottom:'1px solid #e5e7eb' }}>
-                        <div style={{ width:36, height:36, borderRadius:'50%', background: hasVal && isShown ? btn.color : '#e5e7eb', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0, transition:'background 0.2s' }}>
-                          {btn.icon}
-                        </div>
+                        <div style={{ width:36, height:36, borderRadius:'50%', background: hasVal && isShown ? btn.color : '#e5e7eb', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0, transition:'background 0.2s' }}>{btn.icon}</div>
                         <div style={{ flex:1 }}>
                           <div style={{ fontWeight:700, fontSize:14, color:'#111' }}>{btn.label}</div>
                           <div style={{ fontSize:11, color:'#9ca3af' }}>{btn.showLabel}</div>
                         </div>
-                        {/* Toggle */}
                         <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                          <span style={{ fontSize:12, color: isShown && hasVal ? btn.color : '#9ca3af', fontWeight:600 }}>
-                            {isShown && hasVal ? '👁️ Hiện' : '🙈 Ẩn'}
-                          </span>
+                          <span style={{ fontSize:12, color: isShown && hasVal ? btn.color : '#9ca3af', fontWeight:600 }}>{isShown && hasVal ? '👁️ Hiện' : '🙈 Ẩn'}</span>
                           <div onClick={() => set(btn.showKey, isShown ? 'false' : 'true')}
                             style={{ width:42, height:24, borderRadius:12, cursor:'pointer', background: isShown && hasVal ? btn.color : '#d1d5db', position:'relative', transition:'background 0.2s', flexShrink:0 }}>
                             <div style={{ width:18, height:18, borderRadius:'50%', background:'white', position:'absolute', top:3, left: isShown ? 21 : 3, transition:'left 0.2s', boxShadow:'0 1px 3px rgba(0,0,0,0.2)' }} />
                           </div>
                         </div>
                       </div>
-
-                      {/* Input */}
                       <div style={{ padding:'12px 16px' }}>
                         <div style={{ fontSize:11, color:'#9ca3af', marginBottom:6 }}>💡 {btn.hint}</div>
-                        <input
-                          type="text"
-                          value={val}
-                          onChange={e => set(btn.key, e.target.value)}
-                          placeholder={btn.placeholder}
+                        <input type="text" value={val} onChange={e => set(btn.key, e.target.value)} placeholder={btn.placeholder}
                           style={{ width:'100%', padding:'10px 13px', border:'1.5px solid #e5e7eb', borderRadius:8, fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'inherit', transition:'border-color 0.15s' }}
                           onFocus={e => (e.target as HTMLInputElement).style.borderColor = btn.color}
                           onBlur={e  => (e.target as HTMLInputElement).style.borderColor = '#e5e7eb'}
@@ -431,16 +403,12 @@ export default function SettingsPage() {
                     </div>
                   )
                 })}
-
-                {/* Ghi chú vị trí */}
                 <div style={{ background:'#fffbeb', border:'1px solid #fde68a', borderRadius:8, padding:'10px 14px', fontSize:12, color:'#92400e' }}>
                   ⚠️ Các nút nổi hiển thị ở <strong>góc phải màn hình</strong>, chỉ hiện cho khách hàng (không hiện trong trang Admin).
-                  Di chuột vào nút sẽ hiện label tên.
                 </div>
               </div>
 
             ) : (
-              /* ── Các tab khác: render fields bình thường ── */
               fields.map(field => (
                 <FieldRow
                   key={field.key}
@@ -455,21 +423,13 @@ export default function SettingsPage() {
               ))
             )}
 
-            {/* Palette nhanh ở tab giao diện */}
             {activeTab === 'giaodien' && (
               <div>
-                <label style={{ fontSize:13, fontWeight:700, color:'#374151', display:'block', marginBottom:8 }}>
-                  🎨 Bảng màu gợi ý
-                </label>
+                <label style={{ fontSize:13, fontWeight:700, color:'#374151', display:'block', marginBottom:8 }}>🎨 Bảng màu gợi ý</label>
                 <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
                   {PALETTES.map(p => (
-                    <button key={p.color} onClick={() => set('primary_color', p.color)}
-                      title={p.name}
-                      style={{
-                        width:36, height:36, borderRadius:8, border: settings.primary_color === p.color ? `3px solid ${p.color}` : '3px solid transparent',
-                        background:p.color, cursor:'pointer', outline: settings.primary_color === p.color ? `2px solid white` : 'none',
-                        outlineOffset:1, boxShadow:'0 2px 6px rgba(0,0,0,0.15)', transition:'transform 0.1s',
-                      }}
+                    <button key={p.color} onClick={() => set('primary_color', p.color)} title={p.name}
+                      style={{ width:36, height:36, borderRadius:8, border: settings.primary_color === p.color ? `3px solid ${p.color}` : '3px solid transparent', background:p.color, cursor:'pointer', outline: settings.primary_color === p.color ? `2px solid white` : 'none', outlineOffset:1, boxShadow:'0 2px 6px rgba(0,0,0,0.15)', transition:'transform 0.1s' }}
                     />
                   ))}
                 </div>
@@ -478,20 +438,17 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* ── Right: Live Preview (chỉ tab giao diện) ── */}
+        {/* Live Preview */}
         {previewOpen && (
           <div style={{ width:260, flexShrink:0 }}>
             <div style={{ background:'white', borderRadius:12, overflow:'hidden', boxShadow:'0 1px 4px rgba(0,0,0,0.08)', border:'1px solid #e5e7eb' }}>
-              {/* Preview header */}
               <div style={{ background:primary, padding:'8px 14px', display:'flex', alignItems:'center', gap:6 }}>
                 <span style={{ fontSize:14 }}>{settings.site_logo_emoji || '🛍️'}</span>
                 <span style={{ color:'white', fontWeight:700, fontSize:12 }}>{settings.site_name || 'Shopee Deals'}</span>
               </div>
-              {/* Preview banner */}
               <div style={{ background:`${primary}22`, padding:'10px 14px', textAlign:'center' }}>
                 <div style={{ fontSize:11, fontWeight:700, color:primary }}>{settings.banner_title || '🔥 Deal Hot Mỗi Ngày'}</div>
               </div>
-              {/* Preview products */}
               <div style={{ padding:10 }}>
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:6 }}>
                   {[1,2,3,4,5,6].map(i => (
@@ -508,30 +465,23 @@ export default function SettingsPage() {
                   ))}
                 </div>
               </div>
-              {/* Preview social in footer */}
               <div style={{ background:'#222', padding:'8px 14px', textAlign:'center' }}>
                 <div style={{ color:'white', fontWeight:700, fontSize:11 }}>{settings.site_logo_emoji || '🛍️'} {settings.site_name || 'Shopee Deals'}</div>
                 <div style={{ display:'flex', justifyContent:'center', gap:4, flexWrap:'wrap', marginTop:6 }}>
                   {SOCIAL_CHANNELS.filter(ch => settings[ch.key]?.trim() && settings[`${ch.key}_show`] !== 'false').map(ch => (
-                    <span key={ch.key} style={{ fontSize:11, background:ch.color, color:'white', padding:'2px 7px', borderRadius:10, fontWeight:600 }}>
-                      {ch.icon}
-                    </span>
+                    <span key={ch.key} style={{ fontSize:11, background:ch.color, color:'white', padding:'2px 7px', borderRadius:10, fontWeight:600 }}>{ch.icon}</span>
                   ))}
                 </div>
                 <div style={{ fontSize:9, marginTop:4, color:'#666' }}>{settings.footer_copyright || '© 2025 · Affiliate Website'}</div>
               </div>
             </div>
-
-            {/* Bảng màu hiện tại */}
             <div style={{ marginTop:12, background:'white', borderRadius:12, padding:'12px 16px', boxShadow:'0 1px 4px rgba(0,0,0,0.08)' }}>
               <div style={{ fontSize:12, fontWeight:700, color:'#374151', marginBottom:8 }}>Bảng màu hiện tại</div>
               <div style={{ display:'flex', gap:8 }}>
                 {[primary, darken(primary,0.1), darken(primary,0.25), `rgba(${rgb},0.15)`, `rgba(${rgb},0.08)`].map((c,i) => (
                   <div key={i} style={{ flex:1, textAlign:'center' }}>
                     <div style={{ height:28, background:c, borderRadius:6, border:'1px solid #f0f0f0' }} />
-                    <div style={{ fontSize:9, color:'#9ca3af', marginTop:3 }}>
-                      {['Chính','Tối','Đậm','Nhạt','Rất nhạt'][i]}
-                    </div>
+                    <div style={{ fontSize:9, color:'#9ca3af', marginTop:3 }}>{['Chính','Tối','Đậm','Nhạt','Rất nhạt'][i]}</div>
                   </div>
                 ))}
               </div>
@@ -540,7 +490,7 @@ export default function SettingsPage() {
         )}
       </div>
 
-      {/* Sticky save bottom */}
+      {/* Sticky save */}
       <div style={{ position:'sticky', bottom:20, marginTop:24, display:'flex', justifyContent:'flex-end' }}>
         <button onClick={save} disabled={saving} style={{
           background: saving ? '#9ca3af' : saved ? '#059669' : primary,
@@ -556,7 +506,6 @@ export default function SettingsPage() {
   )
 }
 
-// ─── Field Row component ──────────────────────────────────────────────────
 function FieldRow({ field, value, primary, rgb, onChange, uploading, onUpload }: {
   field: { key: string; label: string; type: string; placeholder: string; hint?: string }
   value: string
@@ -581,25 +530,13 @@ function FieldRow({ field, value, primary, rgb, onChange, uploading, onUpload }:
         {field.label}
         <span style={{ fontSize:11, color:'#9ca3af', fontWeight:400, marginLeft:8 }}>({field.key})</span>
       </label>
-      {field.hint && (
-        <div style={{ fontSize:11, color:'#9ca3af', marginBottom:6 }}>💡 {field.hint}</div>
-      )}
+      {field.hint && <div style={{ fontSize:11, color:'#9ca3af', marginBottom:6 }}>💡 {field.hint}</div>}
 
       {field.type === 'toggle' ? (
         <div style={{ display:'flex', alignItems:'center', gap:12 }}>
           <div onClick={() => onChange(value === 'true' ? 'false' : 'true')}
-            style={{
-              width:48, height:26, borderRadius:13, cursor:'pointer',
-              background: value === 'true' ? primary : '#d1d5db',
-              position:'relative', transition:'background 0.2s', flexShrink:0,
-              boxShadow: value === 'true' ? `0 0 0 3px rgba(${rgb},0.2)` : 'none',
-            }}>
-            <div style={{
-              width:20, height:20, borderRadius:'50%', background:'white',
-              position:'absolute', top:3,
-              left: value === 'true' ? 25 : 3,
-              transition:'left 0.2s', boxShadow:'0 1px 3px rgba(0,0,0,0.2)',
-            }} />
+            style={{ width:48, height:26, borderRadius:13, cursor:'pointer', background: value === 'true' ? primary : '#d1d5db', position:'relative', transition:'background 0.2s', flexShrink:0, boxShadow: value === 'true' ? `0 0 0 3px rgba(${rgb},0.2)` : 'none' }}>
+            <div style={{ width:20, height:20, borderRadius:'50%', background:'white', position:'absolute', top:3, left: value === 'true' ? 25 : 3, transition:'left 0.2s', boxShadow:'0 1px 3px rgba(0,0,0,0.2)' }} />
           </div>
           <span style={{ fontSize:13, color: value === 'true' ? primary : '#6b7280', fontWeight:600 }}>
             {value === 'true' ? '✅ Đang hiển thị' : '⭕ Đang ẩn'}
@@ -610,8 +547,7 @@ function FieldRow({ field, value, primary, rgb, onChange, uploading, onUpload }:
         <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
           <input type="color" value={value || field.placeholder} onChange={e => onChange(e.target.value)}
             style={{ width:48, height:40, borderRadius:8, border:'1.5px solid #e5e7eb', cursor:'pointer', padding:2 }} />
-          <input type="text" value={value} onChange={e => onChange(e.target.value)} placeholder={field.placeholder}
-            style={{ ...base, width:130 }} />
+          <input type="text" value={value} onChange={e => onChange(e.target.value)} placeholder={field.placeholder} style={{ ...base, width:130 }} />
           <div style={{ width:40, height:40, borderRadius:8, background: value || field.placeholder, border:'1px solid #e5e7eb', boxShadow:`0 2px 8px rgba(${rgb},0.3)` }} />
           <span style={{ fontSize:12, color:'#9ca3af' }}>Preview</span>
         </div>
@@ -627,6 +563,7 @@ function FieldRow({ field, value, primary, rgb, onChange, uploading, onUpload }:
           <option value="220">Lớn — ảnh to hơn</option>
           <option value="280">Rất lớn — 3-4 sản phẩm/hàng</option>
         </select>
+
       ) : field.type === 'image_upload' ? (
         <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
           <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
