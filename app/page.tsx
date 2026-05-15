@@ -127,8 +127,8 @@ export default async function HomePage({
     <div style={{ minHeight: '100vh', background: '#f5f5f5', fontFamily: "'Be Vietnam Pro', sans-serif" }}>
 
       {/* ── TRUST BAR chạy chữ ── */}
-      <div style={{ background: 'white', borderBottom: '1px solid #eee', padding: '0 16px' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', overflow: 'hidden', padding: '8px 0', whiteSpace: 'nowrap', position: 'relative' }}>
+      <div style={{ borderBottom: '1px solid #eee', background: '#f5f5f5', padding: '0 16px' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', background: 'white', overflow: 'hidden', whiteSpace: 'nowrap', position: 'relative', padding: '8px 0' }}>
           <div style={{ display: 'inline-flex', animation: 'marquee 25s linear infinite', gap: 0 }}>
             {[...Array(4)].map((_, i) => (
               <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 0 }}>
@@ -152,7 +152,7 @@ export default async function HomePage({
 
       {/* FLASH SALE */}
       {!catSlug && !query && (
-        <div style={{ padding: '0 16px' }}>
+        <div style={{ background: '#f5f5f5', padding: '0 16px' }}>
           <div style={{ maxWidth: 1200, margin: '0 auto', overflow: 'hidden' }}>
             <FlashSaleCountdown primary={primary} />
           </div>

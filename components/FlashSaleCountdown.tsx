@@ -35,69 +35,59 @@ export default function FlashSaleCountdown({ primary }: { primary: string }) {
   const pad = (n: number) => String(n).padStart(2, '0')
 
   return (
-    <div style={{ maxWidth: 1200, margin: '0 auto', overflow: 'hidden' }}>
-      <div style={{
-        background: primary,
-        borderBottom: `2px solid rgba(0,0,0,0.08)`,
-        padding: '0 16px',
-        height: 44,
-        display: 'flex', alignItems: 'center', gap: 10,
-        overflow: 'hidden',
-      }}>
-        {/* Icon + FLASH SALE */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
-          <span style={{ fontSize: 14 }}>⚡</span>
-          <span style={{
-            color: '#FFD700', fontWeight: 900,
-            fontSize: 13, letterSpacing: '0.5px',
-            fontFamily: 'Nunito, sans-serif',
-            textTransform: 'uppercase',
-            whiteSpace: 'nowrap',
-          }}>
-            FLASH SALE
-          </span>
-        </div>
-
-        {/* Divider */}
-        <div style={{ width: 1, height: 18, background: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
-
-        {/* "kết thúc sau:" */}
-        <span style={{ color: 'rgba(255,255,255,0.9)', fontSize: 11, flexShrink: 0, whiteSpace: 'nowrap' }}>
-          kết thúc sau:
-        </span>
-
-        {/* Countdown blocks */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
-          {[pad(timeLeft.h), pad(timeLeft.m), pad(timeLeft.s)].map((val, i) => (
-            <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-              <span style={{
-                background: '#1a1a1a', color: 'white',
-                fontWeight: 800, fontSize: 14,
-                fontFamily: 'monospace',
-                padding: '3px 6px', borderRadius: 4,
-                minWidth: 28, textAlign: 'center',
-                letterSpacing: '1px', lineHeight: 1.4,
-              }}>
-                {val}
-              </span>
-              {i < 2 && (
-                <span style={{ color: 'white', fontWeight: 900, fontSize: 14, lineHeight: 1 }}>:</span>
-              )}
-            </span>
-          ))}
-        </div>
-
-        {/* ĐANG DIỄN RA badge */}
-        <div style={{
-          background: '#FFD700', color: '#c0392b',
-          fontSize: 10, fontWeight: 800,
-          padding: '3px 8px', borderRadius: 3,
-          letterSpacing: '0.3px', flexShrink: 0,
+    <div style={{
+      background: primary,
+      borderBottom: `2px solid rgba(0,0,0,0.08)`,
+      padding: '0 16px',
+      height: 44,
+      display: 'flex',
+      alignItems: 'center',
+      gap: 10,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
+        <span style={{ fontSize: 14 }}>⚡</span>
+        <span style={{
+          color: '#FFD700', fontWeight: 900,
+          fontSize: 13, letterSpacing: '0.5px',
+          fontFamily: 'Nunito, sans-serif',
+          textTransform: 'uppercase',
           whiteSpace: 'nowrap',
-          boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
         }}>
-          ĐANG DIỄN RA
-        </div>
+          FLASH SALE
+        </span>
+      </div>
+      <div style={{ width: 1, height: 18, background: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
+      <span style={{ color: 'rgba(255,255,255,0.9)', fontSize: 11, flexShrink: 0, whiteSpace: 'nowrap' }}>
+        kết thúc sau:
+      </span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
+        {[pad(timeLeft.h), pad(timeLeft.m), pad(timeLeft.s)].map((val, i) => (
+          <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+            <span style={{
+              background: '#1a1a1a', color: 'white',
+              fontWeight: 800, fontSize: 14,
+              fontFamily: 'monospace',
+              padding: '3px 6px', borderRadius: 4,
+              minWidth: 28, textAlign: 'center',
+              letterSpacing: '1px', lineHeight: 1.4,
+            }}>
+              {val}
+            </span>
+            {i < 2 && (
+              <span style={{ color: 'white', fontWeight: 900, fontSize: 14, lineHeight: 1 }}>:</span>
+            )}
+          </span>
+        ))}
+      </div>
+      <div style={{
+        background: '#FFD700', color: '#c0392b',
+        fontSize: 10, fontWeight: 800,
+        padding: '3px 8px', borderRadius: 3,
+        letterSpacing: '0.3px', flexShrink: 0,
+        whiteSpace: 'nowrap',
+        boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
+      }}>
+        ĐANG DIỄN RA
       </div>
     </div>
   )
