@@ -35,9 +35,10 @@ export default function FlashSaleCountdown({ primary }: { primary: string }) {
   const pad = (n: number) => String(n).padStart(2, '0')
 
   return (
-    <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+    <div style={{ maxWidth: 1200, margin: '0 auto', overflow: 'hidden' }}>
       <div style={{
-        background: primary, borderBottom: `2px solid rgba(0,0,0,0.08)`,
+        background: primary,
+        borderBottom: `2px solid rgba(0,0,0,0.08)`,
         padding: '0 16px',
         height: 44,
         display: 'flex', alignItems: 'center', gap: 10,
@@ -60,7 +61,7 @@ export default function FlashSaleCountdown({ primary }: { primary: string }) {
         {/* Divider */}
         <div style={{ width: 1, height: 18, background: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
 
-        {/* "kết thúc sau:" — ẩn trên màn nhỏ */}
+        {/* "kết thúc sau:" */}
         <span style={{ color: 'rgba(255,255,255,0.9)', fontSize: 11, flexShrink: 0, whiteSpace: 'nowrap' }}>
           kết thúc sau:
         </span>
@@ -86,7 +87,7 @@ export default function FlashSaleCountdown({ primary }: { primary: string }) {
           ))}
         </div>
 
-        {/* ĐANG DIỄN RA badge — co lại trên mobile */}
+        {/* ĐANG DIỄN RA badge */}
         <div style={{
           background: '#FFD700', color: '#c0392b',
           fontSize: 10, fontWeight: 800,
