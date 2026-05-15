@@ -163,19 +163,6 @@ export default function CategoryNav({
           >
             <style>{`@keyframes dropIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}`}</style>
 
-            {/* Header danh mục cha */}
-            <Link href={`/?cat=${cat.slug}`} style={{
-              display: 'flex', alignItems: 'center', gap: 8,
-              padding: '10px 16px', fontSize: 13,
-              color: primary, fontWeight: 700,
-              textDecoration: 'none',
-              borderBottom: '1px solid #f5f5f5',
-              background: `${primary}0d`,
-            }}>
-              <span style={{ fontSize: 16 }}>📂</span>
-              Tất cả {cat.name} →
-            </Link>
-
             {/* Danh mục con */}
             {cat.children.map(child => {
               const childActive = activeCat === child.slug
