@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useEffect, useState, useRef } from 'react'
 
@@ -19,14 +19,15 @@ const PALETTES = [
 
 // ─── Tabs config ──────────────────────────────────────────────────────────
 const TABS = [
-  { id: 'giaodien',   label: '🎨 Giao diện' },
-  { id: 'banner',     label: '📢 Banner' },
-  { id: 'noidung',    label: '📝 Nội dung' },
-  { id: 'chinh_sach', label: '📋 Chính sách' },
-  { id: 'mang_xa_hoi',label: '📱 Mạng XH' },
-  { id: 'danh_gia',   label: '💬 Đánh giá' },
-  { id: 'seo',        label: '🔍 SEO' },
-  { id: 'popup',      label: '🎯 Popup QC' },
+  { id: 'giaodien',    label: '🎨 Giao diện' },
+  { id: 'banner',      label: '📢 Banner' },
+  { id: 'noidung',     label: '📝 Nội dung' },
+  { id: 'chinh_sach',  label: '📋 Chính sách' },
+  { id: 'mang_xa_hoi', label: '📱 Mạng XH' },
+  { id: 'float_contact', label: '📞 Nút liên hệ' },
+  { id: 'danh_gia',    label: '💬 Đánh giá' },
+  { id: 'seo',         label: '🔍 SEO' },
+  { id: 'popup',       label: '🎯 Popup QC' },
 ]
 
 // ─── Fields theo tab ──────────────────────────────────────────────────────
@@ -62,13 +63,12 @@ const TAB_FIELDS: Record<string, { key: string; label: string; type: string; pla
     { key: 'shipping_text',    label: 'Vận chuyển',   type: 'text',   placeholder: '🚚 Miễn phí vận chuyển · Giao trong 2-5 ngày' },
     { key: 'guarantee_text',   label: 'Đảm bảo',     type: 'text',   placeholder: '✅ Hoàn tiền nếu hàng không đúng mô tả' },
     { key: 'return_text',      label: 'Đổi trả',      type: 'text',   placeholder: '↩️ Đổi trả miễn phí trong 15 ngày' },
-    { key: 'voucher_text',      label: 'Text Voucher (VD: 15.5 VOUCHER Giảm thêm 30%)', type: 'text', placeholder: '15.5 VOUCHER Giảm thêm 30%', hint: 'Hiển thị thanh đỏ trên tất cả ảnh sản phẩm. Giữ ngắn gọn, tối đa ~30 ký tự để không bị cắt' },
-    { key: 'voucher_text', label: 'Text Voucher', type: 'text', placeholder: '15.5 VOUCHER Giam them 30%', hint: 'Hien o anh san pham lien quan' },
+    { key: 'voucher_text',     label: 'Text Voucher (VD: 15.5 VOUCHER Giảm thêm 30%)', type: 'text', placeholder: '15.5 VOUCHER Giảm thêm 30%', hint: 'Hiển thị thanh đỏ trên tất cả ảnh sản phẩm. Giữ ngắn gọn, tối đa ~30 ký tự để không bị cắt' },
     { key: 'show_fake_stats',  label: 'Hiện lượt xem & đã bán giả', type: 'toggle', placeholder: 'true', hint: 'Tạo độ tin tưởng cho khách hàng' },
     { key: 'show_related',     label: 'Hiện sản phẩm liên quan', type: 'toggle', placeholder: 'true' },
   ],
-  // Tab mạng XH: mỗi mạng có URL + toggle show/hide
   mang_xa_hoi: [], // Render riêng bên dưới
+  float_contact: [], // Render riêng bên dưới
   danh_gia: [
     { key: 'show_reviews', label: 'Hiện section đánh giá sản phẩm', type: 'toggle', placeholder: 'true', hint: 'Cho phép người dùng xem và gửi đánh giá trên trang sản phẩm' },
   ],
@@ -104,6 +104,40 @@ const SOCIAL_CHANNELS = [
   { key: 'contact_email',    label: 'Email liên hệ', icon: '✉️', color: '#6b7280', placeholder: 'contact@example.com',          hint: 'Hiển thị ở footer' },
 ]
 
+// Cấu hình nút nổi liên hệ
+const FLOAT_BUTTONS = [
+  {
+    key: 'float_phone',
+    label: 'Số điện thoại',
+    icon: '📞',
+    color: '#22c55e',
+    placeholder: '0912345678',
+    hint: 'Nhấn vào sẽ gọi điện trực tiếp',
+    showKey: 'float_phone_show',
+    showLabel: 'Hiện nút Gọi điện',
+  },
+  {
+    key: 'float_zalo',
+    label: 'Zalo',
+    icon: '💬',
+    color: '#0068ff',
+    placeholder: '0912345678 hoặc https://zalo.me/...',
+    hint: 'Nhập SĐT hoặc link Zalo OA. Nhấn vào mở chat Zalo',
+    showKey: 'float_zalo_show',
+    showLabel: 'Hiện nút Zalo',
+  },
+  {
+    key: 'float_facebook',
+    label: 'Facebook',
+    icon: '📘',
+    color: '#1877f2',
+    placeholder: 'https://facebook.com/your-page',
+    hint: 'Link Facebook Page. Nhấn vào mở trang Facebook',
+    showKey: 'float_facebook_show',
+    showLabel: 'Hiện nút Facebook',
+  },
+]
+
 // ─── Helpers ─────────────────────────────────────────────────────────────
 function hexToRgb(hex: string) {
   const c = hex.replace('#', '')
@@ -133,15 +167,17 @@ export default function SettingsPage() {
 
   useEffect(() => {
     fetch('/api/settings').then(r => r.json()).then(data => {
-      // Gom tất cả fields từ tất cả tabs
       const allFields = Object.values(TAB_FIELDS).flat()
       const socialFields = SOCIAL_CHANNELS.flatMap(ch => [
         { key: ch.key, placeholder: '' },
         { key: `${ch.key}_show`, placeholder: 'true' },
       ])
+      const floatFields = FLOAT_BUTTONS.flatMap(btn => [
+        { key: btn.key, placeholder: '' },
+        { key: btn.showKey, placeholder: 'true' },
+      ])
       const merged = { ...data }
-      // Nếu key chưa có giá trị thì điền placeholder mặc định
-      for (const f of [...allFields, ...socialFields]) {
+      for (const f of [...allFields, ...socialFields, ...floatFields]) {
         if (f.placeholder && (merged[f.key] === undefined || merged[f.key] === '')) {
           merged[f.key] = f.placeholder
         }
@@ -262,31 +298,19 @@ export default function SettingsPage() {
 
                   return (
                     <div key={ch.key} style={{ border:'1.5px solid #e5e7eb', borderRadius:10, overflow:'hidden', opacity: hasUrl ? 1 : 0.7 }}>
-                      {/* Header row */}
                       <div style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 14px', background:'#f9fafb', borderBottom:'1px solid #e5e7eb' }}>
                         <span style={{ fontSize:20 }}>{ch.icon}</span>
                         <span style={{ fontWeight:700, fontSize:14, color:'#111', flex:1 }}>{ch.label}</span>
-                        {/* Toggle show/hide */}
                         <div style={{ display:'flex', alignItems:'center', gap:8 }}>
                           <span style={{ fontSize:12, color: isShown && hasUrl ? primary : '#9ca3af', fontWeight:600 }}>
                             {isShown && hasUrl ? '👁️ Hiển thị' : '🙈 Ẩn'}
                           </span>
                           <div onClick={() => set(showKey, isShown ? 'false' : 'true')}
-                            style={{
-                              width:42, height:24, borderRadius:12, cursor:'pointer',
-                              background: isShown && hasUrl ? primary : '#d1d5db',
-                              position:'relative', transition:'background 0.2s', flexShrink:0,
-                            }}>
-                            <div style={{
-                              width:18, height:18, borderRadius:'50%', background:'white',
-                              position:'absolute', top:3,
-                              left: isShown ? 21 : 3,
-                              transition:'left 0.2s', boxShadow:'0 1px 3px rgba(0,0,0,0.2)',
-                            }} />
+                            style={{ width:42, height:24, borderRadius:12, cursor:'pointer', background: isShown && hasUrl ? primary : '#d1d5db', position:'relative', transition:'background 0.2s', flexShrink:0 }}>
+                            <div style={{ width:18, height:18, borderRadius:'50%', background:'white', position:'absolute', top:3, left: isShown ? 21 : 3, transition:'left 0.2s', boxShadow:'0 1px 3px rgba(0,0,0,0.2)' }} />
                           </div>
                         </div>
                       </div>
-                      {/* URL input */}
                       <div style={{ padding:'10px 14px' }}>
                         {ch.hint && <div style={{ fontSize:11, color:'#9ca3af', marginBottom:6 }}>💡 {ch.hint}</div>}
                         <input
@@ -311,6 +335,110 @@ export default function SettingsPage() {
                   )
                 })}
               </div>
+
+            ) : activeTab === 'float_contact' ? (
+              /* ── Tab Nút liên hệ nổi ── */
+              <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+                {/* Intro card */}
+                <div style={{ background:'linear-gradient(135deg,#f0f9ff,#e0f2fe)', border:'1px solid #bae6fd', borderRadius:10, padding:'14px 16px' }}>
+                  <div style={{ fontWeight:700, color:'#0369a1', fontSize:14, marginBottom:6 }}>📞 Nút liên hệ nổi góc phải màn hình</div>
+                  <div style={{ fontSize:12, color:'#0369a1', lineHeight:1.6 }}>
+                    Các nút này hiển thị cố định ở góc phải màn hình, giúp khách hàng liên hệ nhanh chóng.
+                    Nhập thông tin và bật toggle để hiện nút tương ứng.
+                  </div>
+                </div>
+
+                {/* Preview nút nổi */}
+                <div style={{ background:'#f9fafb', border:'1px solid #e5e7eb', borderRadius:10, padding:'14px 16px' }}>
+                  <div style={{ fontSize:12, fontWeight:700, color:'#374151', marginBottom:10 }}>👁️ Preview các nút sẽ hiển thị:</div>
+                  <div style={{ display:'flex', flexDirection:'column', gap:8, alignItems:'flex-start' }}>
+                    {FLOAT_BUTTONS.map(btn => {
+                      const val     = settings[btn.key] || ''
+                      const isShown = settings[btn.showKey] !== 'false'
+                      const active  = isShown && !!val.trim()
+                      return (
+                        <div key={btn.key} style={{ display:'flex', alignItems:'center', gap:10, opacity: active ? 1 : 0.35 }}>
+                          <div style={{ width:44, height:44, borderRadius:'50%', background: active ? btn.color : '#d1d5db', display:'flex', alignItems:'center', justifyContent:'center', fontSize:20, boxShadow: active ? `0 4px 12px ${btn.color}55` : 'none', transition:'all 0.2s' }}>
+                            {btn.icon}
+                          </div>
+                          <div>
+                            <div style={{ fontSize:13, fontWeight:700, color: active ? '#111' : '#9ca3af' }}>{btn.label}</div>
+                            <div style={{ fontSize:11, color: active ? '#6b7280' : '#d1d5db' }}>
+                              {active ? val : 'Chưa cài đặt'}
+                            </div>
+                          </div>
+                          {active && (
+                            <div style={{ marginLeft:'auto', fontSize:11, background:'#dcfce7', color:'#16a34a', padding:'3px 8px', borderRadius:20, fontWeight:600 }}>
+                              ✅ Đang hiện
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Từng nút config */}
+                {FLOAT_BUTTONS.map(btn => {
+                  const val     = settings[btn.key] || ''
+                  const isShown = settings[btn.showKey] !== 'false'
+                  const hasVal  = !!val.trim()
+
+                  return (
+                    <div key={btn.key} style={{ border:`1.5px solid ${hasVal && isShown ? btn.color + '55' : '#e5e7eb'}`, borderRadius:10, overflow:'hidden', transition:'border-color 0.2s' }}>
+                      {/* Header */}
+                      <div style={{ display:'flex', alignItems:'center', gap:10, padding:'12px 16px', background: hasVal && isShown ? `${btn.color}0d` : '#f9fafb', borderBottom:'1px solid #e5e7eb' }}>
+                        <div style={{ width:36, height:36, borderRadius:'50%', background: hasVal && isShown ? btn.color : '#e5e7eb', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0, transition:'background 0.2s' }}>
+                          {btn.icon}
+                        </div>
+                        <div style={{ flex:1 }}>
+                          <div style={{ fontWeight:700, fontSize:14, color:'#111' }}>{btn.label}</div>
+                          <div style={{ fontSize:11, color:'#9ca3af' }}>{btn.showLabel}</div>
+                        </div>
+                        {/* Toggle */}
+                        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                          <span style={{ fontSize:12, color: isShown && hasVal ? btn.color : '#9ca3af', fontWeight:600 }}>
+                            {isShown && hasVal ? '👁️ Hiện' : '🙈 Ẩn'}
+                          </span>
+                          <div onClick={() => set(btn.showKey, isShown ? 'false' : 'true')}
+                            style={{ width:42, height:24, borderRadius:12, cursor:'pointer', background: isShown && hasVal ? btn.color : '#d1d5db', position:'relative', transition:'background 0.2s', flexShrink:0 }}>
+                            <div style={{ width:18, height:18, borderRadius:'50%', background:'white', position:'absolute', top:3, left: isShown ? 21 : 3, transition:'left 0.2s', boxShadow:'0 1px 3px rgba(0,0,0,0.2)' }} />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Input */}
+                      <div style={{ padding:'12px 16px' }}>
+                        <div style={{ fontSize:11, color:'#9ca3af', marginBottom:6 }}>💡 {btn.hint}</div>
+                        <input
+                          type="text"
+                          value={val}
+                          onChange={e => set(btn.key, e.target.value)}
+                          placeholder={btn.placeholder}
+                          style={{ width:'100%', padding:'10px 13px', border:'1.5px solid #e5e7eb', borderRadius:8, fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'inherit', transition:'border-color 0.15s' }}
+                          onFocus={e => (e.target as HTMLInputElement).style.borderColor = btn.color}
+                          onBlur={e  => (e.target as HTMLInputElement).style.borderColor = '#e5e7eb'}
+                        />
+                        {val.trim() && (
+                          <div style={{ marginTop:8, display:'flex', alignItems:'center', gap:6, flexWrap:'wrap' }}>
+                            <div style={{ width:8, height:8, borderRadius:'50%', background: isShown ? '#22c55e' : '#d1d5db', flexShrink:0 }} />
+                            <span style={{ fontSize:11, color: isShown ? '#22c55e' : '#9ca3af' }}>
+                              {isShown ? `✅ Nút ${btn.label} sẽ hiển thị ở góc phải màn hình` : `Đang ẩn nút ${btn.label}`}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+
+                {/* Ghi chú vị trí */}
+                <div style={{ background:'#fffbeb', border:'1px solid #fde68a', borderRadius:8, padding:'10px 14px', fontSize:12, color:'#92400e' }}>
+                  ⚠️ Các nút nổi hiển thị ở <strong>góc phải màn hình</strong>, chỉ hiện cho khách hàng (không hiện trong trang Admin).
+                  Di chuột vào nút sẽ hiện label tên.
+                </div>
+              </div>
+
             ) : (
               /* ── Các tab khác: render fields bình thường ── */
               fields.map(field => (
@@ -383,7 +511,6 @@ export default function SettingsPage() {
               {/* Preview social in footer */}
               <div style={{ background:'#222', padding:'8px 14px', textAlign:'center' }}>
                 <div style={{ color:'white', fontWeight:700, fontSize:11 }}>{settings.site_logo_emoji || '🛍️'} {settings.site_name || 'Shopee Deals'}</div>
-                {/* Hiện social badges preview */}
                 <div style={{ display:'flex', justifyContent:'center', gap:4, flexWrap:'wrap', marginTop:6 }}>
                   {SOCIAL_CHANNELS.filter(ch => settings[ch.key]?.trim() && settings[`${ch.key}_show`] !== 'false').map(ch => (
                     <span key={ch.key} style={{ fontSize:11, background:ch.color, color:'white', padding:'2px 7px', borderRadius:10, fontWeight:600 }}>
@@ -502,7 +629,6 @@ function FieldRow({ field, value, primary, rgb, onChange, uploading, onUpload }:
         </select>
       ) : field.type === 'image_upload' ? (
         <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-          {/* Nút chọn file + input URL */}
           <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
             <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}
               style={{ background: uploading ? '#9ca3af' : '#059669', color:'white', border:'none', padding:'9px 16px', borderRadius:8, fontWeight:700, fontSize:12, cursor: uploading ? 'not-allowed' : 'pointer', whiteSpace:'nowrap', display:'flex', alignItems:'center', gap:6 }}>
@@ -513,7 +639,6 @@ function FieldRow({ field, value, primary, rgb, onChange, uploading, onUpload }:
             <span style={{ fontSize:12, color:'#9ca3af', alignSelf:'center' }}>hoặc paste URL:</span>
           </div>
           <input type="text" value={value} onChange={e => onChange(e.target.value)} placeholder={field.placeholder} style={base} />
-          {/* Preview ảnh */}
           {value && (
             <div style={{ position:'relative', display:'inline-block' }}>
               <img src={value} alt="preview" style={{ maxHeight:120, maxWidth:'100%', borderRadius:8, border:'1px solid #e5e7eb', objectFit:'cover' }}

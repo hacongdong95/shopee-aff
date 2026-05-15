@@ -46,7 +46,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <ThemeProvider />
       </head>
       <body style={{ margin: 0, background: '#f5f5f5' }}>
-        <Effects marqueeText={marqueeText} primary={primary} />
+        <Effects
+          marqueeText={marqueeText}
+          primary={primary}
+          floatPhone={settings.float_phone}
+          floatZalo={settings.float_zalo}
+          floatFacebook={settings.float_facebook}
+          floatPhoneShow={settings.float_phone_show}
+          floatZaloShow={settings.float_zalo_show}
+          floatFacebookShow={settings.float_facebook_show}
+        />
         <Header settings={settings} categories={categories} />
         {children}
       </body>
