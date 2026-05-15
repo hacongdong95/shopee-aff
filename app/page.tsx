@@ -124,12 +124,12 @@ export default async function HomePage({
     .map(ch => ({ ...ch, value: settings[ch.key].trim() }))
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f5f5f5', fontFamily: "'Be Vietnam Pro', sans-serif" }}>
+    <div style={{ minHeight: '100vh', background: '#f5f5f5', fontFamily: "'Be Vietnam Pro', sans-serif", overflowX: 'hidden' }}>
 
       {/* ── TRUST BAR chạy chữ ── */}
-      <div style={{ borderBottom: '1px solid #eee', background: 'white' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-      <div style={{ background: `linear-gradient(90deg, ${primary}11, white, ${primary}11)`, padding: '8px 0', overflow: 'hidden', whiteSpace: 'nowrap', position: 'relative' }}>
+      <div style={{ borderBottom: '1px solid #eee', background: 'white', overflowX: 'hidden' }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto', overflow: 'hidden' }}>
+      <div style={{ padding: '8px 0', overflow: 'hidden', whiteSpace: 'nowrap', position: 'relative' }}>
         <div style={{ display: 'inline-flex', animation: 'marquee 25s linear infinite', gap: 0 }}>
           {[...Array(4)].map((_, i) => (
             <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 0 }}>
