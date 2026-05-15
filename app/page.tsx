@@ -107,7 +107,8 @@ export default async function HomePage({
     <div style={{ minHeight: '100vh', background: '#f5f5f5', fontFamily: "'Be Vietnam Pro', sans-serif" }}>
 
       {/* ── TRUST BAR chạy chữ ── */}
-      <div style={{ background: `linear-gradient(90deg, ${primary}11, white, ${primary}11)`, borderBottom: '1px solid #eee', padding: '8px 0', overflow: 'hidden', whiteSpace: 'nowrap', position: 'relative' }}>
+      <div style={{ borderBottom: '1px solid #eee', background: 'white' }}>
+      <div style={{ background: `linear-gradient(90deg, ${primary}11, white, ${primary}11)`, padding: '8px 0', overflow: 'hidden', whiteSpace: 'nowrap', position: 'relative', maxWidth: 1200, margin: '0 auto' }}>
         <div style={{ display: 'inline-flex', animation: 'marquee 25s linear infinite', gap: 0 }}>
           {[...Array(4)].map((_, i) => (
             <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 0 }}>
@@ -126,6 +127,7 @@ export default async function HomePage({
             100% { transform: translateX(-25%); }
           }
         `}</style>
+      </div>
       </div>
 
       {/* FLASH SALE */}
