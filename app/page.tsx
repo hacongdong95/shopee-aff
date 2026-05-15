@@ -103,6 +103,26 @@ export default async function HomePage({
   const bannerImages  = bannerImage ? bannerImage.split('\n').map((u: string) => u.trim()).filter(Boolean) : []
   const bannerLinks   = bannerLink  ? bannerLink.split('\n').map((u: string) => u.trim())                  : []
 
+  // Social / Contact cho floating buttons & footer
+  const zaloValue    = settings.social_zalo?.trim()    || ''
+  const phoneValue   = settings.contact_phone?.trim()  || settings.social_zalo?.trim() || ''
+  const fbValue      = settings.social_facebook?.trim() || ''
+  const zaloShow     = settings.social_zalo_show     !== 'false' && !!zaloValue
+  const phoneShow    = settings.contact_phone_show   !== 'false' && !!phoneValue
+  const fbShow       = settings.social_facebook_show !== 'false' && !!fbValue
+  const zaloHref     = zaloValue.startsWith('http') ? zaloValue : `https://zalo.me/${zaloValue.replace(/\D/g,'')}`
+  const phoneHref    = phoneValue.startsWith('http') ? phoneValue : `tel:${phoneValue.replace(/\s/g,'')}`
+  const socialChannels = [
+    { key: 'social_zalo',      label: 'Zalo',      icon: 'Z',  color: '#0068ff', getHref: (v: string) => v.startsWith('http') ? v : `https://zalo.me/${v.replace(/\D/g,'')}` },
+    { key: 'social_facebook',  label: 'Facebook',  icon: 'f',  color: '#1877f2', getHref: (v: string) => v },
+    { key: 'social_shopee',    label: 'Shopee',    icon: 'S',  color: '#ee4d2d', getHref: (v: string) => v },
+    { key: 'social_tiktok',    label: 'TikTok',    icon: '♪',  color: '#010101', getHref: (v: string) => v },
+    { key: 'social_youtube',   label: 'YouTube',   icon: '▶',  color: '#ff0000', getHref: (v: string) => v },
+    { key: 'social_instagram', label: 'Instagram', icon: '📷', color: '#e1306c', getHref: (v: string) => v },
+    { key: 'contact_email',    label: 'Email',     icon: '✉',  color: '#6b7280', getHref: (v: string) => `mailto:${v}` },
+  ].filter(ch => settings[ch.key]?.trim() && settings[`${ch.key}_show`] !== 'false')
+    .map(ch => ({ ...ch, value: settings[ch.key].trim() }))
+
   return (
     <div style={{ minHeight: '100vh', background: '#f5f5f5', fontFamily: "'Be Vietnam Pro', sans-serif" }}>
 
@@ -225,19 +245,194 @@ export default async function HomePage({
         primary={primary}
       />
 
+      {/* ── FLOATING CONTACT BUTTONS ── */}
+      {(zaloShow || phoneShow || fbShow) && (
+        <div style={{
+          position: 'fixed', right: 16, bottom: 80, zIndex: 999,
+          display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10,
+        }}>
+          <style>{`
+            @keyframes float-pulse {
+              0%, 100% { transform: scale(1); box-shadow: 0 4px 20px var(--btn-shadow); }
+              50%       { transform: scale(1.07); box-shadow: 0 6px 28px var(--btn-shadow); }
+            }
+            @keyframes ripple {
+              0%   { transform: scale(1); opacity: 0.6; }
+              100% { transform: scale(2.2); opacity: 0; }
+            }
+            .float-btn { animation: float-pulse 2.4s ease-in-out infinite; }
+            .float-btn:hover { transform: scale(1.12) !important; }
+            .float-label {
+              position: absolute; right: 54px; top: 50%;
+              transform: translateY(-50%);
+              background: rgba(0,0,0,0.75); color: white;
+              font-size: 12px; font-weight: 600; white-space: nowrap;
+              padding: 4px 10px; border-radius: 20px;
+              opacity: 0; pointer-events: none;
+              transition: opacity 0.2s;
+            }
+            .float-btn-wrap:hover .float-label { opacity: 1; }
+          `}</style>
+
+          {/* Zalo */}
+          {zaloShow && (
+            <div className="float-btn-wrap" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <span className="float-label">Chat Zalo</span>
+              <div style={{ position: 'relative' }}>
+                {/* ripple ring */}
+                <div style={{
+                  position: 'absolute', inset: -4, borderRadius: '50%',
+                  background: 'rgba(0,104,255,0.25)',
+                  animation: 'ripple 1.8s ease-out infinite',
+                  pointerEvents: 'none',
+                }} />
+                <a href={zaloHref} target="_blank" rel="noopener noreferrer"
+                  className="float-btn"
+                  style={{
+                    '--btn-shadow': '0 4px 20px rgba(0,104,255,0.5)',
+                    width: 52, height: 52, borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #0068ff, #0050cc)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    textDecoration: 'none', position: 'relative',
+                    animationDelay: '0s',
+                  } as React.CSSProperties}>
+                  {/* Zalo logo Z */}
+                  <svg width="26" height="26" viewBox="0 0 40 40" fill="none">
+                    <path d="M8 28L14 16h12l-6 12H8z" fill="white" opacity="0.9"/>
+                    <path d="M16 12h12l-4 8H12l4-8z" fill="white"/>
+                    <text x="20" y="26" textAnchor="middle" fill="white" fontSize="16" fontWeight="900" fontFamily="Arial">Z</text>
+                  </svg>
+                </a>
+              </div>
+            </div>
+          )}
+
+          {/* Phone */}
+          {phoneShow && (
+            <div className="float-btn-wrap" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <span className="float-label">Gọi ngay</span>
+              <div style={{ position: 'relative' }}>
+                <div style={{
+                  position: 'absolute', inset: -4, borderRadius: '50%',
+                  background: 'rgba(34,197,94,0.25)',
+                  animation: 'ripple 1.8s ease-out infinite 0.4s',
+                  pointerEvents: 'none',
+                }} />
+                <a href={phoneHref}
+                  className="float-btn"
+                  style={{
+                    '--btn-shadow': '0 4px 20px rgba(34,197,94,0.5)',
+                    width: 52, height: 52, borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    textDecoration: 'none',
+                    animationDelay: '0.4s',
+                  } as React.CSSProperties}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z" fill="white"/>
+                  </svg>
+                </a>
+              </div>
+            </div>
+          )}
+
+          {/* Facebook Messenger */}
+          {fbShow && (
+            <div className="float-btn-wrap" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <span className="float-label">Facebook</span>
+              <a href={fbValue} target="_blank" rel="noopener noreferrer"
+                className="float-btn"
+                style={{
+                  '--btn-shadow': '0 4px 20px rgba(24,119,242,0.5)',
+                  width: 52, height: 52, borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #1877f2, #0a5dc9)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  textDecoration: 'none',
+                  animationDelay: '0.8s',
+                } as React.CSSProperties}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                  <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/>
+                </svg>
+              </a>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* FOOTER */}
-      <footer style={{ background: footerColor, color: '#aaa', padding: '48px 20px 28px', marginTop: 48 }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', textAlign: 'center' }}>
-          <div style={{ marginBottom: 16 }}>
-            <div style={{ color: 'white', fontWeight: 800, fontSize: 20, fontFamily: 'Nunito, sans-serif', marginBottom: 6 }}>{siteEmoji} {siteName}</div>
-            <div style={{ fontSize: 13, maxWidth: 400, margin: '0 auto', lineHeight: 1.7, color: 'rgba(255,255,255,0.45)' }}>{footerText}</div>
+      <footer style={{ background: footerColor, color: '#aaa', padding: '48px 20px 32px', marginTop: 48 }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+
+          {/* Top row: Logo + tagline + social buttons */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 32 }}>
+
+            {/* Logo & desc */}
+            <div style={{ flex: '1 1 240px', maxWidth: 360 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                <div style={{ background: primary, borderRadius: 10, width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>{siteEmoji}</div>
+                <div>
+                  <div style={{ color: 'white', fontWeight: 800, fontSize: 18, fontFamily: 'Nunito, sans-serif', lineHeight: 1.2 }}>{siteName}</div>
+                  {siteTagline && <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>{siteTagline}</div>}
+                </div>
+              </div>
+              <div style={{ fontSize: 13, lineHeight: 1.7, color: 'rgba(255,255,255,0.4)', marginBottom: 16 }}>{footerText}</div>
+
+              {/* Social icon row */}
+              {socialChannels.length > 0 && (
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {socialChannels.map(ch => (
+                    <a key={ch.key} href={ch.getHref(ch.value)} target="_blank" rel="noopener noreferrer"
+                      title={ch.label}
+                      style={{
+                        width: 36, height: 36, borderRadius: 9,
+                        background: ch.color,
+                        color: 'white', fontWeight: 800, fontSize: 13,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        textDecoration: 'none', flexShrink: 0,
+                        boxShadow: `0 2px 8px ${ch.color}55`,
+                      }}>
+                      {ch.icon}
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Trust badges */}
+            <div style={{ flex: '1 1 200px', display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'flex-end' }}>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 4 }}>
+                {/* BCT badge */}
+                <div style={{ background: 'white', borderRadius: 8, padding: '6px 10px', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div style={{ background: '#d32f2f', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <span style={{ color: 'white', fontSize: 14, fontWeight: 900 }}>✓</span>
+                  </div>
+                  <div style={{ lineHeight: 1.2 }}>
+                    <div style={{ fontSize: 8, fontWeight: 800, color: '#d32f2f', textTransform: 'uppercase', letterSpacing: '0.3px' }}>Đã đăng ký</div>
+                    <div style={{ fontSize: 7, fontWeight: 700, color: '#555', textTransform: 'uppercase', letterSpacing: '0.3px' }}>Bộ Công Thương</div>
+                  </div>
+                </div>
+                {/* Shopee badge */}
+                <div style={{ background: primary, borderRadius: 8, padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ color: 'white', fontSize: 16 }}>🛒</span>
+                  <div style={{ lineHeight: 1.2 }}>
+                    <div style={{ fontSize: 9, fontWeight: 800, color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase' }}>Official</div>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: 'white' }}>Shopee</div>
+                  </div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
+                {[shippingText, guaranteeText, returnText].map((t, i) => (
+                  <span key={i} style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', background: 'rgba(255,255,255,0.07)', padding: '5px 12px', borderRadius: 20, border: '1px solid rgba(255,255,255,0.1)', whiteSpace: 'nowrap' }}>{t}</span>
+                ))}
+              </div>
+            </div>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 28, padding: '0 8px' }}>
-            {[shippingText, guaranteeText, returnText].map((t, i) => (
-              <span key={i} style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', background: 'rgba(255,255,255,0.06)', padding: '6px 14px', borderRadius: 20, border: '1px solid rgba(255,255,255,0.08)', textAlign: 'center', lineHeight: 1.5 }}>{t}</span>
-            ))}
+
+          <div style={{ height: 1, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)', marginBottom: 20 }} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.25)' }}>{footerCopyright}</div>
+            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)' }}>Website affiliate — giá & khuyến mãi có thể thay đổi</div>
           </div>
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: 20, fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>{footerCopyright}</div>
         </div>
       </footer>
     </div>
