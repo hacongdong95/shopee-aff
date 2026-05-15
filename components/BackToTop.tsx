@@ -22,7 +22,7 @@ export default function BackToTop({ primary = '#ee4d2d' }: { primary?: string })
       title="Lên đầu trang"
       style={{
         position: 'fixed',
-        bottom: 80,   // trên sticky buy bar mobile
+        bottom: 130,  // trên nút gọi và sticky bar
         right: 16,
         zIndex: 150,
         width: 44,
