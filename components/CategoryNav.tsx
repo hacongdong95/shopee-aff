@@ -48,7 +48,7 @@ export default function CategoryNav({
   }
 
   return (
-    <div style={{ background: 'rgba(0,0,0,0.14)', borderTop: '1px solid rgba(255,255,255,0.12)', position: 'relative', zIndex: 100 }}>
+    <div style={{ background: 'rgba(0,0,0,0.14)', borderTop: '1px solid rgba(255,255,255,0.12)', position: 'relative', zIndex: 200, overflow: 'visible' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 20px', display: 'flex', gap: 2, overflowX: 'auto', scrollbarWidth: 'none' }}>
 
         {/* Tab Tất cả */}

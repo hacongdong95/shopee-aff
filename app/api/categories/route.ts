@@ -19,7 +19,6 @@ export async function POST(req: NextRequest) {
     const { name, parentId } = await req.json()
     if (!name?.trim()) return NextResponse.json({ error: 'Tên không được trống' }, { status: 400 })
 
-    // Slug unique — nếu trùng thêm -2, -3...
     const baseSlug = slugify(name.trim(), { lower: true, locale: 'vi', strict: true })
     let slug = baseSlug
     let suffix = 2
@@ -31,6 +30,11 @@ export async function POST(req: NextRequest) {
       where: { parentId: parentId ? Number(parentId) : null },
       _max: { order: true },
     })
+
+    // Fix: reset sequence Postgres nếu bị lệch sau khi import/seed
+    await prisma.$executeRawUnsafe(
+      `SELECT setval(pg_get_serial_sequence('"Category"', 'id'), COALESCE((SELECT MAX(id) FROM "Category"), 0) + 1, false)`
+    )
 
     const cat = await prisma.category.create({
       data: {
