@@ -7,6 +7,7 @@ import FlashSaleCountdown from '@/components/FlashSaleCountdown'
 import PopupAd from '@/components/PopupAd'
 import BannerCarousel from '@/components/BannerCarousel'
 import ProductGrid from '@/components/ProductGrid'
+import FOMOToast from '@/components/FOMOToast'
 
 export const revalidate = 0
 
@@ -215,6 +216,12 @@ export default async function HomePage({
       {popupShow && popupImage && popupAffLink && (
         <PopupAd imageUrl={popupImage} affLink={popupAffLink} title={popupTitle} subtitle={popupSubtitle} btnText={popupBtnText} primary={primary} delaySeconds={popupDelay} />
       )}
+
+      {/* FOMO — số người xem + toast vừa mua */}
+      <FOMOToast
+        products={products.slice(0, 20).map(p => ({ id: p.id, name: p.name, price: p.price }))}
+        primary={primary}
+      />
 
       {/* FOOTER */}
       <footer style={{ background: footerColor, color: '#aaa', padding: '48px 20px 28px', marginTop: 48 }}>
