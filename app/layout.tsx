@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import ThemeProvider from '@/components/ThemeProvider'
 import Header from '@/components/Header'
+import Effects from '@/components/Effects'
 import { prisma } from '@/lib/prisma'
 
 export const revalidate = 60
@@ -14,7 +15,6 @@ async function getSiteData() {
         orderBy: [{ order: 'asc' }, { name: 'asc' }],
       })
     ])
-    
     const settings: Record<string, string> = {}
     for (const r of settingsRows) settings[r.key] = r.value
     return { settings, categories }
@@ -36,6 +36,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const { settings, categories } = await getSiteData()
+  const primary     = settings.primary_color  || '#ee4d2d'
+  const marqueeText = settings.marquee_text   || ''
 
   return (
     <html lang="vi">
@@ -44,6 +46,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <ThemeProvider />
       </head>
       <body style={{ margin: 0, background: '#f5f5f5' }}>
+        <Effects marqueeText={marqueeText} primary={primary} />
         <Header settings={settings} categories={categories} />
         {children}
       </body>
