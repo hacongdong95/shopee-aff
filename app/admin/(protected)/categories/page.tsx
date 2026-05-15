@@ -66,6 +66,7 @@ export default function CategoriesPage() {
   const [editCat, setEditCat]     = useState<Category | null>(null)
   const [formName, setFormName]   = useState('')
   const [formParent, setFormParent] = useState<string>('')
+  const [formIcon, setFormIcon] = useState<string>('')
 
   // Expanded nodes
   const [expanded, setExpanded] = useState<Set<number>>(new Set())
@@ -93,6 +94,7 @@ export default function CategoriesPage() {
     setEditCat(null)
     setFormName('')
     setFormParent(parentId ? String(parentId) : '')
+    setFormIcon('')
     setShowForm(true)
   }
 
@@ -100,6 +102,7 @@ export default function CategoriesPage() {
     setEditCat(cat)
     setFormName(cat.name)
     setFormParent(cat.parentId ? String(cat.parentId) : '')
+    setFormIcon((cat as any).icon || '')
     setShowForm(true)
   }
 
@@ -112,13 +115,13 @@ export default function CategoriesPage() {
         res = await fetch(`/api/categories/${editCat.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: formName, parentId: formParent ? Number(formParent) : null }),
+          body: JSON.stringify({ name: formName, parentId: formParent ? Number(formParent) : null, icon: formIcon }),
         })
       } else {
         res = await fetch('/api/categories', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: formName, parentId: formParent ? Number(formParent) : null }),
+          body: JSON.stringify({ name: formName, parentId: formParent ? Number(formParent) : null, icon: formIcon }),
         })
       }
       if (!res.ok) {
@@ -282,7 +285,7 @@ export default function CategoriesPage() {
 
                   {/* Name */}
                   <span style={{ flex: 1, fontWeight: isParent ? 700 : 500, fontSize: 14, color: '#111', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {cat.name}
+                    {(cat as any).icon ? (cat as any).icon + ' ' : ''}{cat.name}
                   </span>
 
                   {/* Slug */}
@@ -343,6 +346,62 @@ export default function CategoriesPage() {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              {/* Icon picker */}
+              <div>
+                <label style={{ fontSize: 13, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 5 }}>
+                  Icon <span style={{ fontSize: 12, fontWeight: 400, color: '#9ca3af' }}>(tuỳ chọn)</span>
+                </label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, padding: 10, background: '#f9fafb', borderRadius: 8, border: '1px solid #e5e7eb', maxHeight: 160, overflowY: 'auto' }}>
+                    <button key='🧋' type='button' onClick={()=>setFormIcon(formIcon==='🧋'?'':'🧋')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='🧋'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='🧋'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>🧋</button>
+                    <button key='🥛' type='button' onClick={()=>setFormIcon(formIcon==='🥛'?'':'🥛')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='🥛'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='🥛'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>🥛</button>
+                    <button key='🍱' type='button' onClick={()=>setFormIcon(formIcon==='🍱'?'':'🍱')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='🍱'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='🍱'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>🍱</button>
+                    <button key='💊' type='button' onClick={()=>setFormIcon(formIcon==='💊'?'':'💊')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='💊'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='💊'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>💊</button>
+                    <button key='❤️' type='button' onClick={()=>setFormIcon(formIcon==='❤️'?'':'❤️')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='❤️'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='❤️'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>❤️</button>
+                    <button key='⚡' type='button' onClick={()=>setFormIcon(formIcon==='⚡'?'':'⚡')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='⚡'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='⚡'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>⚡</button>
+                    <button key='📱' type='button' onClick={()=>setFormIcon(formIcon==='📱'?'':'📱')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='📱'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='📱'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>📱</button>
+                    <button key='💻' type='button' onClick={()=>setFormIcon(formIcon==='💻'?'':'💻')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='💻'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='💻'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>💻</button>
+                    <button key='🎧' type='button' onClick={()=>setFormIcon(formIcon==='🎧'?'':'🎧')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='🎧'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='🎧'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>🎧</button>
+                    <button key='⌚' type='button' onClick={()=>setFormIcon(formIcon==='⌚'?'':'⌚')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='⌚'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='⌚'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>⌚</button>
+                    <button key='👕' type='button' onClick={()=>setFormIcon(formIcon==='👕'?'':'👕')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='👕'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='👕'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>👕</button>
+                    <button key='👟' type='button' onClick={()=>setFormIcon(formIcon==='👟'?'':'👟')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='👟'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='👟'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>👟</button>
+                    <button key='👜' type='button' onClick={()=>setFormIcon(formIcon==='👜'?'':'👜')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='👜'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='👜'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>👜</button>
+                    <button key='🏠' type='button' onClick={()=>setFormIcon(formIcon==='🏠'?'':'🏠')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='🏠'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='🏠'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>🏠</button>
+                    <button key='🍳' type='button' onClick={()=>setFormIcon(formIcon==='🍳'?'':'🍳')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='🍳'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='🍳'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>🍳</button>
+                    <button key='💄' type='button' onClick={()=>setFormIcon(formIcon==='💄'?'':'💄')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='💄'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='💄'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>💄</button>
+                    <button key='⚽' type='button' onClick={()=>setFormIcon(formIcon==='⚽'?'':'⚽')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='⚽'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='⚽'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>⚽</button>
+                    <button key='📚' type='button' onClick={()=>setFormIcon(formIcon==='📚'?'':'📚')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='📚'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='📚'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>📚</button>
+                    <button key='🧸' type='button' onClick={()=>setFormIcon(formIcon==='🧸'?'':'🧸')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='🧸'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='🧸'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>🧸</button>
+                    <button key='🐾' type='button' onClick={()=>setFormIcon(formIcon==='🐾'?'':'🐾')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='🐾'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='🐾'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>🐾</button>
+                    <button key='🌿' type='button' onClick={()=>setFormIcon(formIcon==='🌿'?'':'🌿')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='🌿'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='🌿'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>🌿</button>
+                    <button key='🍎' type='button' onClick={()=>setFormIcon(formIcon==='🍎'?'':'🍎')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='🍎'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='🍎'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>🍎</button>
+                    <button key='🥩' type='button' onClick={()=>setFormIcon(formIcon==='🥩'?'':'🥩')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='🥩'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='🥩'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>🥩</button>
+                    <button key='🎮' type='button' onClick={()=>setFormIcon(formIcon==='🎮'?'':'🎮')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='🎮'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='🎮'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>🎮</button>
+                    <button key='📷' type='button' onClick={()=>setFormIcon(formIcon==='📷'?'':'📷')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='📷'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='📷'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>📷</button>
+                    <button key='🎵' type='button' onClick={()=>setFormIcon(formIcon==='🎵'?'':'🎵')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='🎵'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='🎵'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>🎵</button>
+                    <button key='✈️' type='button' onClick={()=>setFormIcon(formIcon==='✈️'?'':'✈️')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='✈️'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='✈️'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>✈️</button>
+                    <button key='🚗' type='button' onClick={()=>setFormIcon(formIcon==='🚗'?'':'🚗')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='🚗'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='🚗'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>🚗</button>
+                    <button key='💰' type='button' onClick={()=>setFormIcon(formIcon==='💰'?'':'💰')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='💰'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='💰'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>💰</button>
+                    <button key='🎁' type='button' onClick={()=>setFormIcon(formIcon==='🎁'?'':'🎁')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='🎁'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='🎁'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>🎁</button>
+                    <button key='🔥' type='button' onClick={()=>setFormIcon(formIcon==='🔥'?'':'🔥')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='🔥'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='🔥'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>🔥</button>
+                    <button key='⭐' type='button' onClick={()=>setFormIcon(formIcon==='⭐'?'':'⭐')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='⭐'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='⭐'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>⭐</button>
+                    <button key='💎' type='button' onClick={()=>setFormIcon(formIcon==='💎'?'':'💎')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='💎'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='💎'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>💎</button>
+                    <button key='🏷️' type='button' onClick={()=>setFormIcon(formIcon==='🏷️'?'':'🏷️')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='🏷️'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='🏷️'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>🏷️</button>
+                    <button key='🛒' type='button' onClick={()=>setFormIcon(formIcon==='🛒'?'':'🛒')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='🛒'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='🛒'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>🛒</button>
+                    <button key='🍕' type='button' onClick={()=>setFormIcon(formIcon==='🍕'?'':'🍕')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='🍕'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='🍕'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>🍕</button>
+                    <button key='☕' type='button' onClick={()=>setFormIcon(formIcon==='☕'?'':'☕')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='☕'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='☕'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>☕</button>
+                    <button key='🍜' type='button' onClick={()=>setFormIcon(formIcon==='🍜'?'':'🍜')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='🍜'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='🍜'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>🍜</button>
+                    <button key='🌸' type='button' onClick={()=>setFormIcon(formIcon==='🌸'?'':'🌸')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='🌸'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='🌸'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>🌸</button>
+                    <button key='🧴' type='button' onClick={()=>setFormIcon(formIcon==='🧴'?'':'🧴')} style={{ width:36, height:36, fontSize:20, border:`1.5px solid ${formIcon==='🧴'?'#ee4d2d':'#e5e7eb'}`, borderRadius:8, background:formIcon==='🧴'?'#fff0ee':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>🧴</button>
+                </div>
+                {formIcon && (
+                  <div style={{ marginTop: 8, fontSize: 13, color: '#555', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span>Đã chọn:</span>
+                    <span style={{ fontSize: 24 }}>{formIcon}</span>
+                    <button type="button" onClick={()=>setFormIcon('')} style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', fontSize: 18 }}>✕</button>
+                  </div>
+                )}
               </div>
 
               {/* Preview cấu trúc */}

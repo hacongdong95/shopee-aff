@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
-    const { name, parentId } = await req.json()
+    const { name, parentId, icon } = await req.json()
     if (!name?.trim()) return NextResponse.json({ error: 'Tên không được trống' }, { status: 400 })
 
     const baseSlug = slugify(name.trim(), { lower: true, locale: 'vi', strict: true })
@@ -42,6 +42,7 @@ export async function POST(req: NextRequest) {
         slug,
         parentId: parentId ? Number(parentId) : null,
         order: (maxOrder._max.order ?? 0) + 1,
+        icon: icon || null,
       },
     })
     return NextResponse.json(cat)
