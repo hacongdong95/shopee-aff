@@ -13,6 +13,7 @@ export default function ProductGrid({ products, primary }: { products: Product[]
 
   const shown = products.slice(0, visible)
   const hasMore = visible < products.length
+  const remaining = Math.min(PAGE_SIZE, products.length - visible)
 
   return (
     <>
@@ -29,26 +30,28 @@ export default function ProductGrid({ products, primary }: { products: Product[]
           <button
             onClick={() => setVisible(v => v + PAGE_SIZE)}
             style={{
-              background: 'white', color: '#ee4d2d',
-              border: `1.5px solid #ee4d2d`,
+              background: 'white', color: primary,
+              border: `1.5px solid ${primary}`,
               padding: '12px 40px', borderRadius: 24,
               fontWeight: 700, fontSize: 14, cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(238,77,45,0.15)',
+              boxShadow: `0 2px 8px ${primary}26`,
               transition: 'all 0.2s',
             }}
             onMouseEnter={e => {
-              (e.currentTarget as HTMLButtonElement).style.background = '#ee4d2d'
-              ;(e.currentTarget as HTMLButtonElement).style.color = 'white'
+              const b = e.currentTarget as HTMLButtonElement
+              b.style.background = primary
+              b.style.color = 'white'
             }}
             onMouseLeave={e => {
-              (e.currentTarget as HTMLButtonElement).style.background = 'white'
-              ;(e.currentTarget as HTMLButtonElement).style.color = '#ee4d2d'
+              const b = e.currentTarget as HTMLButtonElement
+              b.style.background = 'white'
+              b.style.color = primary
             }}
           >
-            Xem them {Math.min(PAGE_SIZE, products.length - visible)} san pham ↓
+            Xem th&#xEA;m {remaining} s&#x1EA3;n ph&#x1EA9;m &#x2193;
           </button>
           <div style={{ fontSize: 12, color: '#aaa', marginTop: 8 }}>
-            Dang hien {shown.length}/{products.length} san pham
+            &#x110;ang hi&#x1EC7;n {shown.length}/{products.length} s&#x1EA3;n ph&#x1EA9;m
           </div>
         </div>
       )}
