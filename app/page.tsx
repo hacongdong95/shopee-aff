@@ -94,6 +94,8 @@ export default async function HomePage({
   const popupSubtitle = settings.popup_subtitle || ''
   const popupBtnText  = settings.popup_btn_text || 'Mua Ngay'
   const popupDelay    = Number(settings.popup_delay || '2')
+  const bannerImage   = settings.banner_image   || ''
+  const bannerLink    = settings.banner_link    || ''
 
   return (
     <div style={{ minHeight: '100vh', background: '#f5f5f5', fontFamily: "'Be Vietnam Pro', sans-serif" }}>
@@ -112,6 +114,11 @@ export default async function HomePage({
 
       {/* BANNER */}
       {bannerShow && !catSlug && !query && (
+        bannerImage ? (
+          bannerLink
+            ? <a href={bannerLink} target="_blank" rel="noopener noreferrer" style={{ display:'block' }}><img src={bannerImage} alt="Banner" style={{ width:'100%', maxHeight:320, objectFit:'cover', display:'block' }} /></a>
+            : <img src={bannerImage} alt="Banner" style={{ width:'100%', maxHeight:320, objectFit:'cover', display:'block' }} />
+        ) : (
         <div style={{ background: `linear-gradient(135deg, ${primary}ee 0%, ${primary} 50%, ${primary}cc 100%)`, padding: '40px 20px', textAlign: 'center', color: 'white', position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', top: -40, right: -40, width: 160, height: 160, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', pointerEvents: 'none' }} />
           <div style={{ position: 'absolute', bottom: -30, left: 40, width: 100, height: 100, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', pointerEvents: 'none' }} />
@@ -123,6 +130,7 @@ export default async function HomePage({
             </Link>
           </div>
         </div>
+        )
       )}
 
       <div id="products" style={{ maxWidth: 1200, margin: '0 auto', padding: '28px 16px' }}>
