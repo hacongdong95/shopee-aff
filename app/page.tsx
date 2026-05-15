@@ -116,8 +116,8 @@ export default async function HomePage({
       {bannerShow && !catSlug && !query && (
         bannerImage ? (
           bannerLink
-            ? <a href={bannerLink} target="_blank" rel="noopener noreferrer" style={{ display:'block' }}><img src={bannerImage} alt="Banner" style={{ width:'100%', maxHeight:320, objectFit:'cover', display:'block' }} /></a>
-            : <img src={bannerImage} alt="Banner" style={{ width:'100%', maxHeight:320, objectFit:'cover', display:'block' }} />
+            ? <a href={bannerLink} target="_blank" rel="noopener noreferrer" style={{ display:'block', maxWidth:1200, margin:'0 auto' }}><img src={bannerImage} alt="Banner" style={{ width:'100%', maxHeight:280, objectFit:'cover', display:'block', borderRadius:0 }} /></a>
+            : <div style={{ maxWidth:1200, margin:'0 auto' }}><img src={bannerImage} alt="Banner" style={{ width:'100%', maxHeight:280, objectFit:'cover', display:'block' }} /></div>
         ) : (
         <div style={{ background: `linear-gradient(135deg, ${primary}ee 0%, ${primary} 50%, ${primary}cc 100%)`, padding: '40px 20px', textAlign: 'center', color: 'white', position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', top: -40, right: -40, width: 160, height: 160, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', pointerEvents: 'none' }} />
