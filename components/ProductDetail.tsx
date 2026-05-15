@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import BuyButton from '@/components/BuyButton'
-import NavMenu from '@/components/NavMenu'
 
 type Category = { id: number; name: string; slug: string }
 type Product = {
@@ -674,25 +673,6 @@ export default function ProductDetail({ product, related, settings={}, categorie
         @keyframes fadeIn{from{opacity:0}to{opacity:1}}
         @keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-33.33%)}}
       `}</style>
-
-      {/* Header nav */}
-      <header style={{ background:`linear-gradient(135deg, ${primary} 0%, ${primary}bb 100%)`, position:'sticky', top:0, zIndex:100, boxShadow:`0 2px 20px ${primary}44` }}>
-        <div style={{ maxWidth:1200, margin:'0 auto', padding:'0 20px', height:64, display:'flex', alignItems:'center', gap:20 }}>
-          <a href="/" style={{ color:'white', fontWeight:800, fontSize:20, textDecoration:'none', display:'flex', alignItems:'center', gap:10, whiteSpace:'nowrap', flexShrink:0 }}>
-            <span style={{ background:'rgba(255,255,255,0.22)', borderRadius:10, width:40, height:40, display:'flex', alignItems:'center', justifyContent:'center', fontSize:22, flexShrink:0 }}>{siteEmoji}</span>
-            <div>
-              <div style={{ fontFamily:'Nunito,sans-serif', letterSpacing:'-0.5px', lineHeight:1.1 }}>{siteName}</div>
-              {siteTagline && <div style={{ fontSize:11, fontWeight:400, opacity:0.75, lineHeight:1 }}>{siteTagline}</div>}
-            </div>
-          </a>
-          <a href="/" style={{ flex:1, maxWidth:560, position:'relative', display:'flex' }}>
-            <div style={{ width:'100%', padding:'11px 50px 11px 20px', borderRadius:24, border:'none', fontSize:14, background:'rgba(255,255,255,0.95)', color:'#aaa' }}>
-              {`Tim kiem san pham giam gia...`}
-            </div>
-          </a>
-        </div>
-        <NavMenu categories={categories} catSlug={product.category.slug} primary={primary} />
-      </header>
 
       {/* Trust bar */}
       <div style={{ background:'white', borderBottom:'1px solid #eee', padding:'9px 20px' }}>
