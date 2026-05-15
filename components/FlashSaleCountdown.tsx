@@ -40,37 +40,46 @@ export default function FlashSaleCountdown({ primary }: { primary: string }) {
       borderBottom: '2px solid rgba(0,0,0,0.08)',
       padding: '0 12px',
       height: 40,
+      minHeight: 40,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       gap: 8,
       overflow: 'hidden',
+      flexWrap: 'nowrap',
+      boxSizing: 'border-box',
+      width: '100%',
     }}>
       <style>{`
         @media (max-width: 480px) {
           .flash-label { display: none !important; }
           .flash-sep   { display: none !important; }
           .flash-after { display: none !important; }
+          .flash-countdown { gap: 4px !important; }
         }
       `}</style>
 
       {/* Label FLASH SALE */}
       <div className="flash-label" style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
         <span style={{ fontSize: 13 }}>⚡</span>
-        <span style={{ color: '#FFD700', fontWeight: 900, fontSize: 12, letterSpacing: '0.5px', fontFamily: 'Nunito, sans-serif', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+        <span style={{
+          color: '#FFD700', fontWeight: 900, fontSize: 12,
+          letterSpacing: '0.5px', fontFamily: 'Nunito, sans-serif',
+          textTransform: 'uppercase', whiteSpace: 'nowrap',
+        }}>
           FLASH SALE
         </span>
       </div>
 
       <div className="flash-sep" style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
 
-      {/* "kết thúc sau" — ẩn mobile */}
+      {/* "kết thúc sau" */}
       <span className="flash-label" style={{ color: 'rgba(255,255,255,0.9)', fontSize: 11, flexShrink: 0, whiteSpace: 'nowrap' }}>
         kết thúc sau:
       </span>
 
-      {/* Countdown */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
+      {/* Countdown — luôn hiển thị, kể cả mobile */}
+      <div className="flash-countdown" style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
         {[pad(timeLeft.h), pad(timeLeft.m), pad(timeLeft.s)].map((val, i) => (
           <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
             <span style={{
@@ -83,7 +92,9 @@ export default function FlashSaleCountdown({ primary }: { primary: string }) {
             }}>
               {val}
             </span>
-            {i < 2 && <span style={{ color: 'white', fontWeight: 900, fontSize: 13 }}>:</span>}
+            {i < 2 && (
+              <span style={{ color: 'white', fontWeight: 900, fontSize: 13 }}>:</span>
+            )}
           </span>
         ))}
       </div>
