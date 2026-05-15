@@ -9,7 +9,7 @@ import BannerCarousel from '@/components/BannerCarousel'
 import ProductGrid from '@/components/ProductGrid'
 import FOMOToast from '@/components/FOMOToast'
 
-export const revalidate = 0
+export const revalidate = 60
 
 async function getSettings() {
   const rows = await prisma.setting.findMany()
