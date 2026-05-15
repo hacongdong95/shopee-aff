@@ -45,65 +45,68 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'GROQ_API_KEY chưa được cấu hình' }, { status: 500 })
     }
 
-    const prompt = `Tạo ${count} đánh giá sản phẩm thực tế cho sản phẩm: "${name}"
+    // Chia thành batch 10 để tránh token limit và JSON bị cắt
+    const BATCH_SIZE = 10
+    const batches = Math.ceil(count / BATCH_SIZE)
+    const allReviews: { rating: number; comment: string }[] = []
+
+    for (let b = 0; b < batches; b++) {
+      const batchCount = Math.min(BATCH_SIZE, count - b * BATCH_SIZE)
+
+      const prompt = `Tạo đúng ${batchCount} đánh giá sản phẩm thực tế cho sản phẩm: "${name}"
 
 Yêu cầu:
-- Rating từ 4 đến 5 sao (random, đa dạng, đa số 5 sao)
-- Bình luận ngắn tự nhiên như người Việt Nam thật viết (1-3 câu)
-- Đề cập cụ thể đến sản phẩm, không chung chung
-- Đa dạng: có người khen chất lượng, có người khen giao hàng, có người khen giá, có người so sánh với kỳ vọng
-- Viết bằng tiếng Việt tự nhiên, có thể có lỗi chính tả nhỏ, emoji, viết tắt như người thật
-- KHÔNG dùng từ "sản phẩm" nhiều lần, thay bằng "món đồ", "hàng", "cái này"...
+- Rating: 75% là 5 sao, 25% là 4 sao
+- Bình luận 1-2 câu ngắn, tự nhiên như người Việt thật viết, đề cập đến sản phẩm
+- Đa dạng nội dung: chất lượng, giao hàng, giá cả, dùng thử, mua lần 2
+- Viết tiếng Việt tự nhiên, có thể dùng emoji nhẹ
+- KHÔNG dùng từ "sản phẩm" nhiều, thay bằng "hàng", "món này", "cái này"
 
-Trả về JSON array thuần túy, KHÔNG có markdown, KHÔNG có text thừa:
+Trả về JSON array, KHÔNG markdown, KHÔNG text thừa, PHẢI đủ ${batchCount} phần tử:
 [{"rating":5,"comment":"..."},{"rating":4,"comment":"..."}]`
 
-    const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${GROQ_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        temperature: 0.9,
-        max_tokens: 1500,
-        messages: [
-          { role: 'system', content: 'Bạn tạo review sản phẩm fake nhưng thực tế cho website thương mại điện tử Việt Nam. Chỉ trả về JSON array thuần túy, không có text hay markdown bao quanh.' },
-          { role: 'user', content: prompt },
-        ],
-      }),
-    })
+      const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_API_KEY}` },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          temperature: 0.85,
+          max_tokens: 2000,
+          messages: [
+            { role: 'system', content: 'Chỉ trả về JSON array thuần túy, không có text hay markdown bao quanh. Đảm bảo JSON hợp lệ và đầy đủ.' },
+            { role: 'user', content: prompt },
+          ],
+        }),
+      })
 
-    if (!groqRes.ok) {
-      const errText = await groqRes.text()
-      return NextResponse.json({ error: `Groq API lỗi: ${groqRes.status} - ${errText.slice(0, 200)}` }, { status: 500 })
+      if (!groqRes.ok) continue
+
+      const groqData = await groqRes.json()
+      const text = groqData?.choices?.[0]?.message?.content ?? ''
+      const clean = text.replace(/```json|```/g, '').trim()
+
+      // Tìm array JSON, thử parse
+      try {
+        const match = clean.match(/\[[\s\S]*\]/)
+        if (match) {
+          const parsed = JSON.parse(match[0])
+          if (Array.isArray(parsed)) allReviews.push(...parsed)
+        }
+      } catch {
+        // Batch này lỗi, bỏ qua, tiếp tục batch sau
+      }
+
+      // Delay nhỏ giữa các batch tránh rate limit
+      if (b < batches - 1) await new Promise(r => setTimeout(r, 1200))
     }
 
-    const groqData = await groqRes.json()
-    const text = groqData?.choices?.[0]?.message?.content ?? ''
-
-    // Parse JSON linh hoạt
-    const clean = text.replace(/```json|```/g, '').trim()
-    const match = clean.match(/\[[\s\S]*\]/)
-    if (!match) {
-      return NextResponse.json({ error: `Không parse được JSON. Raw: ${clean.slice(0, 300)}` }, { status: 500 })
-    }
-
-    let reviews: { rating: number; comment: string }[]
-    try {
-      reviews = JSON.parse(match[0])
-    } catch (parseErr) {
-      return NextResponse.json({ error: `JSON parse lỗi: ${parseErr}. Raw: ${match[0].slice(0, 200)}` }, { status: 500 })
-    }
-
-    if (!Array.isArray(reviews) || reviews.length === 0) {
-      return NextResponse.json({ error: 'AI trả về mảng rỗng' }, { status: 500 })
+    if (allReviews.length === 0) {
+      return NextResponse.json({ error: 'AI không tạo được review nào' }, { status: 500 })
     }
 
     // Lưu vào DB
     const usedNames = new Set<string>()
-    const created = await Promise.all(reviews.map((r, i) => {
+    const created = await Promise.all(allReviews.map((r, i) => {
       const reviewName = generateUniqueName(usedNames, i)
       const daysAgo   = Math.floor(Math.random() * 90) + 1
       const createdAt = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000)
