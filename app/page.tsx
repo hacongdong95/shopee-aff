@@ -128,7 +128,8 @@ export default async function HomePage({
 
       {/* ── TRUST BAR chạy chữ ── */}
       <div style={{ borderBottom: '1px solid #eee', background: 'white' }}>
-      <div style={{ background: `linear-gradient(90deg, ${primary}11, white, ${primary}11)`, padding: '8px 0', overflow: 'hidden', whiteSpace: 'nowrap', position: 'relative', maxWidth: 1200, margin: '0 auto' }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+      <div style={{ background: `linear-gradient(90deg, ${primary}11, white, ${primary}11)`, padding: '8px 0', overflow: 'hidden', whiteSpace: 'nowrap', position: 'relative' }}>
         <div style={{ display: 'inline-flex', animation: 'marquee 25s linear infinite', gap: 0 }}>
           {[...Array(4)].map((_, i) => (
             <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 0 }}>
@@ -149,9 +150,14 @@ export default async function HomePage({
         `}</style>
       </div>
       </div>
+      </div>
 
       {/* FLASH SALE */}
-      {!catSlug && !query && <FlashSaleCountdown primary={primary} />}
+      {!catSlug && !query && (
+        <div style={{ maxWidth: 1200, margin: '0 auto', overflow: 'hidden' }}>
+          <FlashSaleCountdown primary={primary} />
+        </div>
+      )}
 
       {/* BANNER */}
       {bannerShow && !catSlug && !query && (
