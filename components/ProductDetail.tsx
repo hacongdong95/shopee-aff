@@ -555,7 +555,9 @@ function ShareButton({ product, primary }: { product: Product; primary: string }
             Chia sẻ Facebook
           </button>
           <button onClick={shareZalo} style={{ width:'100%', display:'flex', alignItems:'center', gap:10, padding:'11px 16px', border:'none', background:'white', cursor:'pointer', fontSize:13, color:'#0068FF', fontWeight:600, borderBottom:'1px solid #f5f5f5', textAlign:'left' }}>
-            <span style={{ width:28, height:28, borderRadius:'50%', background:'#0068FF', color:'white', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:800, flexShrink:0 }}>Zalo</span>
+            <span style={{ width:28, height:28, borderRadius:8, background:'#0068FF', color:'white', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, overflow:'hidden' }}>
+              <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Icon_of_Zalo.svg" alt="Zalo" style={{ width:20, height:20, objectFit:'contain' }} />
+            </span>
             Chia sẻ Zalo
           </button>
           <button onClick={copyLink} style={{ width:'100%', display:'flex', alignItems:'center', gap:10, padding:'11px 16px', border:'none', background:'white', cursor:'pointer', fontSize:13, color:'#555', fontWeight:500, textAlign:'left' }}>
