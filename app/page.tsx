@@ -106,10 +106,13 @@ export default async function HomePage({
     <div style={{ minHeight: '100vh', background: '#f5f5f5', fontFamily: "'Be Vietnam Pro', sans-serif" }}>
 
       {/* TRUST BAR */}
-      <div className="trust-bar" style={{ background: 'white', borderBottom: '1px solid #eee', padding: '9px 20px' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', justifyContent: 'center', gap: 28, flexWrap: 'wrap' }}>
+      <div style={{ background: 'white', borderBottom: '1px solid #eee', padding: '7px 16px' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 6, flexWrap: 'nowrap', overflowX: 'auto', scrollbarWidth: 'none' }}>
           {[shippingText, guaranteeText, returnText].map((t, i) => (
-            <span key={i} style={{ fontSize: 12, color: '#555', fontWeight: 500 }}>{t}</span>
+            <span key={i} style={{ fontSize: 11, color: '#555', fontWeight: 500, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: i < 2 ? 6 : 0 }}>
+              {t}
+              {i < 2 && <span style={{ color: '#ddd', marginLeft: 6 }}>|</span>}
+            </span>
           ))}
         </div>
       </div>
