@@ -5,6 +5,7 @@ import ScrollReveal from '@/components/ScrollReveal'
 import SortFilter from '@/components/SortFilter'
 import FlashSaleCountdown from '@/components/FlashSaleCountdown'
 import PopupAd from '@/components/PopupAd'
+import BannerCarousel from '@/components/BannerCarousel'
 import ProductGrid from '@/components/ProductGrid'
 
 export const revalidate = 60
@@ -97,6 +98,9 @@ export default async function HomePage({
   const popupDelay    = Number(settings.popup_delay || '2')
   const bannerImage   = settings.banner_image   || ''
   const bannerLink    = settings.banner_link    || ''
+  // Hỗ trợ nhiều ảnh banner — mỗi dòng 1 URL
+  const bannerImages  = bannerImage ? bannerImage.split('\n').map((u: string) => u.trim()).filter(Boolean) : []
+  const bannerLinks   = bannerLink  ? bannerLink.split('\n').map((u: string) => u.trim())                  : []
 
   return (
     <div style={{ minHeight: '100vh', background: '#f5f5f5', fontFamily: "'Be Vietnam Pro', sans-serif" }}>
@@ -115,22 +119,22 @@ export default async function HomePage({
 
       {/* BANNER */}
       {bannerShow && !catSlug && !query && (
-        bannerImage ? (
-          bannerLink
-            ? <a href={bannerLink} target="_blank" rel="noopener noreferrer" style={{ display:'block', maxWidth:1200, margin:'0 auto' }}><img src={bannerImage} alt="Banner" style={{ width:'100%', maxHeight:280, objectFit:'cover', display:'block', borderRadius:0 }} /></a>
-            : <div style={{ maxWidth:1200, margin:'0 auto' }}><img src={bannerImage} alt="Banner" style={{ width:'100%', maxHeight:280, objectFit:'cover', display:'block' }} /></div>
+        bannerImages.length > 0 ? (
+          <BannerCarousel images={bannerImages} links={bannerLinks} primary={primary} />
         ) : (
-        <div style={{ background: `linear-gradient(135deg, ${primary}ee 0%, ${primary} 50%, ${primary}cc 100%)`, padding: '40px 20px', textAlign: 'center', color: 'white', position: 'relative', overflow: 'hidden' }}>
-          <div style={{ position: 'absolute', top: -40, right: -40, width: 160, height: 160, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', bottom: -30, left: 40, width: 100, height: 100, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', pointerEvents: 'none' }} />
-          <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative' }}>
-            <div className="banner-title" style={{ fontSize: 32, fontWeight: 800, fontFamily: 'Nunito, sans-serif', marginBottom: 10, textShadow: '0 2px 12px rgba(0,0,0,0.15)', letterSpacing: '-0.5px' }}>{bannerTitle}</div>
-            <div className="banner-sub" style={{ fontSize: 15, opacity: 0.9, maxWidth: 480, margin: '0 auto 20px' }}>{bannerSubtitle}</div>
-            <Link href="#products" style={{ display: 'inline-block', background: 'white', color: primary, padding: '11px 28px', borderRadius: 24, fontWeight: 800, fontSize: 14, textDecoration: 'none', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}>
-              Xem ưu đãi ngay ↓
-            </Link>
+          <div style={{ maxWidth: 1200, margin: '12px auto', padding: '0 16px' }}>
+            <div style={{ background: `linear-gradient(135deg, ${primary}ee 0%, ${primary} 50%, ${primary}cc 100%)`, padding: '40px 20px', textAlign: 'center', color: 'white', position: 'relative', overflow: 'hidden', borderRadius: 12 }}>
+              <div style={{ position: 'absolute', top: -40, right: -40, width: 160, height: 160, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', pointerEvents: 'none' }} />
+              <div style={{ position: 'absolute', bottom: -30, left: 40, width: 100, height: 100, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', pointerEvents: 'none' }} />
+              <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative' }}>
+                <div style={{ fontSize: 'clamp(22px,4vw,32px)', fontWeight: 800, fontFamily: 'Nunito, sans-serif', marginBottom: 10, textShadow: '0 2px 12px rgba(0,0,0,0.15)', letterSpacing: '-0.5px' }}>{bannerTitle}</div>
+                <div style={{ fontSize: 15, opacity: 0.9, maxWidth: 480, margin: '0 auto 20px' }}>{bannerSubtitle}</div>
+                <Link href="#products" style={{ display: 'inline-block', background: 'white', color: primary, padding: '11px 28px', borderRadius: 24, fontWeight: 800, fontSize: 14, textDecoration: 'none', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}>
+                  Xem ưu đãi ngay ↓
+                </Link>
+              </div>
+            </div>
           </div>
-        </div>
         )
       )}
 
