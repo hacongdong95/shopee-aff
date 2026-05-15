@@ -35,9 +35,9 @@ export default function FlashSaleCountdown({ primary }: { primary: string }) {
   const pad = (n: number) => String(n).padStart(2, '0')
 
   return (
-    <div style={{ background: primary, borderBottom: `2px solid rgba(0,0,0,0.08)` }}>
+    <div style={{ maxWidth: 1200, margin: '0 auto' }}>
       <div style={{
-        maxWidth: 1200, margin: '0 auto',
+        background: primary, borderBottom: `2px solid rgba(0,0,0,0.08)`,
         padding: '0 16px',
         height: 44,
         display: 'flex', alignItems: 'center', gap: 10,
