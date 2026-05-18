@@ -58,6 +58,7 @@ export default function ProductsPage() {
   const [showForm, setShowForm]     = useState(false)
   const [loading, setLoading]       = useState(false)
   const [search, setSearch]         = useState('')
+  const [filterCat, setFilterCat]   = useState('')
   const [selected, setSelected]     = useState<Set<number>>(new Set())
   const [selectAll, setSelectAll]   = useState(false) // chọn tất cả mọi trang
   const [deleting, setDeleting]     = useState(false)
@@ -261,7 +262,14 @@ export default function ProductsPage() {
     await fetch(`/api/products/${id}`, { method: 'DELETE' }); load()
   }
 
-  const filtered    = products.filter(p => p.name.toLowerCase().includes(search.toLowerCase()))
+  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'hidden'>('all')
+
+  const filtered = products.filter(p => {
+    const matchName = p.name.toLowerCase().includes(search.toLowerCase())
+    const matchCat  = filterCat ? String(p.categoryId) === filterCat : true
+    const matchStatus = filterStatus === 'all' ? true : filterStatus === 'active' ? p.isActive : !p.isActive
+    return matchName && matchCat && matchStatus
+  })
   const someSelected = selectAll || selected.size > 0
   const selectedCount = selectAll ? products.length : selected.size
   const allFilteredSelected = !selectAll && selected.size === filtered.length && filtered.length > 0
@@ -293,8 +301,34 @@ export default function ProductsPage() {
           onChange={toggleSelectFiltered}
           style={{ width: 16, height: 16, cursor: 'pointer', accentColor: '#ee4d2d' }} />
         <span style={{ color: '#9ca3af' }}>🔍</span>
-        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tìm kiếm sản phẩm..."
+        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tìm kiếm theo tên sản phẩm..."
           style={{ border: 'none', outline: 'none', fontSize: 14, flex: 1, background: 'transparent', minWidth: 150 }} />
+
+        {/* Lọc danh mục */}
+        <select value={filterCat} onChange={e => setFilterCat(e.target.value)}
+          style={{ border: '1.5px solid #e5e7eb', borderRadius: 8, padding: '6px 10px', fontSize: 13, color: '#374151', background: 'white', cursor: 'pointer', outline: 'none', maxWidth: 180 }}>
+          <option value="">📂 Tất cả danh mục</option>
+          {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+        </select>
+
+        {/* Lọc trạng thái */}
+        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value as any)}
+          style={{ border: '1.5px solid #e5e7eb', borderRadius: 8, padding: '6px 10px', fontSize: 13, color: '#374151', background: 'white', cursor: 'pointer', outline: 'none' }}>
+          <option value="all">👁 Tất cả</option>
+          <option value="active">✅ Đang hiện</option>
+          <option value="hidden">🚫 Đang ẩn</option>
+        </select>
+
+        {/* Kết quả + reset */}
+        <span style={{ fontSize: 12, color: '#9ca3af', whiteSpace: 'nowrap' }}>
+          {filtered.length}/{products.length} SP
+        </span>
+        {(search || filterCat || filterStatus !== 'all') && (
+          <button onClick={() => { setSearch(''); setFilterCat(''); setFilterStatus('all') }}
+            style={{ background: '#fee2e2', border: 'none', color: '#dc2626', borderRadius: 6, padding: '4px 10px', fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+            ✕ Xoá lọc
+          </button>
+        )}
       </div>
 
       {/* ── Bulk action bar (kiểu Gmail) ── */}
