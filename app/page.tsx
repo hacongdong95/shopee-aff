@@ -65,7 +65,7 @@ export default async function HomePage({
   ])
 
   const hotProducts = !catSlug && !query
-    ? [...allProducts].sort((a, b) => b.clicks - a.clicks).slice(0, 6)
+    ? [...allProducts].sort((a, b) => b.clicks - a.clicks).slice(0, 9)
     : []
 
   const products = sort === 'discount'
@@ -305,6 +305,31 @@ export default async function HomePage({
           </div>
         </>
       )}
+      {/* FOOTER */}
+      <footer style={{ background: footerColor, color: '#aaa', padding: '48px 20px 28px', marginTop: 48 }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', textAlign: 'center' }}>
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ color: 'white', fontWeight: 800, fontSize: 20, fontFamily: 'Nunito, sans-serif', marginBottom: 6 }}>{siteEmoji} {siteName}</div>
+            <div style={{ fontSize: 13, maxWidth: 400, margin: '0 auto', lineHeight: 1.7, color: 'rgba(255,255,255,0.45)' }}>{footerText}</div>
+          </div>
+          {socialChannels.length > 0 && (
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 20 }}>
+              {socialChannels.map(ch => (
+                <a key={ch.key} href={ch.getHref(ch.value)} target="_blank" rel="noopener noreferrer"
+                  style={{ width: 36, height: 36, borderRadius: '50%', background: ch.color, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, textDecoration: 'none' }}>
+                  {ch.icon}
+                </a>
+              ))}
+            </div>
+          )}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 28, padding: '0 8px' }}>
+            {[shippingText, guaranteeText, returnText].map((t, i) => (
+              <span key={i} style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', background: 'rgba(255,255,255,0.06)', padding: '6px 14px', borderRadius: 20, border: '1px solid rgba(255,255,255,0.08)', textAlign: 'center', lineHeight: 1.5 }}>{t}</span>
+            ))}
+          </div>
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: 20, fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>{footerCopyright}</div>
+        </div>
+      </footer>
     </div>
   )
 }

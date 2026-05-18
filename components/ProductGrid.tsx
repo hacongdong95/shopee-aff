@@ -1,75 +1,64 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import ProductCard from '@/components/ProductCard'
-import ScrollReveal from '@/components/ScrollReveal'
+import { useState } from 'react'
+import ProductCard from './ProductCard'
+import ScrollReveal from './ScrollReveal'
 
-const PAGE_SIZE = 12
+type Category = { id: number; name: string; slug: string }
+type Product = {
+  id: number; name: string; slug: string; price: number
+  oldPrice: number | null; imageUrl: string | null
+  affLink: string; isActive: boolean; clicks: number
+  description: string | null; categoryId: number
+  category: Category; createdAt?: string | Date
+}
 
-type Product = any
+const PAGE_SIZE = 9
 
 export default function ProductGrid({ products, primary }: { products: Product[]; primary: string }) {
   const [visible, setVisible] = useState(PAGE_SIZE)
-  const [loading, setLoading] = useState(false)
-  const loaderRef = useRef<HTMLDivElement>(null)
 
   const shown = products.slice(0, visible)
   const hasMore = visible < products.length
-
-  useEffect(() => {
-    const el = loaderRef.current
-    if (!el) return
-
-    const observer = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting && hasMore && !loading) {
-          setLoading(true)
-          setTimeout(() => {
-            setVisible(v => v + PAGE_SIZE)
-            setLoading(false)
-          }, 400)
-        }
-      },
-      { threshold: 0.1, rootMargin: '200px' }
-    )
-
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [hasMore, loading])
+  const remaining = products.length - visible
 
   return (
-    <>
+    <div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 14 }}>
-        {shown.map((p: Product, i: number) => (
-          <ScrollReveal key={p.id} delay={Math.min((i % 6) * 60, 300)}>
+        {shown.map((p, i) => (
+          <ScrollReveal key={p.id} delay={Math.min((i % PAGE_SIZE) * 60, 300)}>
             <ProductCard product={p} />
           </ScrollReveal>
         ))}
       </div>
 
-      {/* Infinite scroll trigger */}
-      <div ref={loaderRef} style={{ textAlign: 'center', marginTop: 32, minHeight: 60 }}>
-        {loading && (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, color: '#aaa' }}>
-            <div style={{
-              width: 20, height: 20, borderRadius: '50%',
-              border: `2px solid ${primary}33`,
-              borderTop: `2px solid ${primary}`,
-              animation: 'spin 0.8s linear infinite',
-            }} />
-            <span style={{ fontSize: 13 }}>Đang tải thêm...</span>
-          </div>
-        )}
-        {!hasMore && products.length > PAGE_SIZE && (
-          <div style={{ fontSize: 12, color: '#ccc', padding: '8px 0' }}>
-            ✓ Đã hiện tất cả {products.length} sản phẩm
-          </div>
-        )}
-      </div>
-
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg) } }
-      `}</style>
-    </>
+      {hasMore && (
+        <div style={{ textAlign: 'center', marginTop: 32 }}>
+          <button
+            onClick={() => setVisible(v => v + PAGE_SIZE)}
+            style={{
+              padding: '12px 36px', background: 'white',
+              border: `2px solid ${primary}`, borderRadius: 24,
+              color: primary, fontWeight: 700, fontSize: 14,
+              cursor: 'pointer', transition: 'all 0.15s',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+            }}
+            onMouseEnter={e => {
+              const el = e.currentTarget
+              el.style.background = primary
+              el.style.color = 'white'
+            }}
+            onMouseLeave={e => {
+              const el = e.currentTarget
+              el.style.background = 'white'
+              el.style.color = primary
+            }}
+          >
+            Xem thêm {Math.min(PAGE_SIZE, remaining)} sản phẩm
+            <span style={{ opacity: 0.6, marginLeft: 6, fontSize: 12 }}>({remaining} còn lại)</span>
+          </button>
+        </div>
+      )}
+    </div>
   )
 }
