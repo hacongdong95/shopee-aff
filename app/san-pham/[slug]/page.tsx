@@ -125,7 +125,7 @@ export default async function ProductPage({
   }).catch(() => [])
 
   const avgRating = reviews.length
-    ? (reviews.reduce((s, r) => s + (r.rating as number), 0 as number) / reviews.length).toFixed(1)
+    ? (reviews.map(r => r.rating).reduce((a, b) => a + b, 0) / reviews.length).toFixed(1)
     : '4.8'
   const reviewCount = reviews.length || 0
 
