@@ -98,6 +98,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="vi">
       <head>
         <meta charSet="utf-8" />
+        <meta name="google-site-verification" content="9w8tzdqx_NGCRLszOJMRgnANh85bCW0tgszxg4cboIA" />
         <ThemeProvider />
       </head>
       <body style={{ margin: 0, background: '#f5f5f5' }}>
