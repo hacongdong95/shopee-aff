@@ -102,6 +102,15 @@ export default async function HomePage({
   const bannerImages  = bannerImage ? bannerImage.split('\n').map((u: string) => u.trim()).filter(Boolean) : []
   const bannerLinks   = bannerLink  ? bannerLink.split('\n').map((u: string) => u.trim())                  : []
 
+  // Footer settings
+  const footerAbout     = settings.footer_about    || footerText
+  const footerHotline   = settings.footer_hotline  || ''
+  const footerEmail     = settings.footer_email    || ''
+  const footerAddress   = settings.footer_address  || ''
+  const footerFanpage   = settings.footer_fanpage_url   || ''
+  const footerFanpageLabel = settings.footer_fanpage_label || 'Fanpage'
+  const footerShopeeUrl = settings.footer_shopee_url || ''
+
   const zaloValue    = settings.social_zalo?.trim()    || ''
   const phoneValue   = settings.contact_phone?.trim()  || settings.social_zalo?.trim() || ''
   const fbValue      = settings.social_facebook?.trim() || ''
@@ -306,28 +315,165 @@ export default async function HomePage({
         </>
       )}
       {/* FOOTER */}
-      <footer style={{ background: footerColor, color: '#aaa', padding: '48px 20px 28px', marginTop: 48 }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', textAlign: 'center' }}>
-          <div style={{ marginBottom: 16 }}>
-            <div style={{ color: 'white', fontWeight: 800, fontSize: 20, fontFamily: 'Nunito, sans-serif', marginBottom: 6 }}>{siteEmoji} {siteName}</div>
-            <div style={{ fontSize: 13, maxWidth: 400, margin: '0 auto', lineHeight: 1.7, color: 'rgba(255,255,255,0.45)' }}>{footerText}</div>
-          </div>
-          {socialChannels.length > 0 && (
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 20 }}>
-              {socialChannels.map(ch => (
-                <a key={ch.key} href={ch.getHref(ch.value)} target="_blank" rel="noopener noreferrer"
-                  style={{ width: 36, height: 36, borderRadius: '50%', background: ch.color, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, textDecoration: 'none' }}>
-                  {ch.icon}
-                </a>
-              ))}
+      <footer style={{ background: footerColor, marginTop: 48 }}>
+
+        {/* Main footer — 4 cột */}
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '48px 20px 32px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 40 }}>
+
+            {/* Cột 1: Về chúng tôi */}
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+                <span style={{ background: primary, borderRadius: 10, width: 38, height: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>{siteEmoji}</span>
+                <div>
+                  <div style={{ color: 'white', fontWeight: 800, fontSize: 16, lineHeight: 1.2, fontFamily: 'Nunito, sans-serif' }}>{siteName}</div>
+                  {siteTagline && <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 1 }}>{siteTagline}</div>}
+                </div>
+              </div>
+              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', lineHeight: 1.8, margin: '0 0 16px' }}>{footerAbout}</p>
+
+              {/* Thông tin liên hệ */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {footerHotline && (
+                  <a href={`tel:${footerHotline.replace(/\s/g,'')}`} style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, flexShrink: 0 }}>📞</span>
+                    {footerHotline}
+                  </a>
+                )}
+                {footerEmail && (
+                  <a href={`mailto:${footerEmail}`} style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, flexShrink: 0 }}>✉️</span>
+                    {footerEmail}
+                  </a>
+                )}
+                {footerAddress && (
+                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                    <span style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, flexShrink: 0 }}>📍</span>
+                    {footerAddress}
+                  </div>
+                )}
+              </div>
             </div>
-          )}
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 28, padding: '0 8px' }}>
-            {[shippingText, guaranteeText, returnText].map((t, i) => (
-              <span key={i} style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', background: 'rgba(255,255,255,0.06)', padding: '6px 14px', borderRadius: 20, border: '1px solid rgba(255,255,255,0.08)', textAlign: 'center', lineHeight: 1.5 }}>{t}</span>
-            ))}
+
+            {/* Cột 2: Danh mục */}
+            <div>
+              <div style={{ color: 'white', fontWeight: 700, fontSize: 14, marginBottom: 16, paddingBottom: 10, borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                📂 Danh mục
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {categories.filter((c: any) => !c.parentId).slice(0, 7).map((cat: any) => (
+                  <a key={cat.id} href={`/?cat=${cat.slug}`}
+                    style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 8, transition: 'color 0.15s' }}
+                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = 'white'}
+                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.55)'}
+                  >
+                    <span style={{ color: primary, fontSize: 12 }}>›</span>
+                    {cat.name}
+                    {(cat as any)._count?.products > 0 && (
+                      <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', marginLeft: 'auto' }}>{(cat as any)._count.products}</span>
+                    )}
+                  </a>
+                ))}
+                <a href="/" style={{ fontSize: 12, color: primary, textDecoration: 'none', marginTop: 4, fontWeight: 600 }}>Xem tất cả →</a>
+              </div>
+            </div>
+
+            {/* Cột 3: Chính sách */}
+            <div>
+              <div style={{ color: 'white', fontWeight: 700, fontSize: 14, marginBottom: 16, paddingBottom: 10, borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                📋 Chính sách
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {[
+                  { label: 'Chính sách đổi trả', icon: '↩️' },
+                  { label: 'Chính sách bảo hành', icon: '🛡️' },
+                  { label: 'Chính sách bảo mật', icon: '🔒' },
+                  { label: 'Điều khoản sử dụng', icon: '📄' },
+                  { label: 'Hướng dẫn mua hàng', icon: '🛒' },
+                  { label: 'Câu hỏi thường gặp', icon: '❓' },
+                ].map((item, i) => (
+                  <div key={i} style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span>{item.icon}</span>
+                    {item.label}
+                  </div>
+                ))}
+              </div>
+
+              {/* Trust badges */}
+              <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {[shippingText, guaranteeText, returnText].map((t, i) => (
+                  <div key={i} style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: primary, display: 'inline-block', flexShrink: 0 }} />
+                    {t}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Cột 4: Kết nối + Thanh toán */}
+            <div>
+              <div style={{ color: 'white', fontWeight: 700, fontSize: 14, marginBottom: 16, paddingBottom: 10, borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                🔗 Kết nối
+              </div>
+
+              {/* Social icons */}
+              {socialChannels.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
+                  {socialChannels.map(ch => (
+                    <a key={ch.key} href={ch.getHref(ch.value)} target="_blank" rel="noopener noreferrer" title={ch.label}
+                      style={{ width: 38, height: 38, borderRadius: 10, background: ch.color, color: 'white', fontWeight: 800, fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', boxShadow: `0 2px 8px ${ch.color}55`, transition: 'transform 0.15s' }}
+                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'}
+                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.transform = ''}
+                    >{ch.icon}</a>
+                  ))}
+                </div>
+              )}
+
+              {/* Nút Fanpage + Shop Shopee */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
+                {footerFanpage && (
+                  <a href={footerFanpage} target="_blank" rel="noopener noreferrer"
+                    style={{ fontSize: 12, color: 'white', background: '#1877f2', padding: '8px 14px', borderRadius: 8, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700 }}>
+                    👍 Theo dõi {footerFanpageLabel}
+                  </a>
+                )}
+                {footerShopeeUrl && (
+                  <a href={footerShopeeUrl} target="_blank" rel="noopener noreferrer"
+                    style={{ fontSize: 12, color: 'white', background: primary, padding: '8px 14px', borderRadius: 8, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700 }}>
+                    🛒 Vào Shop Shopee
+                  </a>
+                )}
+              </div>
+
+              {/* Thanh toán */}
+              <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, marginBottom: 10 }}>Phương thức thanh toán:</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {[
+                  { name: 'VISA',   bg: '#1a1f71', color: 'white' },
+                  { name: 'MASTER', bg: '#eb001b', color: 'white' },
+                  { name: 'MoMo',   bg: '#ae2070', color: 'white' },
+                  { name: 'ZaloPay', bg: '#0068ff', color: 'white' },
+                  { name: 'VNPay',  bg: '#005baa', color: 'white' },
+                  { name: 'COD',    bg: '#16a34a', color: 'white' },
+                ].map(p => (
+                  <span key={p.name} style={{ background: p.bg, color: p.color, fontSize: 9, fontWeight: 800, padding: '4px 8px', borderRadius: 5, letterSpacing: '0.3px' }}>{p.name}</span>
+                ))}
+              </div>
+            </div>
           </div>
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: 20, fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>{footerCopyright}</div>
+        </div>
+
+        {/* Copyright bar */}
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', padding: '14px 20px' }}>
+          <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: 8, alignItems: 'center' }}>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.25)' }}>{footerCopyright}</div>
+            <div style={{ display: 'flex', gap: 16 }}>
+              <a href="/" style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>Trang chủ</a>
+              <a href="/?sort=discount" style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>Deal hot</a>
+              <a href="/?sort=newest" style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>Mới nhất</a>
+            </div>
+            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.15)' }}>Website affiliate · Giá & KM có thể thay đổi</div>
+          </div>
         </div>
       </footer>
     </div>
