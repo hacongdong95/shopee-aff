@@ -304,11 +304,22 @@ export default function ProductsPage() {
         <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tìm kiếm theo tên sản phẩm..."
           style={{ border: 'none', outline: 'none', fontSize: 14, flex: 1, background: 'transparent', minWidth: 150 }} />
 
-        {/* Lọc danh mục */}
+        {/* Lọc danh mục - dạng cây cha/con */}
         <select value={filterCat} onChange={e => setFilterCat(e.target.value)}
           style={{ border: '1.5px solid #e5e7eb', borderRadius: 8, padding: '6px 10px', fontSize: 13, color: '#374151', background: 'white', cursor: 'pointer', outline: 'none', maxWidth: 180 }}>
           <option value="">📂 Tất cả danh mục</option>
-          {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          {categories.filter(c => !c.parentId).map(parent => {
+            const children = categories.filter(c => c.parentId === parent.id)
+            if (children.length > 0) return (
+              <optgroup key={parent.id} label={parent.name}>
+                <option value={parent.id}>{parent.name} (tất cả)</option>
+                {children.map(child => (
+                  <option key={child.id} value={child.id}>↳ {child.name}</option>
+                ))}
+              </optgroup>
+            )
+            return <option key={parent.id} value={parent.id}>{parent.name}</option>
+          })}
         </select>
 
         {/* Lọc trạng thái */}
