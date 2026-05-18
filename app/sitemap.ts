@@ -13,7 +13,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       orderBy: { updatedAt: 'desc' },
     }),
     prisma.category.findMany({
-      select: { slug: true, updatedAt: true },
+      select: { slug: true },
     }),
   ])
 
@@ -28,8 +28,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const categoryRoutes: MetadataRoute.Sitemap = categories.map(c => ({
     url: `${base}/?cat=${c.slug}`,
-    lastModified: c.updatedAt,
-    changeFrequency: 'daily',
+    lastModified: new Date(),
+    changeFrequency: 'daily' as const,
     priority: 0.8,
   }))
 
