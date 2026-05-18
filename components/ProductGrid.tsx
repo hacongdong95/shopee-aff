@@ -48,10 +48,10 @@ export default function ProductGrid({ products, primary }: { products: Product[]
               b.style.color = primary
             }}
           >
-            Xem th&#xEA;m {remaining} s&#x1EA3;n ph&#x1EA9;m &#x2193;
+            Xem thêm {remaining} sản phẩm ↓
           </button>
           <div style={{ fontSize: 12, color: '#aaa', marginTop: 8 }}>
-            &#x110;ang hi&#x1EC7;n {shown.length}/{products.length} s&#x1EA3;n ph&#x1EA9;m
+            Đang hiện {shown.length}/{products.length} sản phẩm
           </div>
         </div>
       )}
