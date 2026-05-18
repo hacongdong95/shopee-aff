@@ -936,6 +936,22 @@ export default function ProductDetail({ product, related, settings={}, categorie
 
       {/* ── Sticky Buy Bar mobile ── */}
       <StickyBuyBar product={product} primary={primary} buyButtonText={buyBtnText} />
+
+      {/* ── Footer ── */}
+      <footer style={{ background:footerColor, color:'#aaa', padding:'40px 20px 28px', marginTop:8 }}>
+        <div style={{ maxWidth:1100, margin:'0 auto', textAlign:'center' }}>
+          <div style={{ marginBottom:14 }}>
+            <div style={{ color:'white', fontWeight:800, fontSize:18, fontFamily:'Nunito,sans-serif', marginBottom:6 }}>{siteEmoji} {siteName}</div>
+            <div style={{ fontSize:13, maxWidth:400, margin:'0 auto', lineHeight:1.7, color:'rgba(255,255,255,0.4)' }}>{footerText}</div>
+          </div>
+          <div style={{ display:'flex', justifyContent:'center', gap:8, flexWrap:'wrap', marginBottom:20, padding:'0 8px' }}>
+            {[shippingText, guaranteeText, returnText].map((t:string, i:number) => (
+              <span key={i} style={{ fontSize:12, color:'rgba(255,255,255,0.5)', background:'rgba(255,255,255,0.06)', padding:'6px 14px', borderRadius:20, border:'1px solid rgba(255,255,255,0.08)', textAlign:'center', lineHeight:1.5 }}>{t}</span>
+            ))}
+          </div>
+          <div style={{ borderTop:'1px solid rgba(255,255,255,0.07)', paddingTop:16, fontSize:12, color:'rgba(255,255,255,0.25)' }}>{footerCopy}</div>
+        </div>
+      </footer>
     </div>
   )
 }
