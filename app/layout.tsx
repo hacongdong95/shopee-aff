@@ -24,13 +24,47 @@ async function getSiteData() {
   }
 }
 
+const BASE_URL = 'https://giadinhsudo.store'
+
 export async function generateMetadata(): Promise<Metadata> {
   const { settings: s } = await getSiteData()
-  const siteName = s.site_name || 'Shopee Deals'
+  const siteName = s.site_name || 'Gia Đình Su Đô'
   const title = s.seo_title || siteName
+  const description = s.seo_description || 'Săn deal chuẩn – Mua sắm thông minh mỗi ngày. Tổng hợp sản phẩm giảm giá tốt nhất từ Shopee.'
+  const logo = s.site_logo_url || `${BASE_URL}/favicon.ico`
+
   return {
-    title,
-    description: s.seo_description || 'Sản phẩm tốt nhất',
+    title: { default: title, template: `%s | ${siteName}` },
+    description,
+    metadataBase: new URL(BASE_URL),
+    alternates: { canonical: BASE_URL },
+    keywords: ['mua sắm', 'giảm giá', 'shopee', 'deal hot', 'sản phẩm giảm giá', siteName],
+    authors: [{ name: siteName, url: BASE_URL }],
+    creator: siteName,
+    publisher: siteName,
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 },
+    },
+    openGraph: {
+      type: 'website',
+      locale: 'vi_VN',
+      url: BASE_URL,
+      siteName,
+      title,
+      description,
+      images: [{ url: logo, width: 800, height: 600, alt: siteName }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [logo],
+    },
+    verification: {
+      google: s.google_site_verification || '',
+    },
   }
 }
 
