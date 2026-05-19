@@ -510,6 +510,8 @@ function buildSocialLinks(settings: Settings): SocialLink[] {
 function ShareButton({ product, primary }: { product: Product; primary: string }) {
   const [open, setOpen] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [shortUrl, setShortUrl] = useState<string | null>(null)
+  const [loadingShort, setLoadingShort] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -518,23 +520,51 @@ function ShareButton({ product, primary }: { product: Product; primary: string }
     return () => document.removeEventListener('mousedown', h)
   }, [])
 
-  const getUrl = () => typeof window !== 'undefined' ? window.location.href : ''
+  // Tạo short link lần đầu khi mở dropdown
+  const getShortUrl = async (): Promise<string> => {
+    if (shortUrl) return shortUrl
+    setLoadingShort(true)
+    try {
+      const path = window.location.pathname
+      const res = await fetch('/api/shorten', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: path }),
+      })
+      const data = await res.json()
+      setShortUrl(data.short)
+      return data.short
+    } catch {
+      return window.location.href
+    } finally {
+      setLoadingShort(false)
+    }
+  }
 
-  const shareZalo = () => {
-    window.open(`https://zalo.me/share/url?url=${encodeURIComponent(getUrl())}&title=${encodeURIComponent(product.name)}`, '_blank')
+  const handleOpen = async () => {
+    setOpen(o => !o)
+    if (!shortUrl) getShortUrl() // pre-fetch khi mở
+  }
+
+  const shareZalo = async () => {
+    const url = await getShortUrl()
+    window.open(`https://zalo.me/share/url?url=${encodeURIComponent(url)}&title=${encodeURIComponent(product.name)}`, '_blank')
     setOpen(false)
   }
-  const shareFacebook = () => {
-    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(getUrl())}`, '_blank', 'width=600,height=400')
+  const shareFacebook = async () => {
+    const url = await getShortUrl()
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank', 'width=600,height=400')
     setOpen(false)
   }
   const copyLink = async () => {
-    await navigator.clipboard.writeText(getUrl())
+    const url = await getShortUrl()
+    await navigator.clipboard.writeText(url)
     setCopied(true); setTimeout(() => setCopied(false), 2000)
     setOpen(false)
   }
   const shareNative = async () => {
-    try { await navigator.share({ title: product.name, url: getUrl() }) } catch {}
+    const url = await getShortUrl()
+    try { await navigator.share({ title: product.name, url }) } catch {}
     setOpen(false)
   }
 
@@ -543,14 +573,22 @@ function ShareButton({ product, primary }: { product: Product; primary: string }
   return (
     <div ref={ref} style={{ position:'relative' }}>
       <button
-        onClick={() => hasNativeShare ? shareNative() : setOpen(o => !o)}
+        onClick={() => hasNativeShare ? shareNative() : handleOpen()}
         style={{ background:'none', border:'1px solid #e5e7eb', borderRadius:20, padding:'4px 12px', fontSize:12, color:'#666', cursor:'pointer', display:'flex', alignItems:'center', gap:4, whiteSpace:'nowrap', transition:'border-color 0.15s' }}
       >
         {copied ? '✅ Đã copy!' : '🔗 Chia sẻ'}
       </button>
 
       {open && !hasNativeShare && (
-        <div style={{ position:'absolute', top:'calc(100% + 6px)', right:0, background:'white', borderRadius:12, boxShadow:'0 8px 24px rgba(0,0,0,0.12)', border:'1px solid #f0f0f0', minWidth:180, zIndex:999, overflow:'hidden' }}>
+        <div style={{ position:'absolute', top:'calc(100% + 6px)', right:0, background:'white', borderRadius:12, boxShadow:'0 8px 24px rgba(0,0,0,0.12)', border:'1px solid #f0f0f0', minWidth:200, zIndex:999, overflow:'hidden' }}>
+          {/* Hiện short URL preview */}
+          {(shortUrl || loadingShort) && (
+            <div style={{ padding:'8px 16px', background:'#f8f9fa', borderBottom:'1px solid #f0f0f0', fontSize:11, color:'#6b7280' }}>
+              {loadingShort ? '⏳ Đang tạo link...' : (
+                <span style={{ fontFamily:'monospace', color:'#374151', fontWeight:600 }}>{shortUrl}</span>
+              )}
+            </div>
+          )}
           <button onClick={shareFacebook} style={{ width:'100%', display:'flex', alignItems:'center', gap:10, padding:'11px 16px', border:'none', background:'white', cursor:'pointer', fontSize:13, color:'#1877F2', fontWeight:600, borderBottom:'1px solid #f5f5f5', textAlign:'left' }}>
             <span style={{ width:28, height:28, borderRadius:'50%', background:'#1877F2', color:'white', display:'flex', alignItems:'center', justifyContent:'center', fontSize:14, flexShrink:0 }}>f</span>
             Chia sẻ Facebook
@@ -563,7 +601,7 @@ function ShareButton({ product, primary }: { product: Product; primary: string }
           </button>
           <button onClick={copyLink} style={{ width:'100%', display:'flex', alignItems:'center', gap:10, padding:'11px 16px', border:'none', background:'white', cursor:'pointer', fontSize:13, color:'#555', fontWeight:500, textAlign:'left' }}>
             <span style={{ width:28, height:28, borderRadius:'50%', background:'#f0f0f0', color:'#555', display:'flex', alignItems:'center', justifyContent:'center', fontSize:14, flexShrink:0 }}>🔗</span>
-            {copied ? '✅ Đã copy!' : 'Copy link'}
+            {copied ? '✅ Đã copy!' : 'Copy link ngắn'}
           </button>
         </div>
       )}
