@@ -117,8 +117,7 @@ export default function Effects({
         @keyframes phone-ring{0%,100%{transform:rotate(0)}10%{transform:rotate(-15deg)}20%{transform:rotate(15deg)}30%{transform:rotate(-10deg)}40%{transform:rotate(10deg)}50%{transform:rotate(0)}}
 
         .back-to-top{
-          position:fixed;top:50%;right:16px;z-index:999;
-          transform:translateY(-50%);
+          position:fixed;bottom:16px;right:16px;z-index:999;
           width:42px;height:42px;border-radius:50%;
           background:${color};color:white;border:none;cursor:pointer;
           font-size:18px;display:flex;align-items:center;justify-content:center;
@@ -128,7 +127,7 @@ export default function Effects({
 
         /* Float buttons container */
         .float-contact{
-          position:fixed;right:16px;bottom:140px;
+          position:fixed;right:16px;bottom:70px;
           z-index:1000;display:flex;flex-direction:column;gap:10px;
           animation:float-in 0.4s ease both;
         }
@@ -215,14 +214,28 @@ export default function Effects({
               className="float-btn"
               aria-label={aiLabel}
               onClick={() => {
-                if (zaloHref) window.open(zaloHref, '_blank')
-                else if (fbHref) window.open(fbHref, '_blank')
-                else if (phoneHref) window.location.href = phoneHref
-                else {
-                  // Fallback: scroll lên đầu và hiện thông báo
-                  window.scrollTo({ top: 0, behavior: 'smooth' })
-                  alert('Vui lòng liên hệ qua số điện thoại hoặc Zalo để được tư vấn!')
-                }
+                // Ưu tiên: Zalo > Facebook > Phone > popup chat
+                if (zaloHref) { window.open(zaloHref, '_blank'); return }
+                if (fbHref) { window.open(fbHref, '_blank'); return }
+                if (phoneHref) { window.location.href = phoneHref; return }
+                // Fallback: tạo popup chat đơn giản
+                const existing = document.getElementById('ai-chat-popup')
+                if (existing) { existing.style.display = existing.style.display === 'none' ? 'flex' : 'none'; return }
+                const popup = document.createElement('div')
+                popup.id = 'ai-chat-popup'
+                popup.style.cssText = 'position:fixed;bottom:130px;right:16px;z-index:9999;background:white;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.18);width:300px;padding:20px;display:flex;flex-direction:column;gap:12px;'
+                popup.innerHTML = \`
+                  <div style="display:flex;justify-content:space-between;align-items:center">
+                    <span style="font-weight:700;font-size:14px;color:#333">💬 Tư vấn</span>
+                    <button onclick="this.closest('#ai-chat-popup').style.display='none'" style="background:none;border:none;cursor:pointer;font-size:18px;color:#999">×</button>
+                  </div>
+                  <p style="margin:0;font-size:13px;color:#555;line-height:1.6">Xin chào! Bạn cần tư vấn gì? Vui lòng để lại số điện thoại hoặc liên hệ qua các kênh bên dưới.</p>
+                  <div style="display:flex;flex-direction:column;gap:8px">
+                    ${floatPhone ? \`<a href="tel:\${floatPhone}" style="background:#22c55e;color:white;padding:10px;border-radius:8px;text-align:center;text-decoration:none;font-weight:700;font-size:13px">📞 Gọi ngay: \${floatPhone}</a>\` : ''}
+                    ${zaloHref ? \`<a href="\${zaloHref}" target="_blank" style="background:#0068ff;color:white;padding:10px;border-radius:8px;text-align:center;text-decoration:none;font-weight:700;font-size:13px">💬 Chat Zalo</a>\` : ''}
+                  </div>
+                \`
+                document.body.appendChild(popup)
               }}
               style={{
                 background: aiColor,
