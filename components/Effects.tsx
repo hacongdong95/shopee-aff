@@ -206,7 +206,7 @@ export default function Effects({
       )}
 
       {/* ── Floating Contact Buttons ── */}
-      {!isAdmin && (showPhone || showZalo || showFb) && (
+      {!isAdmin && (showPhone || showZalo || showFb || showAi) && (
         <div className="float-contact">
 
           {/* Phone */}
