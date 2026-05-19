@@ -572,18 +572,16 @@ function ShareButton({ product, primary }: { product: Product; primary: string }
     setOpen(false)
   }
 
-  const hasNativeShare = typeof navigator !== 'undefined' && !!navigator.share
-
   return (
     <div ref={ref} style={{ position:'relative' }}>
       <button
-        onClick={() => hasNativeShare ? shareNative() : handleOpen()}
+        onClick={handleOpen}
         style={{ background:'none', border:'1px solid #e5e7eb', borderRadius:20, padding:'4px 12px', fontSize:12, color:'#666', cursor:'pointer', display:'flex', alignItems:'center', gap:4, whiteSpace:'nowrap', transition:'border-color 0.15s' }}
       >
         {copied ? '✅ Đã copy!' : '🔗 Chia sẻ'}
       </button>
 
-      {open && !hasNativeShare && (
+      {open && (
         <div style={{ position:'absolute', top:'calc(100% + 6px)', right:0, background:'white', borderRadius:12, boxShadow:'0 8px 24px rgba(0,0,0,0.12)', border:'1px solid #f0f0f0', minWidth:200, zIndex:999, overflow:'hidden' }}>
           {/* Hiện short URL preview */}
           {(shortUrl || loadingShort) && (
