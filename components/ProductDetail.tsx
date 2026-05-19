@@ -531,11 +531,15 @@ function ShareButton({ product, primary }: { product: Product; primary: string }
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: path }),
       })
+      if (!res.ok) throw new Error('shorten failed')
       const data = await res.json()
-      setShortUrl(data.short)
-      return data.short
+      const url = data.short || window.location.href
+      setShortUrl(url)
+      return url
     } catch {
-      return window.location.href
+      const fallback = window.location.href
+      setShortUrl(fallback)
+      return fallback
     } finally {
       setLoadingShort(false)
     }
