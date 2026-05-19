@@ -209,6 +209,45 @@ export default function Effects({
       {!isAdmin && (showPhone || showZalo || showFb || showAi) && (
         <div className="float-contact">
 
+          {/* AI Tư vấn — đặt LÊN TRÊN cùng */}
+          {showAi && (
+            <button
+              className="float-btn"
+              aria-label={aiLabel}
+              onClick={() => {
+                if (zaloHref) window.open(zaloHref, '_blank')
+                else if (fbHref) window.open(fbHref, '_blank')
+                else if (phoneHref) window.location.href = phoneHref
+                else {
+                  // Fallback: scroll lên đầu và hiện thông báo
+                  window.scrollTo({ top: 0, behavior: 'smooth' })
+                  alert('Vui lòng liên hệ qua số điện thoại hoặc Zalo để được tư vấn!')
+                }
+              }}
+              style={{
+                background: aiColor,
+                border: 'none',
+                cursor: 'pointer',
+                position: 'relative',
+                overflow: 'visible',
+              }}
+              data-label={aiLabel}
+            >
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="white">
+                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+              </svg>
+              <span style={{
+                position: 'absolute', right: 62, top: '50%', transform: 'translateY(-50%)',
+                background: aiColor, color: 'white',
+                padding: '5px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700,
+                whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                animation: 'labelPulse 2s ease-in-out infinite',
+              }}>
+                {aiLabel}
+              </span>
+            </button>
+          )}
+
           {/* Phone */}
           {showPhone && (
             <a
@@ -235,7 +274,6 @@ export default function Effects({
               aria-label="Chat Zalo"
               style={{ background: '#0068ff', padding: 0 }}
             >
-              {/* Zalo SVG logo */}
               <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="26" cy="26" r="26" fill="#0068FF"/>
                 <text x="26" y="32" textAnchor="middle" fill="white" fontSize="16" fontWeight="800" fontFamily="Arial">Za</text>
@@ -258,43 +296,6 @@ export default function Effects({
                 <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/>
               </svg>
             </a>
-          )}
-
-          {/* AI Tư vấn */}
-          {showAi && (
-            <button
-              className="float-btn"
-              aria-label={aiLabel}
-              onClick={() => {
-                const msg = encodeURIComponent('Xin chào! Tôi cần tư vấn sản phẩm.')
-                if (zaloHref) window.open(zaloHref, '_blank')
-                else if (fbHref) window.open(fbHref, '_blank')
-                else if (phoneHref) window.location.href = phoneHref
-              }}
-              style={{
-                background: aiColor,
-                border: 'none',
-                cursor: 'pointer',
-                position: 'relative',
-                overflow: 'visible',
-              }}
-              data-label={aiLabel}
-            >
-              {/* Icon chat bubble */}
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="white">
-                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-              </svg>
-              {/* Label nổi bên trái */}
-              <span style={{
-                position: 'absolute', right: 62, top: '50%', transform: 'translateY(-50%)',
-                background: aiColor, color: 'white',
-                padding: '5px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700,
-                whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-                animation: 'labelPulse 2s ease-in-out infinite',
-              }}>
-                {aiLabel}
-              </span>
-            </button>
           )}
         </div>
       )}
