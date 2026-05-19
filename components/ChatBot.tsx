@@ -63,7 +63,10 @@ export default function ChatBot({ primary = '#ee4d2d' }: { primary?: string }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: newMessages.map(m => ({ role: m.role, content: m.content }))
+          message: content,
+          history: messages
+            .filter(m => m.role !== 'assistant' || messages.indexOf(m) > 0)
+            .map(m => ({ role: m.role, content: m.content })),
         }),
       })
       const data = await res.json()
