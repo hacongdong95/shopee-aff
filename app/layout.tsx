@@ -3,7 +3,6 @@ import './globals.css'
 import ThemeProvider from '@/components/ThemeProvider'
 import Header from '@/components/Header'
 import Effects from '@/components/Effects'
-import ChatBot from '@/components/ChatBot'
 import { prisma } from '@/lib/prisma'
 
 export const revalidate = 60
@@ -47,10 +46,24 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <ThemeProvider />
       </head>
       <body style={{ margin: 0, background: '#f5f5f5' }}>
-        <Effects marqueeText={marqueeText} primary={primary} />
+        <Effects
+          marqueeText={marqueeText}
+          primary={primary}
+          floatPhone={settings.float_phone}
+          floatZalo={settings.float_zalo}
+          floatFacebook={settings.float_facebook}
+          floatPhoneShow={settings.float_phone_show}
+          floatZaloShow={settings.float_zalo_show}
+          floatFacebookShow={settings.float_facebook_show}
+          floatPhoneLabel={settings.float_phone_label}
+          floatZaloLabel={settings.float_zalo_label}
+          floatFacebookLabel={settings.float_facebook_label}
+          floatAiShow={settings.float_ai_show}
+          floatAiLabel={settings.float_ai_label}
+          floatAiColor={settings.float_ai_color}
+        />
         <Header settings={settings} categories={categories} />
         {children}
-        <ChatBot primary={primary} />
       </body>
     </html>
   )

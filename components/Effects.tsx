@@ -6,13 +6,20 @@ import { usePathname } from 'next/navigation'
 interface EffectsProps {
   marqueeText?: string
   primary?: string
-  // Floating contact buttons
   floatPhone?: string
   floatZalo?: string
   floatFacebook?: string
   floatPhoneShow?: string
   floatZaloShow?: string
   floatFacebookShow?: string
+  // Labels/tooltips
+  floatPhoneLabel?: string
+  floatZaloLabel?: string
+  floatFacebookLabel?: string
+  // AI chat button
+  floatAiShow?: string
+  floatAiLabel?: string
+  floatAiColor?: string
 }
 
 export default function Effects({
@@ -24,6 +31,12 @@ export default function Effects({
   floatPhoneShow,
   floatZaloShow,
   floatFacebookShow,
+  floatPhoneLabel,
+  floatZaloLabel,
+  floatFacebookLabel,
+  floatAiShow,
+  floatAiLabel,
+  floatAiColor,
 }: EffectsProps) {
   const pathname = usePathname()
   const [showTop, setShowTop] = useState(false)
@@ -45,6 +58,9 @@ export default function Effects({
   const showPhone = floatPhoneShow !== 'false' && !!floatPhone?.trim()
   const showZalo  = floatZaloShow  !== 'false' && !!floatZalo?.trim()
   const showFb    = floatFacebookShow !== 'false' && !!floatFacebook?.trim()
+  const showAi    = floatAiShow !== 'false'
+  const aiLabel   = floatAiLabel || 'Bạn cần tư vấn?'
+  const aiColor   = floatAiColor || '#ee4d2d'
 
   // Back to top
   useEffect(() => {
@@ -157,6 +173,10 @@ export default function Effects({
           border:2px solid rgba(0,104,255,0.5);
           animation:pulse-ring 2.5s ease-out 0.5s infinite;
         }
+        @keyframes labelPulse{
+          0%,100%{opacity:1;transform:translateY(-50%) scale(1)}
+          50%{opacity:0.85;transform:translateY(-50%) scale(1.03)}
+        }
       `}</style>
 
       {/* Marquee — chỉ hiện ngoài admin và khi có text */}
@@ -194,7 +214,7 @@ export default function Effects({
             <a
               href={phoneHref}
               className="float-btn float-btn-phone"
-              data-label={floatPhone}
+              data-label={floatPhoneLabel || floatPhone}
               aria-label="Gọi điện"
               style={{ background: '#22c55e' }}
             >
@@ -211,7 +231,7 @@ export default function Effects({
               target="_blank"
               rel="noopener noreferrer"
               className="float-btn float-btn-zalo"
-              data-label="Zalo"
+              data-label={floatZaloLabel || "Chat Zalo"}
               aria-label="Chat Zalo"
               style={{ background: '#0068ff', padding: 0 }}
             >
@@ -230,7 +250,7 @@ export default function Effects({
               target="_blank"
               rel="noopener noreferrer"
               className="float-btn"
-              data-label="Facebook"
+              data-label={floatFacebookLabel || "Facebook"}
               aria-label="Facebook"
               style={{ background: '#1877f2' }}
             >
@@ -238,6 +258,43 @@ export default function Effects({
                 <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/>
               </svg>
             </a>
+          )}
+
+          {/* AI Tư vấn */}
+          {showAi && (
+            <button
+              className="float-btn"
+              aria-label={aiLabel}
+              onClick={() => {
+                const msg = encodeURIComponent('Xin chào! Tôi cần tư vấn sản phẩm.')
+                if (zaloHref) window.open(zaloHref, '_blank')
+                else if (fbHref) window.open(fbHref, '_blank')
+                else if (phoneHref) window.location.href = phoneHref
+              }}
+              style={{
+                background: aiColor,
+                border: 'none',
+                cursor: 'pointer',
+                position: 'relative',
+                overflow: 'visible',
+              }}
+              data-label={aiLabel}
+            >
+              {/* Icon chat bubble */}
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="white">
+                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+              </svg>
+              {/* Label nổi bên trái */}
+              <span style={{
+                position: 'absolute', right: 62, top: '50%', transform: 'translateY(-50%)',
+                background: aiColor, color: 'white',
+                padding: '5px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700,
+                whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                animation: 'labelPulse 2s ease-in-out infinite',
+              }}>
+                {aiLabel}
+              </span>
+            </button>
           )}
         </div>
       )}

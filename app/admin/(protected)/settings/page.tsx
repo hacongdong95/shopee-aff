@@ -81,7 +81,14 @@ const TAB_FIELDS: Record<string, { key: string; label: string; type: string; pla
     { key: 'show_related',     label: 'Hiện sản phẩm liên quan', type: 'toggle', placeholder: 'true' },
   ],
   mang_xa_hoi: [],
-  float_contact: [],
+  float_contact: [
+    { key: 'float_phone_label',   label: 'Tooltip nút Gọi điện',     type: 'text', placeholder: 'Gọi ngay để được tư vấn', hint: 'Hiện khi hover vào nút' },
+    { key: 'float_zalo_label',    label: 'Tooltip nút Zalo',          type: 'text', placeholder: 'Chat Zalo với chúng tôi', hint: 'Hiện khi hover vào nút' },
+    { key: 'float_facebook_label',label: 'Tooltip nút Facebook',      type: 'text', placeholder: 'Nhắn tin Facebook', hint: 'Hiện khi hover vào nút' },
+    { key: 'float_ai_show',       label: 'Hiện nút Tư vấn AI',        type: 'toggle', placeholder: 'true', hint: 'Nút chat AI "Bạn cần tư vấn?"' },
+    { key: 'float_ai_label',      label: 'Text nút Tư vấn AI',        type: 'text', placeholder: 'Bạn cần tư vấn?', hint: 'Hiện trên nút AI chat' },
+    { key: 'float_ai_color',      label: 'Màu nút Tư vấn AI',         type: 'color', placeholder: '#ee4d2d' },
+  ],
   danh_gia: [
     { key: 'show_reviews', label: 'Hiện section đánh giá sản phẩm', type: 'toggle', placeholder: 'true', hint: 'Cho phép người dùng xem và gửi đánh giá trên trang sản phẩm' },
   ],
@@ -183,6 +190,7 @@ export default function SettingsPage() {
       const floatFields = FLOAT_BUTTONS.flatMap(btn => [
         { key: btn.key, placeholder: '' },
         { key: btn.showKey, placeholder: 'true' },
+        { key: `${btn.key}_label`, placeholder: '' },
       ])
       const merged = { ...data }
       for (const f of [...allFields, ...socialFields, ...floatFields]) {
