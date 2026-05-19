@@ -22,6 +22,119 @@ interface EffectsProps {
   floatAiColor?: string
 }
 
+
+// ── AI Chat Widget ─────────────────────────────────────────────────────────
+function AiChatWidget({ aiColor, aiLabel }: { aiColor: string; aiLabel: string }) {
+  const [open, setOpen] = useState(false)
+  const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; text: string }[]>([
+    { role: 'assistant', text: 'Xin chào! Tôi có thể giúp gì cho bạn hôm nay? 😊' }
+  ])
+  const [input, setInput] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const send = async () => {
+    if (!input.trim() || loading) return
+    const userMsg = input.trim()
+    setInput('')
+    setMessages(prev => [...prev, { role: 'user', text: userMsg }])
+    setLoading(true)
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 400,
+          system: 'Bạn là trợ lý tư vấn mua sắm thân thiện của một website affiliate Shopee. Trả lời ngắn gọn, thân thiện bằng tiếng Việt. Giúp khách hàng chọn sản phẩm phù hợp.',
+          messages: [{ role: 'user', content: userMsg }]
+        })
+      })
+      const data = await res.json()
+      const reply = data.content?.[0]?.text || 'Xin lỗi, tôi chưa thể trả lời ngay. Vui lòng liên hệ qua Zalo hoặc điện thoại nhé!'
+      setMessages(prev => [...prev, { role: 'assistant', text: reply }])
+    } catch {
+      setMessages(prev => [...prev, { role: 'assistant', text: 'Có lỗi xảy ra. Vui lòng thử lại!' }])
+    }
+    setLoading(false)
+  }
+
+  return (
+    <>
+      {/* Nút tư vấn AI — luôn hiện */}
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{
+          position: 'fixed', right: 16, bottom: 130, zIndex: 1001,
+          background: aiColor, color: 'white', border: 'none',
+          borderRadius: 28, height: 52, padding: '0 18px 0 14px',
+          display: 'flex', alignItems: 'center', gap: 8,
+          cursor: 'pointer', boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
+          fontFamily: 'inherit', fontSize: 13, fontWeight: 700,
+          whiteSpace: 'nowrap',
+        }}
+      >
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="white">
+          <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+        </svg>
+        {aiLabel}
+      </button>
+
+      {/* Popup chat */}
+      {open && (
+        <div style={{
+          position: 'fixed', right: 16, bottom: 195, zIndex: 1002,
+          width: 320, maxWidth: 'calc(100vw - 32px)',
+          background: 'white', borderRadius: 16,
+          boxShadow: '0 8px 40px rgba(0,0,0,0.18)',
+          display: 'flex', flexDirection: 'column', overflow: 'hidden',
+        }}>
+          {/* Header */}
+          <div style={{ background: aiColor, padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ color: 'white', fontWeight: 700, fontSize: 14 }}>💬 {aiLabel}</span>
+            <button onClick={() => setOpen(false)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontSize: 20, lineHeight: 1 }}>×</button>
+          </div>
+          {/* Messages */}
+          <div style={{ height: 260, overflowY: 'auto', padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {messages.map((m, i) => (
+              <div key={i} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
+                <div style={{
+                  maxWidth: '80%', padding: '8px 12px', borderRadius: m.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+                  background: m.role === 'user' ? aiColor : '#f3f4f6',
+                  color: m.role === 'user' ? 'white' : '#333',
+                  fontSize: 13, lineHeight: 1.5,
+                }}>
+                  {m.text}
+                </div>
+              </div>
+            ))}
+            {loading && (
+              <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                <div style={{ padding: '8px 12px', borderRadius: '16px 16px 16px 4px', background: '#f3f4f6', fontSize: 13, color: '#999' }}>
+                  Đang trả lời...
+                </div>
+              </div>
+            )}
+          </div>
+          {/* Input */}
+          <div style={{ padding: '8px 12px', borderTop: '1px solid #f0f0f0', display: 'flex', gap: 8 }}>
+            <input
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && send()}
+              placeholder="Nhập câu hỏi..."
+              style={{ flex: 1, padding: '8px 12px', border: '1.5px solid #e5e7eb', borderRadius: 20, fontSize: 13, outline: 'none', fontFamily: 'inherit' }}
+            />
+            <button onClick={send} disabled={loading || !input.trim()}
+              style={{ background: aiColor, color: 'white', border: 'none', borderRadius: '50%', width: 36, height: 36, cursor: 'pointer', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: (!input.trim() || loading) ? 0.5 : 1 }}>
+              ➤
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+
 export default function Effects({
   marqueeText,
   primary,
@@ -204,49 +317,29 @@ export default function Effects({
         </div>
       )}
 
-      {/* ── Floating Contact Buttons ── */}
-      {!isAdmin && (showPhone || showZalo || showFb || showAi) && (
+      {/* ── AI Chat Popup State ── */}
+      {!isAdmin && showAi && <AiChatWidget aiColor={aiColor} aiLabel={aiLabel} />}
+
+      {/* ── Floating Contact Buttons (Zalo → Phone → FB) ── */}
+      {!isAdmin && (showPhone || showZalo || showFb) && (
         <div className="float-contact">
-
-          {/* AI Tư vấn — đặt LÊN TRÊN cùng */}
-          {showAi && (
-            <button
-              className="float-btn"
-              aria-label={aiLabel}
-              onClick={() => {
-                if (zaloHref) { window.open(zaloHref, '_blank'); return }
-                if (fbHref) { window.open(fbHref, '_blank'); return }
-                if (phoneHref) { window.location.href = phoneHref; return }
-                window.scrollTo({ top: 0, behavior: 'smooth' })
-              }}
-              style={{
-                background: aiColor,
-                border: 'none',
-                cursor: 'pointer',
-                position: 'relative',
-                overflow: 'visible',
-              }}
-              data-label={aiLabel}
+          {/* Zalo — trên */}
+          {showZalo && (
+            <a href={zaloHref} target="_blank" rel="noopener noreferrer"
+              className="float-btn float-btn-zalo"
+              data-label={floatZaloLabel || 'Chat Zalo'}
+              aria-label="Chat Zalo"
+              style={{ background: '#0068ff', padding: 0 }}
             >
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="white">
-                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+              <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
+                <circle cx="26" cy="26" r="26" fill="#0068FF"/>
+                <text x="26" y="32" textAnchor="middle" fill="white" fontSize="16" fontWeight="800" fontFamily="Arial">Za</text>
               </svg>
-              <span style={{
-                position: 'absolute', right: 62, top: '50%', transform: 'translateY(-50%)',
-                background: aiColor, color: 'white',
-                padding: '5px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700,
-                whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-                animation: 'labelPulse 2s ease-in-out infinite',
-              }}>
-                {aiLabel}
-              </span>
-            </button>
+            </a>
           )}
-
           {/* Phone */}
           {showPhone && (
-            <a
-              href={phoneHref}
+            <a href={phoneHref}
               className="float-btn float-btn-phone"
               data-label={floatPhoneLabel || floatPhone}
               aria-label="Gọi điện"
@@ -257,33 +350,11 @@ export default function Effects({
               </svg>
             </a>
           )}
-
-          {/* Zalo */}
-          {showZalo && (
-            <a
-              href={zaloHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="float-btn float-btn-zalo"
-              data-label={floatZaloLabel || "Chat Zalo"}
-              aria-label="Chat Zalo"
-              style={{ background: '#0068ff', padding: 0 }}
-            >
-              <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="26" cy="26" r="26" fill="#0068FF"/>
-                <text x="26" y="32" textAnchor="middle" fill="white" fontSize="16" fontWeight="800" fontFamily="Arial">Za</text>
-              </svg>
-            </a>
-          )}
-
           {/* Facebook */}
           {showFb && (
-            <a
-              href={fbHref}
-              target="_blank"
-              rel="noopener noreferrer"
+            <a href={fbHref} target="_blank" rel="noopener noreferrer"
               className="float-btn"
-              data-label={floatFacebookLabel || "Facebook"}
+              data-label={floatFacebookLabel || 'Facebook'}
               aria-label="Facebook"
               style={{ background: '#1877f2' }}
             >
