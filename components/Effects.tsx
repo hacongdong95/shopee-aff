@@ -214,28 +214,10 @@ export default function Effects({
               className="float-btn"
               aria-label={aiLabel}
               onClick={() => {
-                // Ưu tiên: Zalo > Facebook > Phone > popup chat
                 if (zaloHref) { window.open(zaloHref, '_blank'); return }
                 if (fbHref) { window.open(fbHref, '_blank'); return }
                 if (phoneHref) { window.location.href = phoneHref; return }
-                // Fallback: tạo popup chat đơn giản
-                const existing = document.getElementById('ai-chat-popup')
-                if (existing) { existing.style.display = existing.style.display === 'none' ? 'flex' : 'none'; return }
-                const popup = document.createElement('div')
-                popup.id = 'ai-chat-popup'
-                popup.style.cssText = 'position:fixed;bottom:130px;right:16px;z-index:9999;background:white;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.18);width:300px;padding:20px;display:flex;flex-direction:column;gap:12px;'
-                popup.innerHTML = \`
-                  <div style="display:flex;justify-content:space-between;align-items:center">
-                    <span style="font-weight:700;font-size:14px;color:#333">💬 Tư vấn</span>
-                    <button onclick="this.closest('#ai-chat-popup').style.display='none'" style="background:none;border:none;cursor:pointer;font-size:18px;color:#999">×</button>
-                  </div>
-                  <p style="margin:0;font-size:13px;color:#555;line-height:1.6">Xin chào! Bạn cần tư vấn gì? Vui lòng để lại số điện thoại hoặc liên hệ qua các kênh bên dưới.</p>
-                  <div style="display:flex;flex-direction:column;gap:8px">
-                    ${floatPhone ? \`<a href="tel:\${floatPhone}" style="background:#22c55e;color:white;padding:10px;border-radius:8px;text-align:center;text-decoration:none;font-weight:700;font-size:13px">📞 Gọi ngay: \${floatPhone}</a>\` : ''}
-                    ${zaloHref ? \`<a href="\${zaloHref}" target="_blank" style="background:#0068ff;color:white;padding:10px;border-radius:8px;text-align:center;text-decoration:none;font-weight:700;font-size:13px">💬 Chat Zalo</a>\` : ''}
-                  </div>
-                \`
-                document.body.appendChild(popup)
+                window.scrollTo({ top: 0, behavior: 'smooth' })
               }}
               style={{
                 background: aiColor,
