@@ -12,10 +12,10 @@ export default function BuyButton({
   label?: string
 }) {
   const handleBuy = () => {
-    // Đếm click — fire and forget
-    fetch(`/api/products/${productId}/click`, { method: 'POST' }).catch(() => {})
-    // Mở link trực tiếp
+    // Mở link TRƯỚC — không để bất cứ thứ gì block
     window.open(affLink, '_blank', 'noopener,noreferrer')
+    // Đếm click sau — fire and forget
+    fetch(`/api/products/${productId}/click`, { method: 'POST' }).catch(() => {})
   }
 
   const handleScrollToDesc = () => {
