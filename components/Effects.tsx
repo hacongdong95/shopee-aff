@@ -172,11 +172,14 @@ export default function Effects({
       if (!btn) return
       if (btn.closest('header') || btn.closest('nav')) return
       if (btn.closest('.float-contact')) return
-      // Skip nếu button là link affiliate hoặc có href đến shopee
+      // Skip tất cả nút có onClick handler quan trọng
+      if (btn.tagName === 'BUTTON' && btn.getAttribute('data-ripple') === null) {
+        // Chỉ apply ripple nếu button không có onclick critical
+        const hasImportantClick = btn.closest('.pd-cta, .share-section, [data-no-ripple]')
+        if (hasImportantClick) return
+      }
       const href = (btn as HTMLAnchorElement).href || ''
       if (href.includes('shopee') || href.includes('shope.ee')) return
-      // Skip nút mua hàng và chia sẻ trong trang chi tiết
-      if (btn.closest('.pd-cta') || btn.closest('.share-section')) return
 
       const rect = btn.getBoundingClientRect()
       const size = Math.max(rect.width, rect.height) * 2
@@ -190,17 +193,15 @@ export default function Effects({
         border-radius:50%;background:rgba(255,255,255,0.25);
         transform:scale(0);pointer-events:none;
         animation:ripple-anim 0.55s ease-out forwards;
-        z-index:9999;
+        z-index:0;
       `
-      const prev = btn.style.position
-      const prev2 = btn.style.overflow
-      if (!prev || prev === 'static') btn.style.position = 'relative'
-      btn.style.overflow = 'hidden'
+      const prevPos = btn.style.position
+      // KHÔNG đổi overflow — chỉ dùng clip-path thay thế
+      if (!prevPos || prevPos === 'static') btn.style.position = 'relative'
       btn.appendChild(ripple)
       ripple.addEventListener('animationend', () => {
         ripple.remove()
-        if (!prev || prev === 'static') btn.style.position = prev
-        btn.style.overflow = prev2
+        if (!prevPos || prevPos === 'static') btn.style.position = prevPos
       })
     }
     document.addEventListener('click', handler)
