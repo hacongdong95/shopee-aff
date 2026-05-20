@@ -180,6 +180,8 @@ export default function Effects({
       }
       const href = (btn as HTMLAnchorElement).href || ''
       if (href.includes('shopee') || href.includes('shope.ee')) return
+      // Skip ripple trên các button có data-no-ripple hoặc nằm trong .pd-actions
+      if (btn.closest('.pd-actions, .share-dropdown, [data-no-ripple]')) return
 
       const rect = btn.getBoundingClientRect()
       const size = Math.max(rect.width, rect.height) * 2
@@ -196,8 +198,8 @@ export default function Effects({
         z-index:0;
       `
       const prevPos = btn.style.position
-      // KHÔNG đổi overflow — chỉ dùng clip-path thay thế
       if (!prevPos || prevPos === 'static') btn.style.position = 'relative'
+      // KHÔNG set overflow:hidden — để window.open hoạt động bình thường
       btn.appendChild(ripple)
       ripple.addEventListener('animationend', () => {
         ripple.remove()
