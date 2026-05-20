@@ -170,7 +170,13 @@ export default function Effects({
       const target = e.target as HTMLElement
       const btn = target.closest('button, a, [data-ripple]') as HTMLElement | null
       if (!btn) return
-      if (btn.closest('header') || btn.closest('nav')) return // skip header/nav
+      if (btn.closest('header') || btn.closest('nav')) return
+      if (btn.closest('.float-contact')) return
+      // Skip nếu button là link affiliate hoặc có href đến shopee
+      const href = (btn as HTMLAnchorElement).href || ''
+      if (href.includes('shopee') || href.includes('shope.ee')) return
+      // Skip nút mua hàng và chia sẻ trong trang chi tiết
+      if (btn.closest('.pd-cta') || btn.closest('.share-section')) return
 
       const rect = btn.getBoundingClientRect()
       const size = Math.max(rect.width, rect.height) * 2

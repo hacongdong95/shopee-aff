@@ -836,7 +836,12 @@ export default function ProductDetail({ product, related, settings={}, categorie
 
               {/* CTA */}
               <div className='pd-cta' style={{ display:'flex', gap:10, marginTop:'auto', flexWrap:'wrap' }}>
-                <BuyButton productId={product.id} affLink={product.affLink} variant="outline" label="Xem Mô Tả" />
+                <button
+                  onClick={() => document.getElementById('product-description')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                  style={{ flex:1, padding:'13px 0', background:'#fff0ee', color:'#ee4d2d', border:'1px solid #ee4d2d', borderRadius:2, fontSize:14, fontWeight:600, cursor:'pointer' }}
+                >
+                  📋 Xem Mô Tả
+                </button>
                 <BuyButton productId={product.id} affLink={product.affLink} variant="primary" label={buyBtnText} />
               </div>
               <div style={{ marginTop:8, fontSize:11, color:'#bbb' }}>Bạn sẽ được chuyển đến Shopee để hoàn tất đặt hàng an toàn</div>

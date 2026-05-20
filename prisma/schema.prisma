@@ -70,8 +70,8 @@ model Review {
 
 model ShortLink {
   id        Int      @id @default(autoincrement())
-  code      String   @unique  // VD: "abc123"
-  url       String            // URL đích: /san-pham/ten-san-pham
+  code      String   @unique
+  url       String
   clicks    Int      @default(0)
   createdAt DateTime @default(now())
 }
