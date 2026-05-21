@@ -23,15 +23,10 @@ function HeaderInner({ settings, categories }: { settings: any, categories: any 
       position: 'sticky',
       top: 0,
       zIndex: 100,
-      background: '#f5f5f5',
-      padding: '8px 16px 0',
     }}>
       {/* Khung header bo góc */}
       <div style={{
-        maxWidth: 1200,
-        margin: '0 auto',
         background: `linear-gradient(135deg, ${primary} 0%, ${primary}bb 100%)`,
-        borderRadius: '12px 12px 0 0',
         boxShadow: `0 2px 20px ${primary}44`,
         overflow: 'visible',
       }}>
