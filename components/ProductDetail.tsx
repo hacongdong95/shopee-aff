@@ -762,7 +762,7 @@ export default function ProductDetail({ product, related, settings={}, categorie
             </div>
 
             {/* Right: Info */}
-            <div className="pd-info" style={{ padding:'20px 20px 20px', display:'flex', flexDirection:'column', minWidth:0, overflow:'hidden' }}>
+            <div className="pd-info" style={{ padding:'20px 20px 20px', display:'flex', flexDirection:'column', minWidth:0 }}>
               {/* Category + share */}
               <div style={{ marginBottom:8, display:'flex', alignItems:'center', justifyContent:'space-between', gap:8, flexWrap:'wrap' }}>
                 <span style={{ fontSize:11, color:primary, fontWeight:700, background:`${primary}12`, padding:'3px 10px', borderRadius:20, border:`1px solid ${primary}33` }}>{product.category.name}</span>
