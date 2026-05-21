@@ -668,7 +668,7 @@ function SocialProofPopup({ primary }: { primary: string }) {
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function ProductDetail({ product, related, settings={}, categories=[] }: { product:Product; related:Product[]; settings?:Settings; categories?:any[] }) {
   const [copied, setCopied] = useState(false)
-  const [openReviews, setOpenReviews] = useState(false)
+  const [openReviews, setOpenReviews] = useState(true)
   const [liveRating, setLiveRating] = useState<string | null>(null)
   const [liveReviewCount, setLiveReviewCount] = useState<number | null>(null)
 
@@ -883,7 +883,7 @@ export default function ProductDetail({ product, related, settings={}, categorie
         )}
 
         {/* ── Đánh giá sản phẩm ── */}
-        {showReviews && (
+        {true && (
           <div style={{ background:'white', borderRadius:12, boxShadow:'0 2px 8px rgba(0,0,0,0.06)', overflow:'hidden', marginBottom:16 }}>
             <div onClick={() => setOpenReviews(o => !o)}
               style={{ padding:'14px 20px', display:'flex', alignItems:'center', justifyContent:'space-between', cursor:'pointer', userSelect:'none', background: openReviews ? `${primary}0e` : 'white', borderBottom: openReviews ? `2px solid ${primary}33` : 'none' }}>
