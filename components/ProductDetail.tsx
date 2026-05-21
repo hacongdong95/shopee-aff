@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
-import BuyButton from '@/components/BuyButton'
 import SiteFooter from '@/components/SiteFooter'
 
 type Category = { id: number; name: string; slug: string }
@@ -545,30 +544,34 @@ function ShareButton({ product, primary }: { product: Product; primary: string }
     }
   }
 
-  const handleOpen = async () => {
+  const handleOpen = () => {
     setOpen(o => !o)
-    if (!shortUrl) getShortUrl() // pre-fetch khi mở
+    // Pre-fetch short URL ngay khi mở — không await để không block
+    if (!shortUrl) getShortUrl()
   }
 
-  const shareZalo = async () => {
-    const url = await getShortUrl()
+  // Dùng shortUrl đã fetch sẵn, fallback về href nếu chưa có
+  const getCurrentUrl = () => shortUrl || window.location.href
+
+  const shareZalo = () => {
+    const url = getCurrentUrl()
     window.open(`https://zalo.me/share/url?url=${encodeURIComponent(url)}&title=${encodeURIComponent(product.name)}`, '_blank')
     setOpen(false)
   }
-  const shareFacebook = async () => {
-    const url = await getShortUrl()
+  const shareFacebook = () => {
+    const url = getCurrentUrl()
     window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank', 'width=600,height=400')
     setOpen(false)
   }
   const copyLink = async () => {
-    const url = await getShortUrl()
+    const url = getCurrentUrl()
     await navigator.clipboard.writeText(url)
     setCopied(true); setTimeout(() => setCopied(false), 2000)
     setOpen(false)
   }
-  const shareNative = async () => {
-    const url = await getShortUrl()
-    try { await navigator.share({ title: product.name, url }) } catch {}
+  const shareNative = () => {
+    const url = getCurrentUrl()
+    try { navigator.share({ title: product.name, url }) } catch {}
     setOpen(false)
   }
 
@@ -842,7 +845,15 @@ export default function ProductDetail({ product, related, settings={}, categorie
                 >
                   📋 Xem Mô Tả
                 </button>
-                <BuyButton productId={product.id} affLink={product.affLink} variant="primary" label={buyBtnText} />
+                <a
+                  href={product.affLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => fetch(`/api/products/${product.id}/click`, { method: 'POST' }).catch(() => {})}
+                  style={{ flex:1, padding:'13px 0', background:'#ee4d2d', color:'white', border:'none', borderRadius:2, fontSize:14, fontWeight:700, cursor:'pointer', textDecoration:'none', display:'flex', alignItems:'center', justifyContent:'center' }}
+                >
+                  ⚡ {buyBtnText}
+                </a>
               </div>
               <div style={{ marginTop:8, fontSize:11, color:'#bbb' }}>Bạn sẽ được chuyển đến Shopee để hoàn tất đặt hàng an toàn</div>
             </div>
@@ -858,7 +869,15 @@ export default function ProductDetail({ product, related, settings={}, categorie
             </div>
             <div style={{ padding:'20px 20px' }}>{renderDescription(product.description, primary)}</div>
             <div style={{ padding:'16px 20px', borderTop:'1px solid #f5f5f5', display:'flex', justifyContent:'center' }}>
-              <BuyButton productId={product.id} affLink={product.affLink} variant="primary" label={`⚡ ${buyBtnText} Tại Shopee`} />
+              <a
+                href={product.affLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => fetch(`/api/products/${product.id}/click`, { method: 'POST' }).catch(() => {})}
+                style={{ padding:'12px 32px', background:'#ee4d2d', color:'white', borderRadius:8, fontSize:14, fontWeight:700, textDecoration:'none', display:'inline-flex', alignItems:'center', gap:6 }}
+              >
+                ⚡ {buyBtnText} Tại Shopee
+              </a>
             </div>
           </div>
         )}
