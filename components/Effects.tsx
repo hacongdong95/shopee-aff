@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
+import FlashSaleCountdown from './FlashSaleCountdown'
 
 interface EffectsProps {
   marqueeText?: string
@@ -199,6 +200,9 @@ export default function Effects({
           </div>
         </div>
       )}
+
+      {/* Flash Sale Countdown */}
+      {!isAdmin && <FlashSaleCountdown primary={color} />}
 
       {/* ── Floating Contact Buttons ── */}
       {!isAdmin && (showPhone || showZalo || showFb || showAi) && (
