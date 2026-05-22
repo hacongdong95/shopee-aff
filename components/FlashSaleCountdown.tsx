@@ -18,6 +18,7 @@ export default function FlashSaleCountdown({ primary }: { primary: string }) {
     setMounted(true)
     const tick = () => {
       const diff = getNextFlashSaleEnd().getTime() - Date.now()
+      console.log('[FlashSale] diff:', diff)
       if (diff <= 0) { setTimeLeft({ h: 0, m: 0, s: 0 }); return }
       setTimeLeft({
         h: Math.floor(diff / 3600000),
