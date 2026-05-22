@@ -668,7 +668,7 @@ function SocialProofPopup({ primary }: { primary: string }) {
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function ProductDetail({ product, related, settings={}, categories=[] }: { product:Product; related:Product[]; settings?:Settings; categories?:any[] }) {
   const [copied, setCopied] = useState(false)
-  const [openReviews, setOpenReviews] = useState(true)
+  const [openReviews, setOpenReviews] = useState(false)
   const handleRatingUpdate = useCallback((r: string, c: number) => {
     setLiveRating(r); setLiveReviewCount(c)
   }, [])
