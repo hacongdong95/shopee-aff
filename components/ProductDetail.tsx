@@ -143,23 +143,7 @@ function ImageGallery({ images, name, primary }: { images:string[]; name:string;
   )
 }
 
-// ── Flash Countdown ───────────────────────────────────────────────────────────
-function FlashCountdown({ productId }: { productId:number }) {
-  const base = (seededRandom(productId*17)*3600+600)|0
-  const [secs, setSecs] = useState(base)
-  useEffect(() => { const t=setInterval(()=>setSecs(s=>s>0?s-1:base),1000); return ()=>clearInterval(t) },[base])
-  const h=String(Math.floor(secs/3600)).padStart(2,'0')
-  const m=String(Math.floor((secs%3600)/60)).padStart(2,'0')
-  const s=String(secs%60).padStart(2,'0')
-  return (
-    <div style={{ display:'flex', alignItems:'center', gap:6, fontSize:11 }}>
-      <span style={{ color:'white', fontWeight:700 }}>⚡ Còn:</span>
-      {[h,m,s].map((v,i)=>(
-        <span key={i} style={{ background:'rgba(0,0,0,0.35)', color:'white', fontWeight:800, fontSize:13, padding:'2px 6px', borderRadius:4, fontVariantNumeric:'tabular-nums' }}>{v}</span>
-      ))}
-    </div>
-  )
-}
+// ── Import FlashCountdown component ───────────────────────────────────────────
 
 // ── Marquee Banner ────────────────────────────────────────────────────────────
 function MarqueeBanner({ primary, items }: { primary:string; items:string[] }) {
