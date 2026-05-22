@@ -669,6 +669,9 @@ function SocialProofPopup({ primary }: { primary: string }) {
 export default function ProductDetail({ product, related, settings={}, categories=[] }: { product:Product; related:Product[]; settings?:Settings; categories?:any[] }) {
   const [copied, setCopied] = useState(false)
   const [openReviews, setOpenReviews] = useState(true)
+  const handleRatingUpdate = useCallback((r: string, c: number) => {
+    setLiveRating(r); setLiveReviewCount(c)
+  }, [])
   const [liveRating, setLiveRating] = useState<string | null>(null)
   const [liveReviewCount, setLiveReviewCount] = useState<number | null>(null)
 
@@ -893,7 +896,7 @@ export default function ProductDetail({ product, related, settings={}, categorie
               </div>
               <span style={{ fontSize:20, color:primary, transition:'transform 0.2s', display:'inline-block', transform: openReviews ? 'rotate(180deg)' : 'rotate(0deg)' }}>▾</span>
             </div>
-            {openReviews && <ReviewsSection productId={product.id} primary={primary} onRatingUpdate={(r, c) => { setLiveRating(r); setLiveReviewCount(c) }} />}
+            {openReviews && <ReviewsSection productId={product.id} primary={primary} onRatingUpdate={handleRatingUpdate} />}
           </div>
         )}
 
