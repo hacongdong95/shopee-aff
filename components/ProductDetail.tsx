@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import SiteFooter from '@/components/SiteFooter'
+import FlashCountdown from './FlashCountdown'
 
 type Category = { id: number; name: string; slug: string }
 type Product = {
