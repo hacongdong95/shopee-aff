@@ -33,12 +33,12 @@ function getFakeStats(id: number) {
   return { sold, views, reviews, rating }
 }
 const KEYWORD_ICONS: [RegExp, string][] = [
-  [/chính hãng/i,'?'],[/b?o hành/i,'???'],[/mi?n phí/i,'??'],
-  [/giao hàng|v?n chuy?n/i,'??'],[/khuy?n mãi|gi?m giá/i,'??'],
-  [/an toàn/i,'??'],[/cao c?p|ch?t lu?ng/i,'?'],[/m?i|new/i,'??'],
-  [/hot|bán ch?y/i,'??'],[/t?ng kèm/i,'??'],[/công ngh?/i,'??'],
-  [/pin|battery/i,'??'],[/bluetooth|wifi/i,'??'],[/kích thu?c|size/i,'??'],
-  [/màu s?c|màu/i,'??'],[/tr?ng lu?ng|n?ng/i,'??'],[/xu?t x?|thuong hi?u/i,'???'],
+  [/chnh hng/i,'?'],[/b?o hnh/i,'???'],[/mi?n ph/i,'??'],
+  [/giao hng|v?n chuy?n/i,'??'],[/khuy?n mi|gi?m gi/i,'??'],
+  [/an ton/i,'??'],[/cao c?p|ch?t lu?ng/i,'?'],[/m?i|new/i,'??'],
+  [/hot|bn ch?y/i,'??'],[/t?ng km/i,'??'],[/cng ngh?/i,'??'],
+  [/pin|battery/i,'??'],[/bluetooth|wifi/i,'??'],[/kch thu?c|size/i,'??'],
+  [/mu s?c|mu/i,'??'],[/tr?ng lu?ng|n?ng/i,'??'],[/xu?t x?|thuong hi?u/i,'???'],
 ]
 function getLineIcon(text: string) {
   for (const [r, i] of KEYWORD_ICONS) if (r.test(text)) return i
@@ -52,9 +52,9 @@ function renderDescription(desc: string, primary: string) {
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:2 }}>
       {lines.map((line, i) => {
-        const isHeader = line.endsWith(':') || /^[A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚÝAÐOU\s]{6,}$/.test(line)
-        const isBullet = /^[-•*+]/.test(line) || /^\d+\./.test(line)
-        const bt = isBullet ? line.replace(/^[-•*+]\s*|^\d+\.\s*/,'') : line
+        const isHeader = line.endsWith(':') || /^[A-ZAOU\s]{6,}$/.test(line)
+        const isBullet = /^[-*+]/.test(line) || /^\d+\./.test(line)
+        const bt = isBullet ? line.replace(/^[-*+]\s*|^\d+\.\s*/,'') : line
         if (isHeader) return (
           <div key={i} style={{ marginTop:i===0?0:18, marginBottom:6, padding:'8px 14px', background:`${primary}10`, borderLeft:`3px solid ${primary}`, borderRadius:'0 6px 6px 0', fontSize:13, fontWeight:700, color:primary, display:'flex', alignItems:'center', gap:8 }}>
             <span>??</span>{line.replace(/:$/,'').toUpperCase()}
@@ -88,11 +88,11 @@ function Lightbox({ images, startIdx, onClose }: { images:string[]; startIdx:num
     <div onClick={onClose} style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(0,0,0,0.93)', backdropFilter:'blur(8px)', display:'flex', alignItems:'center', justifyContent:'center', animation:'fadeIn 0.2s ease' }}>
       <button onClick={onClose} style={{ position:'absolute', top:16, right:16, background:'rgba(255,255,255,0.15)', border:'none', color:'white', width:40, height:40, borderRadius:'50%', fontSize:20, cursor:'pointer', zIndex:2, display:'flex', alignItems:'center', justifyContent:'center' }}>?</button>
       <div style={{ position:'absolute', top:20, left:'50%', transform:'translateX(-50%)', color:'rgba(255,255,255,0.6)', fontSize:13, background:'rgba(0,0,0,0.4)', padding:'3px 14px', borderRadius:20 }}>{idx+1} / {images.length}</div>
-      {images.length>1 && <button onClick={e=>{e.stopPropagation();prev()}} style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%)', background:'rgba(255,255,255,0.15)', border:'none', color:'white', width:44, height:44, borderRadius:'50%', fontSize:26, cursor:'pointer', zIndex:2, display:'flex', alignItems:'center', justifyContent:'center' }}>‹</button>}
+      {images.length>1 && <button onClick={e=>{e.stopPropagation();prev()}} style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%)', background:'rgba(255,255,255,0.15)', border:'none', color:'white', width:44, height:44, borderRadius:'50%', fontSize:26, cursor:'pointer', zIndex:2, display:'flex', alignItems:'center', justifyContent:'center' }}></button>}
       <div onClick={e=>{e.stopPropagation();setZoomed(z=>!z)}} style={{ maxWidth:'88vw', maxHeight:'80vh', overflow:'hidden', borderRadius:10, cursor:zoomed?'zoom-out':'zoom-in' }}>
         <img src={images[idx]} alt="" style={{ maxWidth:'88vw', maxHeight:'80vh', objectFit:'contain', display:'block', transform:zoomed?'scale(2.2)':'scale(1)', transition:'transform 0.3s ease', userSelect:'none' }} />
       </div>
-      {images.length>1 && <button onClick={e=>{e.stopPropagation();next()}} style={{ position:'absolute', right:12, top:'50%', transform:'translateY(-50%)', background:'rgba(255,255,255,0.15)', border:'none', color:'white', width:44, height:44, borderRadius:'50%', fontSize:26, cursor:'pointer', zIndex:2, display:'flex', alignItems:'center', justifyContent:'center' }}>›</button>}
+      {images.length>1 && <button onClick={e=>{e.stopPropagation();next()}} style={{ position:'absolute', right:12, top:'50%', transform:'translateY(-50%)', background:'rgba(255,255,255,0.15)', border:'none', color:'white', width:44, height:44, borderRadius:'50%', fontSize:26, cursor:'pointer', zIndex:2, display:'flex', alignItems:'center', justifyContent:'center' }}></button>}
       {images.length>1 && (
         <div onClick={e=>e.stopPropagation()} style={{ position:'absolute', bottom:16, left:'50%', transform:'translateX(-50%)', display:'flex', gap:6, flexWrap:'wrap', justifyContent:'center', maxWidth:'90vw' }}>
           {images.map((url,i) => (
@@ -103,7 +103,7 @@ function Lightbox({ images, startIdx, onClose }: { images:string[]; startIdx:num
         </div>
       )}
       <div style={{ position:'absolute', bottom:images.length>1?80:20, left:'50%', transform:'translateX(-50%)', color:'rgba(255,255,255,0.4)', fontSize:11, whiteSpace:'nowrap' }}>
-        {zoomed?'Click d? thu nh? · ESC dóng':'Click d? zoom · ? ? chuy?n ?nh · ESC dóng'}
+        {zoomed?'Click d? thu nh?  ESC dng':'Click d? zoom  ? ? chuy?n ?nh  ESC dng'}
       </div>
     </div>
   )
@@ -122,10 +122,10 @@ function ImageGallery({ images, name, primary }: { images:string[]; name:string;
     <div>
       <div onClick={()=>setLightbox(true)} style={{ width:'100%', paddingTop:'100%', position:'relative', background:'#fafafa', borderRadius:8, overflow:'hidden', border:'1px solid #f0f0f0', cursor:'zoom-in' }}>
         <img src={images[idx]} alt={name} style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'contain', padding:8, transition:'opacity 0.2s' }} />
-        <div style={{ position:'absolute', bottom:10, left:'50%', transform:'translateX(-50%)', background:'rgba(0,0,0,0.45)', color:'white', fontSize:11, padding:'3px 12px', borderRadius:20, whiteSpace:'nowrap', pointerEvents:'none' }}>?? Click d? phóng to</div>
+        <div style={{ position:'absolute', bottom:10, left:'50%', transform:'translateX(-50%)', background:'rgba(0,0,0,0.45)', color:'white', fontSize:11, padding:'3px 12px', borderRadius:20, whiteSpace:'nowrap', pointerEvents:'none' }}>?? Click d? phng to</div>
         {images.length>1 && <>
-          <button onClick={e=>{e.stopPropagation();setIdx(i=>(i-1+images.length)%images.length)}} style={{ position:'absolute', left:6, top:'50%', transform:'translateY(-50%)', background:'rgba(0,0,0,0.35)', color:'white', border:'none', borderRadius:'50%', width:32, height:32, cursor:'pointer', fontSize:18, display:'flex', alignItems:'center', justifyContent:'center' }}>‹</button>
-          <button onClick={e=>{e.stopPropagation();setIdx(i=>(i+1)%images.length)}} style={{ position:'absolute', right:6, top:'50%', transform:'translateY(-50%)', background:'rgba(0,0,0,0.35)', color:'white', border:'none', borderRadius:'50%', width:32, height:32, cursor:'pointer', fontSize:18, display:'flex', alignItems:'center', justifyContent:'center' }}>›</button>
+          <button onClick={e=>{e.stopPropagation();setIdx(i=>(i-1+images.length)%images.length)}} style={{ position:'absolute', left:6, top:'50%', transform:'translateY(-50%)', background:'rgba(0,0,0,0.35)', color:'white', border:'none', borderRadius:'50%', width:32, height:32, cursor:'pointer', fontSize:18, display:'flex', alignItems:'center', justifyContent:'center' }}></button>
+          <button onClick={e=>{e.stopPropagation();setIdx(i=>(i+1)%images.length)}} style={{ position:'absolute', right:6, top:'50%', transform:'translateY(-50%)', background:'rgba(0,0,0,0.35)', color:'white', border:'none', borderRadius:'50%', width:32, height:32, cursor:'pointer', fontSize:18, display:'flex', alignItems:'center', justifyContent:'center' }}></button>
           <div style={{ position:'absolute', bottom:8, right:8, background:'rgba(0,0,0,0.45)', color:'white', fontSize:11, padding:'2px 8px', borderRadius:10 }}>{idx+1}/{images.length}</div>
         </>}
       </div>
@@ -143,11 +143,10 @@ function ImageGallery({ images, name, primary }: { images:string[]; name:string;
   )
 }
 
-// -- Import FlashCountdown component -------------------------------------------
 
 // -- Marquee Banner ------------------------------------------------------------
 function MarqueeBanner({ primary, items }: { primary:string; items:string[] }) {
-  const text = items.join('   •   ')
+  const text = items.join('      ')
   return (
     <div style={{ background:`${primary}15`, borderBottom:`1px solid ${primary}25`, overflow:'hidden', height:32, display:'flex', alignItems:'center' }}>
       <div style={{ display:'flex', gap:0, whiteSpace:'nowrap', animation:'marquee 28s linear infinite' }}>
@@ -236,7 +235,7 @@ function LikeButton({ reviewId, initialLikes, primary }: { reviewId: number; ini
 }
 
 // -- Reviews Section -----------------------------------------------------------
-// Mask tên ki?u Shopee: "Nguy?n Van Minh" ? "Nguy?n V*** h"
+// Mask tn ki?u Shopee: "Nguy?n Van Minh" ? "Nguy?n V*** h"
 function maskName(name: string): string {
   const parts = name.trim().split(' ')
   if (parts.length === 1) {
@@ -244,15 +243,15 @@ function maskName(name: string): string {
     if (w.length <= 2) return w
     return w[0] + '***' + w[w.length - 1]
   }
-  // H? gi? nguyên, d?m ?n, tên ?n gi?a
+  // H? gi? nguyn, d?m ?n, tn ?n gi?a
   return parts.map((w, i) => {
-    if (i === 0) return w // H?: gi? nguyên
+    if (i === 0) return w // H?: gi? nguyn
     if (i === parts.length - 1) {
-      // Tên cu?i: gi? ch? d?u + *** + ch? cu?i
+      // Tn cu?i: gi? ch? d?u + *** + ch? cu?i
       if (w.length <= 1) return w + '***'
       return w[0] + '***' + w[w.length - 1]
     }
-    // Ð?m gi?a: ch? gi? ch? d?u + ***
+    // ?m gi?a: ch? gi? ch? d?u + ***
     return w[0] + '***'
   }).join(' ')
 }
@@ -293,10 +292,10 @@ function ReviewsSection({ productId, primary, onRatingUpdate }: { productId:numb
 
   const submit = async () => {
     setError('')
-    if (!name.trim()) return setError('Vui lòng nh?p tên c?a b?n')
-    if (rating === 0) return setError('Vui lòng ch?n s? sao')
-    if (!comment.trim()) return setError('Vui lòng nh?p n?i dung dánh giá')
-    if (comment.trim().length < 10) return setError('Ðánh giá ph?i ít nh?t 10 ký t?')
+    if (!name.trim()) return setError('Vui lng nh?p tn c?a b?n')
+    if (rating === 0) return setError('Vui lng ch?n s? sao')
+    if (!comment.trim()) return setError('Vui lng nh?p n?i dung dnh gi')
+    if (comment.trim().length < 10) return setError('nh gi ph?i t nh?t 10 k t?')
 
     setSubmitting(true)
     const res = await fetch('/api/reviews', {
@@ -311,7 +310,7 @@ function ReviewsSection({ productId, primary, onRatingUpdate }: { productId:numb
       load()
     } else {
       const d = await res.json()
-      setError(d.error || 'Có l?i x?y ra, th? l?i sau')
+      setError(d.error || 'C l?i x?y ra, th? l?i sau')
     }
   }
 
@@ -338,13 +337,13 @@ function ReviewsSection({ productId, primary, onRatingUpdate }: { productId:numb
         {/* T?ng quan rating */}
         {reviews.length > 0 && (
           <div style={{ display:'flex', gap:20, marginBottom:24, padding:16, background:'#fafafa', borderRadius:10, border:'1px solid #f0f0f0', flexWrap:'wrap' }}>
-            {/* Ði?m trung bình */}
+            {/* i?m trung bnh */}
             <div style={{ textAlign:'center', minWidth:80 }}>
               <div style={{ fontSize:42, fontWeight:800, color:primary, lineHeight:1 }}>{avgRating}</div>
               <StarRow value={Math.round(Number(avgRating))} size={16} />
-              <div style={{ fontSize:11, color:'#999', marginTop:4 }}>{reviews.length} dánh giá</div>
+              <div style={{ fontSize:11, color:'#999', marginTop:4 }}>{reviews.length} dnh gi</div>
             </div>
-            {/* Phân ph?i sao - có th? click d? l?c */}
+            {/* Phn ph?i sao - c th? click d? l?c */}
             <div style={{ flex:1, minWidth:160, display:'flex', flexDirection:'column', gap:5, justifyContent:'center' }}>
               {ratingDist.map(({ star, count, pct }) => (
                 <div key={star} onClick={() => setFilterStar(filterStar === star ? null : star)}
@@ -367,19 +366,19 @@ function ReviewsSection({ productId, primary, onRatingUpdate }: { productId:numb
           </div>
         )}
 
-        {/* Danh sách dánh giá */}
+        {/* Danh sch dnh gi */}
         {loading ? (
-          <div style={{ textAlign:'center', padding:'24px 0', color:'#aaa', fontSize:13 }}>Ðang t?i dánh giá...</div>
+          <div style={{ textAlign:'center', padding:'24px 0', color:'#aaa', fontSize:13 }}>ang t?i dnh gi...</div>
         ) : reviews.length === 0 ? (
           <div style={{ textAlign:'center', padding:'20px 0 8px', color:'#bbb' }}>
             <div style={{ fontSize:36, marginBottom:6 }}>??</div>
-            <div style={{ fontSize:13 }}>Chua có dánh giá nào. Hãy là ngu?i d?u tiên!</div>
+            <div style={{ fontSize:13 }}>Chua c dnh gi no. Hy l ngu?i d?u tin!</div>
           </div>
         ) : (
           <div style={{ display:'flex', flexDirection:'column', gap:12, marginBottom:24 }}>
             {(filterStar ? reviews.filter(r => r.rating === filterStar) : reviews).length === 0 ? (
               <div style={{ textAlign:'center', padding:'16px 0', color:'#aaa', fontSize:13 }}>
-                Không có dánh giá {filterStar} sao nào.
+                Khng c dnh gi {filterStar} sao no.
                 <span onClick={() => setFilterStar(null)} style={{ color:primary, cursor:'pointer', marginLeft:6, fontWeight:600 }}>Xem t?t c?</span>
               </div>
             ) : null}
@@ -402,40 +401,40 @@ function ReviewsSection({ productId, primary, onRatingUpdate }: { productId:numb
           </div>
         )}
 
-        {/* Form dánh giá */}
+        {/* Form dnh gi */}
         <div style={{ borderTop:'1px solid #f0f0f0', paddingTop:20 }}>
           <div style={{ fontSize:14, fontWeight:700, color:'#222', marginBottom:14 }}>
-            {submitted ? '? C?m on b?n dã dánh giá!' : '?? Vi?t dánh giá c?a b?n'}
+            {submitted ? '? C?m on b?n d dnh gi!' : '?? Vi?t dnh gi c?a b?n'}
           </div>
 
           {submitted ? (
             <div style={{ textAlign:'center', padding:'14px 0' }}>
               <div style={{ fontSize:32, marginBottom:8 }}>??</div>
-              <div style={{ fontSize:13, color:'#555', marginBottom:12 }}>Ðánh giá c?a b?n dã du?c ghi nh?n. C?m on b?n!</div>
+              <div style={{ fontSize:13, color:'#555', marginBottom:12 }}>nh gi c?a b?n d du?c ghi nh?n. C?m on b?n!</div>
               <button onClick={()=>setSubmitted(false)} style={{ background:'none', border:`1.5px solid ${primary}`, color:primary, padding:'7px 18px', borderRadius:20, fontSize:13, fontWeight:600, cursor:'pointer' }}>
-                Thêm dánh giá khác
+                Thm dnh gi khc
               </button>
             </div>
           ) : (
             <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
               <div>
-                <label style={{ fontSize:12, fontWeight:700, color:'#555', display:'block', marginBottom:4 }}>Tên c?a b?n *</label>
+                <label style={{ fontSize:12, fontWeight:700, color:'#555', display:'block', marginBottom:4 }}>Tn c?a b?n *</label>
                 <input value={name} onChange={e=>setName(e.target.value)} placeholder="Nguy?n Van A" style={inputStyle} maxLength={60}
                   onFocus={e=>(e.target as HTMLInputElement).style.borderColor=primary}
                   onBlur={e=>(e.target as HTMLInputElement).style.borderColor='#e5e7eb'} />
               </div>
               <div>
-                <label style={{ fontSize:12, fontWeight:700, color:'#555', display:'block', marginBottom:6 }}>Ðánh giá sao *</label>
+                <label style={{ fontSize:12, fontWeight:700, color:'#555', display:'block', marginBottom:6 }}>nh gi sao *</label>
                 <StarRow value={rating} onChange={setRating} size={28} />
                 {rating > 0 && (
                   <div style={{ fontSize:12, color:primary, marginTop:4, fontWeight:600 }}>
-                    {['','?? R?t t?','?? T?','?? Bình thu?ng','?? T?t','?? Tuy?t v?i'][rating]}
+                    {['','?? R?t t?','?? T?','?? Bnh thu?ng','?? T?t','?? Tuy?t v?i'][rating]}
                   </div>
                 )}
               </div>
               <div>
-                <label style={{ fontSize:12, fontWeight:700, color:'#555', display:'block', marginBottom:4 }}>N?i dung dánh giá *</label>
-                <textarea value={comment} onChange={e=>setComment(e.target.value)} placeholder="Chia s? tr?i nghi?m c?a b?n v? s?n ph?m này..." rows={3} maxLength={1000}
+                <label style={{ fontSize:12, fontWeight:700, color:'#555', display:'block', marginBottom:4 }}>N?i dung dnh gi *</label>
+                <textarea value={comment} onChange={e=>setComment(e.target.value)} placeholder="Chia s? tr?i nghi?m c?a b?n v? s?n ph?m ny..." rows={3} maxLength={1000}
                   style={{ ...inputStyle, resize:'vertical', lineHeight:1.6 }}
                   onFocus={e=>(e.target as HTMLTextAreaElement).style.borderColor=primary}
                   onBlur={e=>(e.target as HTMLTextAreaElement).style.borderColor='#e5e7eb'} />
@@ -448,7 +447,7 @@ function ReviewsSection({ productId, primary, onRatingUpdate }: { productId:numb
               )}
               <button onClick={submit} disabled={submitting}
                 style={{ background:submitting?'#d1d5db':primary, color:'white', border:'none', padding:'11px 0', borderRadius:8, fontWeight:700, fontSize:14, cursor:submitting?'not-allowed':'pointer', transition:'background 0.2s', boxShadow:submitting?'none':`0 2px 10px ${primary}44` }}>
-                {submitting ? '? Ðang g?i...' : '?? G?i dánh giá'}
+                {submitting ? '? ang g?i...' : '?? G?i dnh gi'}
               </button>
             </div>
           )}
@@ -459,7 +458,7 @@ function ReviewsSection({ productId, primary, onRatingUpdate }: { productId:numb
 }
 
 // -- Social Links Footer helper ------------------------------------------------
-// Tr? v? m?ng social links d?a theo settings, ch? nh?ng cái có URL và du?c b?t
+// Tr? v? m?ng social links d?a theo settings, ch? nh?ng ci c URL v du?c b?t
 type SocialLink = { key: string; label: string; icon: string; href: string; bg: string }
 
 function buildSocialLinks(settings: Settings): SocialLink[] {
@@ -474,14 +473,14 @@ function buildSocialLinks(settings: Settings): SocialLink[] {
   return all
     .filter(s => {
       const val = settings[s.key]?.trim()
-      // N?u admin dã set show toggle = false thì ?n
+      // N?u admin d set show toggle = false th ?n
       const showKey = `${s.key}_show`
       if (settings[showKey] === 'false') return false
       return !!val
     })
     .map(s => {
       let val = settings[s.key].trim()
-      // Zalo: n?u ch? nh?p SÐT thì build URL
+      // Zalo: n?u ch? nh?p ST th build URL
       if (s.key === 'social_zalo' && !val.startsWith('http')) {
         val = `https://zalo.me/${val.replace(/\D/g,'')}`
       }
@@ -531,11 +530,11 @@ function ShareButton({ product, primary }: { product: Product; primary: string }
 
   const handleOpen = () => {
     setOpen(o => !o)
-    // Pre-fetch short URL ngay khi m? — không await d? không block
+    // Pre-fetch short URL ngay khi m?  khng await d? khng block
     if (!shortUrl) getShortUrl()
   }
 
-  // Dùng shortUrl dã fetch s?n, fallback v? href n?u chua có
+  // Dng shortUrl d fetch s?n, fallback v? href n?u chua c
   const getCurrentUrl = () => shortUrl || window.location.href
 
   const shareZalo = () => {
@@ -566,7 +565,7 @@ function ShareButton({ product, primary }: { product: Product; primary: string }
         onClick={handleOpen}
         style={{ background:'none', border:'1px solid #e5e7eb', borderRadius:20, padding:'4px 12px', fontSize:12, color:'#666', cursor:'pointer', display:'flex', alignItems:'center', gap:4, whiteSpace:'nowrap', transition:'border-color 0.15s' }}
       >
-        {copied ? '? Ðã copy!' : '?? Chia s?'}
+        {copied ? '?  copy!' : '?? Chia s?'}
       </button>
 
       {open && (
@@ -574,7 +573,7 @@ function ShareButton({ product, primary }: { product: Product; primary: string }
           {/* Hi?n short URL preview */}
           {(shortUrl || loadingShort) && (
             <div style={{ padding:'8px 16px', background:'#f8f9fa', borderBottom:'1px solid #f0f0f0', fontSize:11, color:'#6b7280' }}>
-              {loadingShort ? '? Ðang t?o link...' : (
+              {loadingShort ? '? ang t?o link...' : (
                 <span style={{ fontFamily:'monospace', color:'#374151', fontWeight:600 }}>{shortUrl}</span>
               )}
             </div>
@@ -591,7 +590,7 @@ function ShareButton({ product, primary }: { product: Product; primary: string }
           </button>
           <button onClick={copyLink} style={{ width:'100%', display:'flex', alignItems:'center', gap:10, padding:'11px 16px', border:'none', background:'white', cursor:'pointer', fontSize:13, color:'#555', fontWeight:500, textAlign:'left' }}>
             <span style={{ width:28, height:28, borderRadius:'50%', background:'#f0f0f0', color:'#555', display:'flex', alignItems:'center', justifyContent:'center', fontSize:14, flexShrink:0 }}>??</span>
-            {copied ? '? Ðã copy!' : 'Copy link ng?n'}
+            {copied ? '?  copy!' : 'Copy link ng?n'}
           </button>
         </div>
       )}
@@ -600,10 +599,10 @@ function ShareButton({ product, primary }: { product: Product; primary: string }
 }
 
 // -- Social Proof Popup --------------------------------------------------------
-const NAMES = ['Nguy?n V.A','Tr?n T.B','Lê M.C','Ph?m T.D','Hoàng V.E','Vu T.F','Ð?ng V.G','Bùi T.H','Ð? M.I','Ngô T.K','Duong V.L','Lý T.M','Phan V.N','Tr?nh T.O','Ðinh V.P']
-const ACTIONS = ['v?a xem s?n ph?m này','v?a mua s?n ph?m này','v?a thêm vào gi? hàng','v?a d?t hàng thành công']
-const TIMES = ['vài giây tru?c','1 phút tru?c','2 phút tru?c','5 phút tru?c','10 phút tru?c']
-const LOCS = ['Hà N?i','TP.HCM','Ðà N?ng','H?i Phòng','C?n Tho','Hu?','Nha Trang','Vinh','Thái Nguyên','Bình Duong']
+const NAMES = ['Nguy?n V.A','Tr?n T.B','L M.C','Ph?m T.D','Hong V.E','Vu T.F','?ng V.G','Bi T.H','? M.I','Ng T.K','Duong V.L','L T.M','Phan V.N','Tr?nh T.O','inh V.P']
+const ACTIONS = ['v?a xem s?n ph?m ny','v?a mua s?n ph?m ny','v?a thm vo gi? hng','v?a d?t hng thnh cng']
+const TIMES = ['vi giy tru?c','1 pht tru?c','2 pht tru?c','5 pht tru?c','10 pht tru?c']
+const LOCS = ['H N?i','TP.HCM',' N?ng','H?i Phng','C?n Tho','Hu?','Nha Trang','Vinh','Thi Nguyn','Bnh Duong']
 
 function SocialProofPopup({ primary }: { primary: string }) {
   const [visible, setVisible] = useState(false)
@@ -642,7 +641,7 @@ function SocialProofPopup({ primary }: { primary: string }) {
         ??
       </div>
       <div style={{ minWidth:0 }}>
-        <div style={{ fontSize:12, fontWeight:700, color:'#222' }}>{data.name} <span style={{ color:'#888', fontWeight:400 }}>· {data.loc}</span></div>
+        <div style={{ fontSize:12, fontWeight:700, color:'#222' }}>{data.name} <span style={{ color:'#888', fontWeight:400 }}> {data.loc}</span></div>
         <div style={{ fontSize:12, color:'#555', marginTop:1 }}>{data.action}</div>
         <div style={{ fontSize:11, color:'#bbb', marginTop:1 }}>{data.time}</div>
       </div>
@@ -664,13 +663,13 @@ export default function ProductDetail({ product, related, settings={}, categorie
   const siteName      = settings.site_name       || 'Shopee Deals'
   const siteEmoji     = settings.site_logo_emoji || '???'
   const siteTagline   = settings.site_tagline    || ''
-  const shippingText  = settings.shipping_text   || '?? Mi?n phí v?n chuy?n · Giao trong 2-5 ngày'
-  const guaranteeText = settings.guarantee_text  || '? Hoàn ti?n n?u hàng không dúng mô t?'
-  const returnText    = settings.return_text     || '?? Ð?i tr? mi?n phí trong 15 ngày'
+  const shippingText  = settings.shipping_text   || '?? Mi?n ph v?n chuy?n  Giao trong 2-5 ngy'
+  const guaranteeText = settings.guarantee_text  || '? Hon ti?n n?u hng khng dng m t?'
+  const returnText    = settings.return_text     || '?? ?i tr? mi?n ph trong 15 ngy'
   const buyBtnText    = settings.buy_button_text || 'Mua Ngay'
-  const shopeeBadge   = settings.shopee_badge    || 'Ð?m b?o chính hãng · Giao nhanh'
-  const footerText    = settings.footer_text     || 'T?ng h?p s?n ph?m gi?m giá t?t nh?t t? Shopee'
-  const footerCopy    = settings.footer_copyright|| '© 2025 · Affiliate Website'
+  const shopeeBadge   = settings.shopee_badge    || '?m b?o chnh hng  Giao nhanh'
+  const footerText    = settings.footer_text     || 'T?ng h?p s?n ph?m gi?m gi t?t nh?t t? Shopee'
+  const footerCopy    = settings.footer_copyright|| ' 2025  Affiliate Website'
   const footerColor   = settings.footer_color    || '#1a1a1a'
   const showReviews   = settings.show_reviews    !== 'false'
   const voucherText   = settings.voucher_text    || '15.5 VOUCHER Giam them 30%'
@@ -720,9 +719,9 @@ export default function ProductDetail({ product, related, settings={}, categorie
       {/* -- Breadcrumb -- */}
       <div style={{ maxWidth:1100, margin:'0 auto', padding:'10px 16px', fontSize:12, color:'#888', display:'flex', gap:6, alignItems:'center', flexWrap:'wrap' }}>
         <Link href="/" style={{ color:primary, textDecoration:'none' }}>Trang ch?</Link>
-        <span>›</span>
+        <span></span>
         <Link href={`/?cat=${product.category.slug}`} style={{ color:primary, textDecoration:'none' }}>{product.category.name}</Link>
-        <span>›</span>
+        <span></span>
         <span style={{ color:'#555', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:200 }}>{product.name}</span>
       </div>
 
@@ -759,7 +758,7 @@ export default function ProductDetail({ product, related, settings={}, categorie
 
               <h1 className='pd-title' style={{ margin:'0 0 10px', fontSize:18, fontWeight:500, lineHeight:1.5, color:'#222' }}>{product.name}</h1>
 
-              {/* Stats — ki?u Shopee */}
+              {/* Stats  ki?u Shopee */}
               <div className='pd-stats' style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12, paddingBottom:12, borderBottom:'1px solid #f5f5f5', fontSize:12, color:'#666', flexWrap:'wrap' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:3 }}>
                   <span style={{ color:'#ee4d2d', fontWeight:700, fontSize:13, borderBottom:'1px solid #ee4d2d' }}>{rating}</span>
@@ -770,16 +769,16 @@ export default function ProductDetail({ product, related, settings={}, categorie
                   </div>
                 </div>
                 <span style={{ color:'#e0e0e0' }}>|</span>
-                <span style={{ borderBottom:'1px solid #999', color:'#555' }}>{reviews2.toLocaleString('vi-VN')} Ðánh Giá</span>
+                <span style={{ borderBottom:'1px solid #999', color:'#555' }}>{reviews2.toLocaleString('vi-VN')} nh Gi</span>
                 <span style={{ color:'#e0e0e0' }}>|</span>
-                <span>Ðã Bán <b style={{ color:'#555' }}>{sold >= 1000 ? `${Math.floor(sold/100)/10}k` : sold.toLocaleString('vi-VN')}</b></span>
+                <span> Bn <b style={{ color:'#555' }}>{sold >= 1000 ? `${Math.floor(sold/100)/10}k` : sold.toLocaleString('vi-VN')}</b></span>
                 <span style={{ color:'#e0e0e0' }}>|</span>
                 <span style={{ color:'#26aa99', fontWeight:600, display:'flex', alignItems:'center', gap:3 }}>
-                  <span>?</span> Còn Hàng
+                  <span>?</span> Cn Hng
                 </span>
               </div>
 
-              {/* Price — ki?u Shopee v?i Flash Sale */}
+              {/* Price  ki?u Shopee v?i Flash Sale */}
               <div style={{ background:'#fff6f6', border:'1px solid #ffe0dc', borderRadius:8, padding:'14px 16px', marginBottom:14 }}>
                 {discount && discount >= 5 && (
                   <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:10, paddingBottom:10, borderBottom:'1px dashed #ffd0cc', flexWrap:'wrap' }}>
@@ -788,7 +787,7 @@ export default function ProductDetail({ product, related, settings={}, categorie
                       <span style={{ color:'white', fontWeight:800, fontSize:12, letterSpacing:'0.5px' }}>FLASH SALE</span>
                     </div>
                     <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-                      <span style={{ fontSize:11, color:'#999' }}>K?T THÚC TRONG</span>
+                      <span style={{ fontSize:11, color:'#999' }}>K?T THC TRONG</span>
                       <FlashCountdown productId={product.id} />
                     </div>
                   </div>
@@ -810,14 +809,14 @@ export default function ProductDetail({ product, related, settings={}, categorie
                 </div>
                 {saved && (
                   <div style={{ marginTop:6, fontSize:12, color:'#ee4d2d', display:'flex', alignItems:'center', gap:4 }}>
-                    ?? Ti?t ki?m <b>{saved.toLocaleString('vi-VN')}?</b> so v?i giá g?c
+                    ?? Ti?t ki?m <b>{saved.toLocaleString('vi-VN')}?</b> so v?i gi g?c
                   </div>
                 )}
               </div>
 
               {/* Policies */}
               <div style={{ display:'flex', flexDirection:'column', gap:8, marginBottom:18, fontSize:13 }}>
-                {([['V?n Chuy?n',shippingText],['Ð?m B?o',guaranteeText],['Tr? Hàng',returnText]] as [string,string][]).map(([l,v])=>(
+                {([['V?n Chuy?n',shippingText],['?m B?o',guaranteeText],['Tr? Hng',returnText]] as [string,string][]).map(([l,v])=>(
                   <div key={l} style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
                     <span style={{ color:'#999', minWidth:90, fontSize:12 }}>{l}</span>
                     <span style={{ color:'#333', fontSize:12, flex:1 }}>{v}</span>
@@ -831,7 +830,7 @@ export default function ProductDetail({ product, related, settings={}, categorie
                   onClick={() => document.getElementById('product-description')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
                   style={{ flex:1, padding:'13px 0', background:'#fff0ee', color:'#ee4d2d', border:'1px solid #ee4d2d', borderRadius:2, fontSize:14, fontWeight:600, cursor:'pointer' }}
                 >
-                  ?? Xem Mô T?
+                  ?? Xem M T?
                 </button>
                 <a
                   href={product.affLink}
@@ -843,17 +842,17 @@ export default function ProductDetail({ product, related, settings={}, categorie
                   ? {buyBtnText}
                 </a>
               </div>
-              <div style={{ marginTop:8, fontSize:11, color:'#bbb' }}>B?n s? du?c chuy?n d?n Shopee d? hoàn t?t d?t hàng an toàn</div>
+              <div style={{ marginTop:8, fontSize:11, color:'#bbb' }}>B?n s? du?c chuy?n d?n Shopee d? hon t?t d?t hng an ton</div>
             </div>
           </div>
         </div>
 
-        {/* -- Mô t? -- */}
+        {/* -- M t? -- */}
         {product.description && (
           <div id="product-description" style={{ background:'white', borderRadius:12, boxShadow:'0 2px 8px rgba(0,0,0,0.06)', marginBottom:16, overflow:'hidden' }}>
             <div style={{ background:`${primary}0e`, padding:'14px 20px', borderBottom:`2px solid ${primary}33`, display:'flex', alignItems:'center', gap:10 }}>
               <span style={{ fontSize:20 }}>??</span>
-              <h2 style={{ margin:0, fontSize:16, fontWeight:700, color:primary }}>MÔ T? S?N PH?M</h2>
+              <h2 style={{ margin:0, fontSize:16, fontWeight:700, color:primary }}>M T? S?N PH?M</h2>
             </div>
             <div style={{ padding:'20px 20px' }}>{renderDescription(product.description, primary)}</div>
             <div style={{ padding:'16px 20px', borderTop:'1px solid #f5f5f5', display:'flex', justifyContent:'center' }}>
@@ -870,14 +869,14 @@ export default function ProductDetail({ product, related, settings={}, categorie
           </div>
         )}
 
-        {/* -- Ðánh giá s?n ph?m -- */}
+        {/* -- nh gi s?n ph?m -- */}
         {true && (
           <div style={{ background:'white', borderRadius:12, boxShadow:'0 2px 8px rgba(0,0,0,0.06)', overflow:'hidden', marginBottom:16 }}>
             <div onClick={() => setOpenReviews(o => !o)}
               style={{ padding:'14px 20px', display:'flex', alignItems:'center', justifyContent:'space-between', cursor:'pointer', userSelect:'none', background: openReviews ? `${primary}0e` : 'white', borderBottom: openReviews ? `2px solid ${primary}33` : 'none' }}>
               <div style={{ display:'flex', alignItems:'center', gap:10 }}>
                 <span style={{ fontSize:20 }}>??</span>
-                <h2 style={{ margin:0, fontSize:16, fontWeight:700, color:primary }}>ÐÁNH GIÁ S?N PH?M</h2>
+                <h2 style={{ margin:0, fontSize:16, fontWeight:700, color:primary }}>NH GI S?N PH?M</h2>
               </div>
               <span style={{ fontSize:20, color:primary, transition:'transform 0.2s', display:'inline-block', transform: openReviews ? 'rotate(180deg)' : 'rotate(0deg)' }}>?</span>
             </div>
@@ -885,12 +884,12 @@ export default function ProductDetail({ product, related, settings={}, categorie
           </div>
         )}
 
-        {/* -- S?n ph?m liên quan — grid ki?u Shopee -- */}
+        {/* -- S?n ph?m lin quan  grid ki?u Shopee -- */}
         {related.length>0 && (
           <div style={{ background:'white', borderRadius:12, boxShadow:'0 2px 8px rgba(0,0,0,0.06)', overflow:'hidden' }}>
             <div style={{ background:'#fafafa', padding:'14px 20px', borderBottom:'1px solid #f0f0f0', display:'flex', alignItems:'center', gap:10 }}>
               <div style={{ width:4, height:20, background:primary, borderRadius:2 }} />
-              <h2 style={{ margin:0, fontSize:15, fontWeight:700, color:'#333' }}>CÓ TH? B?N THÍCH</h2>
+              <h2 style={{ margin:0, fontSize:15, fontWeight:700, color:'#333' }}>C TH? B?N THCH</h2>
               <span style={{ fontSize:12, color:'#aaa' }}>Top {related.length}</span>
             </div>
             <div style={{ padding:'12px 12px 16px' }}>
@@ -916,14 +915,14 @@ export default function ProductDetail({ product, related, settings={}, categorie
                             ? <img src={thumb} alt={p.name} style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'contain', padding:6, transition:'transform 0.3s' }} />
                             : <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', fontSize:40 }}>???</div>}
 
-                          {/* Discount badge — góc trên trái */}
+                          {/* Discount badge  gc trn tri */}
                           {disc && (
                             <div style={{ position:'absolute', top:0, left:0, background:primary, color:'white', fontSize:11, fontWeight:800, padding:'3px 8px', borderRadius:'0 0 8px 0' }}>
                               -{disc}%
                             </div>
                           )}
 
-                          {/* Voucher bar — dáy ?nh nhu Shopee */}
+                          {/* Voucher bar  dy ?nh nhu Shopee */}
                           {voucherText && (
                             <div style={{ position:'absolute', bottom:0, left:0, right:0, background:'linear-gradient(90deg,#ff6633,#ee4d2d)', padding:'3px 8px', display:'flex', alignItems:'center', gap:4 }}>
                               <span style={{ background:'rgba(255,255,255,0.25)', borderRadius:3, padding:'1px 5px', fontSize:9, fontWeight:800, color:'white' }}>{voucherText.split(' ')[0]}</span>
@@ -934,12 +933,12 @@ export default function ProductDetail({ product, related, settings={}, categorie
 
                         {/* Info */}
                         <div style={{ padding:'8px 10px 10px' }}>
-                          {/* Mall / Yêu thích badge */}
+                          {/* Mall / Yu thch badge */}
                           {(isYeuThich || isMall) && (
                             <div style={{ marginBottom:4 }}>
                               {isMall
                                 ? <span style={{ background:'#d0011b', color:'white', fontSize:9, fontWeight:700, padding:'1px 5px', borderRadius:2 }}>Mall</span>
-                                : <span style={{ background:`${primary}15`, color:primary, fontSize:9, fontWeight:700, padding:'1px 6px', borderRadius:2, border:`1px solid ${primary}44` }}>Yêu thích</span>
+                                : <span style={{ background:`${primary}15`, color:primary, fontSize:9, fontWeight:700, padding:'1px 6px', borderRadius:2, border:`1px solid ${primary}44` }}>Yu thch</span>
                               }
                             </div>
                           )}
@@ -964,12 +963,12 @@ export default function ProductDetail({ product, related, settings={}, categorie
                               <span style={{ color:'#555', fontWeight:600 }}>{fakeRating}</span>
                             </div>
                             <span style={{ color:'#e0e0e0' }}>|</span>
-                            <span>Ðã bán {fakeSoldUnit}</span>
+                            <span> bn {fakeSoldUnit}</span>
                           </div>
 
                           {/* Location + Freeship */}
                           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginTop:5 }}>
-                            <span style={{ fontSize:10, color:'#aaa' }}>?? Hà N?i</span>
+                            <span style={{ fontSize:10, color:'#aaa' }}>?? H N?i</span>
                             <span style={{ background:'#26aa99', color:'white', fontSize:9, fontWeight:700, padding:'2px 5px', borderRadius:2 }}>FREESHIP</span>
                           </div>
                         </div>
