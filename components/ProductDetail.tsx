@@ -33,16 +33,16 @@ function getFakeStats(id: number) {
   return { sold, views, reviews, rating }
 }
 const KEYWORD_ICONS: [RegExp, string][] = [
-  [/chnh hng/i,'?'],[/b?o hnh/i,'???'],[/mi?n ph/i,'??'],
-  [/giao hng|v?n chuy?n/i,'??'],[/khuy?n mi|gi?m gi/i,'??'],
-  [/an ton/i,'??'],[/cao c?p|ch?t lu?ng/i,'?'],[/m?i|new/i,'??'],
-  [/hot|bn ch?y/i,'??'],[/t?ng km/i,'??'],[/cng ngh?/i,'??'],
-  [/pin|battery/i,'??'],[/bluetooth|wifi/i,'??'],[/kch thu?c|size/i,'??'],
-  [/mu s?c|mu/i,'??'],[/tr?ng lu?ng|n?ng/i,'??'],[/xu?t x?|thuong hi?u/i,'???'],
+  [/ch.nh h.ng/i,'✅'],[/b.o h.nh/i,'🛡️'],[/mi.n ph./i,'🆓'],
+  [/giao h.ng|v.n chuy.n/i,'🚚'],[/khuy.n m.i|gi.m gi./i,'🔥'],
+  [/an to.n/i,'🔒'],[/cao c.p|ch.t l..ng/i,'⭐'],[/m.i|new/i,'🆕'],
+  [/hot|b.n ch.y/i,'🔥'],[/t.ng k.m/i,'🎁'],[/c.ng ngh./i,'💡'],
+  [/pin|battery/i,'🔋'],[/bluetooth|wifi/i,'📶'],[/k.ch th..c|size/i,'📏'],
+  [/m.u s.c|m.u/i,'🎨'],[/tr.ng l..ng|n.ng/i,'⚖️'],[/xu.t x.|th..ng hi.u/i,'🏭'],
 ]
 function getLineIcon(text: string) {
   for (const [r, i] of KEYWORD_ICONS) if (r.test(text)) return i
-  return '?'
+  return '▸'
 }
 function renderDescription(desc: string, primary: string) {
   const fixed = desc.replace(/\\n/g,'\n').replace(/<br\s*\/?>/gi,'\n').replace(/<li>/gi,'\n- ').replace(/<\/li>/gi,'')
@@ -334,22 +334,22 @@ function ReviewsSection({ productId, primary, onRatingUpdate }: { productId:numb
     <div style={{ background:'white', overflow:'hidden' }}>
       <div style={{ padding:'16px 20px' }}>
 
-        {/* T?ng quan rating */}
+        {/* Tổng quan rating */}
         {reviews.length > 0 && (
           <div style={{ display:'flex', gap:20, marginBottom:24, padding:16, background:'#fafafa', borderRadius:10, border:'1px solid #f0f0f0', flexWrap:'wrap' }}>
-            {/* i?m trung bnh */}
+            {/* Điểm trung bình */}
             <div style={{ textAlign:'center', minWidth:80 }}>
               <div style={{ fontSize:42, fontWeight:800, color:primary, lineHeight:1 }}>{avgRating}</div>
               <StarRow value={Math.round(Number(avgRating))} size={16} />
-              <div style={{ fontSize:11, color:'#999', marginTop:4 }}>{reviews.length} dđánh giá</div>
+              <div style={{ fontSize:11, color:'#999', marginTop:4 }}>{reviews.length} đánh giá</div>
             </div>
-            {/* Phn ph?i sao - c th? click d? l?c */}
+            {/* Phân phối sao - có thể click để lọc */}
             <div style={{ flex:1, minWidth:160, display:'flex', flexDirection:'column', gap:5, justifyContent:'center' }}>
               {ratingDist.map(({ star, count, pct }) => (
                 <div key={star} onClick={() => setFilterStar(filterStar === star ? null : star)}
                   style={{ display:'flex', alignItems:'center', gap:8, fontSize:12, cursor:'pointer', padding:'3px 6px', borderRadius:6, background: filterStar === star ? `${primary}12` : 'transparent', border: filterStar === star ? `1px solid ${primary}44` : '1px solid transparent', transition:'all 0.15s' }}>
                   <span style={{ width:12, textAlign:'right', color: filterStar === star ? primary : '#555', fontWeight:700 }}>{star}</span>
-                  <span style={{ fontSize:13 }}>?</span>
+                  <span style={{ fontSize:13 }}>⭐</span>
                   <div style={{ flex:1, height:6, background:'#f0f0f0', borderRadius:4, overflow:'hidden' }}>
                     <div style={{ height:'100%', width:`${pct}%`, background: star >= 4 ? primary : star === 3 ? '#f39c12' : '#e74c3c', borderRadius:4, transition:'width 0.5s ease' }} />
                   </div>
@@ -359,26 +359,26 @@ function ReviewsSection({ productId, primary, onRatingUpdate }: { productId:numb
               {filterStar && (
                 <div onClick={() => setFilterStar(null)}
                   style={{ fontSize:11, color:primary, cursor:'pointer', textAlign:'center', marginTop:4, fontWeight:600 }}>
-                  ? Bỏ lọc
+                  ✕ Bỏ lọc
                 </div>
               )}
             </div>
           </div>
         )}
 
-        {/* Danh sch dđánh giá */}
+        {/* Danh sch đánh giá */}
         {loading ? (
-          <div style={{ textAlign:'center', padding:'24px 0', color:'#aaa', fontSize:13 }}>ang t?i dđánh giá...</div>
+          <div style={{ textAlign:'center', padding:'24px 0', color:'#aaa', fontSize:13 }}>ang t?i đánh giá...</div>
         ) : reviews.length === 0 ? (
           <div style={{ textAlign:'center', padding:'20px 0 8px', color:'#bbb' }}>
-            <div style={{ fontSize:36, marginBottom:6 }}>??</div>
-            <div style={{ fontSize:13 }}>Chua c dđánh giá no. Hy l ngu?i d?u tin!</div>
+            <div style={{ fontSize:36, marginBottom:6 }}>💬</div>
+            <div style={{ fontSize:13 }}>Chua c đánh giá no. Hy l ngu?i d?u tin!</div>
           </div>
         ) : (
           <div style={{ display:'flex', flexDirection:'column', gap:12, marginBottom:24 }}>
             {(filterStar ? reviews.filter(r => r.rating === filterStar) : reviews).length === 0 ? (
               <div style={{ textAlign:'center', padding:'16px 0', color:'#aaa', fontSize:13 }}>
-                Khng c dđánh giá {filterStar} sao nào.
+                Khng c đánh giá {filterStar} sao nào.
                 <span onClick={() => setFilterStar(null)} style={{ color:primary, cursor:'pointer', marginLeft:6, fontWeight:600 }}>Xem tất cả</span>
               </div>
             ) : null}
@@ -401,10 +401,10 @@ function ReviewsSection({ productId, primary, onRatingUpdate }: { productId:numb
           </div>
         )}
 
-        {/* Form dđánh giá */}
+        {/* Form đánh giá */}
         <div style={{ borderTop:'1px solid #f0f0f0', paddingTop:20 }}>
           <div style={{ fontSize:14, fontWeight:700, color:'#222', marginBottom:14 }}>
-            {submitted ? '? C?m on b?n d dđánh giá!' : '?? Vi?t dđánh giá c?a b?n'}
+            {submitted ? '? C?m on b?n d đánh giá!' : '?? Vi?t đánh giá c?a b?n'}
           </div>
 
           {submitted ? (
@@ -412,7 +412,7 @@ function ReviewsSection({ productId, primary, onRatingUpdate }: { productId:numb
               <div style={{ fontSize:32, marginBottom:8 }}>??</div>
               <div style={{ fontSize:13, color:'#555', marginBottom:12 }}>đánh giá c?a b?n d du?c ghi nh?n. C?m on b?n!</div>
               <button onClick={()=>setSubmitted(false)} style={{ background:'none', border:`1.5px solid ${primary}`, color:primary, padding:'7px 18px', borderRadius:20, fontSize:13, fontWeight:600, cursor:'pointer' }}>
-                Thm dđánh giá khc
+                Thm đánh giá khc
               </button>
             </div>
           ) : (
@@ -433,7 +433,7 @@ function ReviewsSection({ productId, primary, onRatingUpdate }: { productId:numb
                 )}
               </div>
               <div>
-                <label style={{ fontSize:12, fontWeight:700, color:'#555', display:'block', marginBottom:4 }}>N?i dung dđánh giá *</label>
+                <label style={{ fontSize:12, fontWeight:700, color:'#555', display:'block', marginBottom:4 }}>N?i dung đánh giá *</label>
                 <textarea value={comment} onChange={e=>setComment(e.target.value)} placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm này..." rows={3} maxLength={1000}
                   style={{ ...inputStyle, resize:'vertical', lineHeight:1.6 }}
                   onFocus={e=>(e.target as HTMLTextAreaElement).style.borderColor=primary}
@@ -447,7 +447,7 @@ function ReviewsSection({ productId, primary, onRatingUpdate }: { productId:numb
               )}
               <button onClick={submit} disabled={submitting}
                 style={{ background:submitting?'#d1d5db':primary, color:'white', border:'none', padding:'11px 0', borderRadius:8, fontWeight:700, fontSize:14, cursor:submitting?'not-allowed':'pointer', transition:'background 0.2s', boxShadow:submitting?'none':`0 2px 10px ${primary}44` }}>
-                {submitting ? '? Đang gửi...' : '?? G?i dđánh giá'}
+                {submitting ? '? Đang gửi...' : '?? G?i đánh giá'}
               </button>
             </div>
           )}
