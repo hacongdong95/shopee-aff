@@ -40,7 +40,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const marqueeText = settings.marquee_text   || ''
 
   return (
-    <html lang="vi">
+    <html lang="vi" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <ThemeProvider />
